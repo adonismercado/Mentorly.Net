@@ -1,2 +1,10 @@
 obj/**
 bin/**
+src/**/bin/
+src/Mentorly.Application/bin/**/*.*
+src/Mentorly.Application/obj/**/*.*
+/.vs
+/tests/Mentorly.Tests/bin/Debug/net10.0
+/src/Mentorly.Domain/obj
+/src/Mentorly.Infrastructure/obj
+/src/Mentorly.UI/obj

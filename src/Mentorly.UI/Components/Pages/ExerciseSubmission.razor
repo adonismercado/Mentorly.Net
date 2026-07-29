@@ -1,0 +1,141 @@
+@page "/exercise-submission"
+@rendermode InteractiveServer
+@using Mentorly.Application.DTOs
+@using Mentorly.Application.Services
+@using Mentorly.Infrastructure.Identity
+@using Mentorly.Infrastructure.Persistence.Seed
+@inject IStudentEnrollmentService StudentEnrollmentService
+@inject IPeerReviewService PeerReviewService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Exercise Submission</PageTitle>
+
+<h1>Exercise Submission</h1>
+
+<p>Demo values are prefilled using infrastructure seed data.</p>
+
+<div class="mb-3">
+    <button class="btn btn-primary me-2" @onclick="EnsureEnrollmentAsync">1) Enroll Student</button>
+    <button class="btn btn-success me-2" @onclick="SubmitExerciseAsync" disabled="@(_enrollmentId is null)">2) Submit Exercise</button>
+    <button class="btn btn-warning" @onclick="ApproveAsPeerAsync" disabled="@(_submissionId is null)">3) Peer Approve</button>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(_message))
+{
+    <div class="alert alert-info" role="alert">@_message</div>
+}
+
+<div class="card p-3">
+    <div><strong>StudentId:</strong> @_studentId</div>
+    <div><strong>CourseId:</strong> @_courseId</div>
+    <div><strong>ActivityId:</strong> @_activityId</div>
+    <div><strong>EnrollmentId:</strong> @_enrollmentId</div>
+    <div><strong>SubmissionId:</strong> @_submissionId</div>
+    <div><strong>SubmissionStatus:</strong> @_submissionStatus</div>
+    <div><strong>Positive Reviews:</strong> @_positiveReviews</div>
+</div>
+
+@code {
+    private Guid? _studentId;
+    private readonly Guid _courseId = SeedData.CourseId;
+    private readonly Guid _activityId = SeedData.ActivityId;
+
+    private Guid? _enrollmentId;
+    private Guid? _submissionId;
+    private string _submissionStatus = "-";
+    private int _positiveReviews;
+    private string? _message;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var studentIdClaim = authState.User.FindFirst(MentorlyClaimTypes.StudentId)?.Value;
+
+        if (Guid.TryParse(studentIdClaim, out var studentId))
+        {
+            _studentId = studentId;
+            _message = "Authenticated student mapped from Google claims.";
+        }
+        else
+        {
+            _message = "Sign in with Google to map your student identity.";
+        }
+    }
+
+    private async Task EnsureEnrollmentAsync()
+    {
+        if (_studentId is null)
+        {
+            _message = "Sign in first. Student claim not available.";
+            return;
+        }
+
+        try
+        {
+            var result = await StudentEnrollmentService.EnrollAsync(new CreateEnrollmentRequestDto(
+                _studentId.Value,
+                _courseId,
+                DateTime.UtcNow));
+
+            _enrollmentId = result.EnrollmentId;
+            _message = $"Enrollment created. Expires: {result.ExpiresAtUtc:O}";
+        }
+        catch (Exception ex)
+        {
+            _message = ex.Message;
+        }
+    }
+
+    private async Task SubmitExerciseAsync()
+    {
+        if (_enrollmentId is null)
+        {
+            _message = "Create enrollment first.";
+            return;
+        }
+
+        try
+        {
+            var result = await StudentEnrollmentService.SubmitExerciseAsync(new SubmitExerciseRequestDto(
+                _enrollmentId.Value,
+                _activityId,
+                "https://github.com/example/mentorly-exercise",
+                DateTime.UtcNow));
+
+            _submissionId = result.SubmissionId;
+            _submissionStatus = result.Status.ToString();
+            _message = "Submission registered.";
+        }
+        catch (Exception ex)
+        {
+            _message = ex.Message;
+        }
+    }
+
+    private async Task ApproveAsPeerAsync()
+    {
+        if (_submissionId is null)
+        {
+            _message = "Submit an exercise first.";
+            return;
+        }
+
+        try
+        {
+            var result = await PeerReviewService.SubmitReviewAsync(new CreatePeerReviewRequestDto(
+                _submissionId.Value,
+                SeedData.ReviewerStudentId,
+                true,
+                "Code structure is clear and requirements are satisfied.",
+                DateTime.UtcNow));
+
+            _positiveReviews = result.PositiveReviews;
+            _submissionStatus = result.SubmissionStatus.ToString();
+            _message = $"Review added. {result.PositiveReviews}/{result.RequiredPositiveReviews} approvals.";
+        }
+        catch (Exception ex)
+        {
+            _message = ex.Message;
+        }
+    }
+}
