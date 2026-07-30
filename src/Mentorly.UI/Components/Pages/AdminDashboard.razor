@@ -1,0 +1,34 @@
+@page "/admin-dashboard"
+@attribute [Authorize(Roles = "Admin")]
+
+<PageTitle>Admin Dashboard</PageTitle>
+
+<h1>Admin dashboard</h1>
+<p>This area is intended for administrative tools and operational oversight.</p>
+
+<div class="row g-3 mt-2">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Courses</h5>
+                <p class="card-text">Create and manage courses for each cohort.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Reviews</h5>
+                <p class="card-text">Monitor pending peer review activity.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Users</h5>
+                <p class="card-text">Manage student and administrator access.</p>
+            </div>
+        </div>
+    </div>
+</div>

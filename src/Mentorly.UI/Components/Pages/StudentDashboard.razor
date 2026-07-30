@@ -1,0 +1,18 @@
+@page "/student-dashboard"
+@attribute [Authorize(Roles = "Student")]
+
+<PageTitle>Student Dashboard</PageTitle>
+
+<h1>Student dashboard</h1>
+<p>See your learning progress, upcoming tasks, and peer review activities in one place.</p>
+
+<div class="card mt-3">
+    <div class="card-body">
+        <h5 class="card-title">Your next steps</h5>
+        <ul class="mb-0">
+            <li>Open your active course</li>
+            <li>Submit pending exercises</li>
+            <li>Complete peer review assignments</li>
+        </ul>
+    </div>
+</div>
