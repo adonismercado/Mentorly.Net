@@ -8,3 +8,7 @@ src/Mentorly.Application/obj/**/*.*
 /src/Mentorly.Domain/obj
 /src/Mentorly.Infrastructure/obj
 /src/Mentorly.UI/obj
+/src/Mentorly.Api/obj/**
+/src/Mentorly.Api/obj/**
+/tests/Mentorly.Tests/obj/**
+

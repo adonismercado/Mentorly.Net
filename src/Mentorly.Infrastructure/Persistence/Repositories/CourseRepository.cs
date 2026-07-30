@@ -6,9 +6,32 @@ namespace Mentorly.Infrastructure.Persistence.Repositories;
 
 public sealed class CourseRepository(MentorlyDbContext dbContext) : ICourseRepository
 {
+    public Task<IReadOnlyList<Course>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return dbContext.Courses
+            .AsNoTracking()
+            .ToListAsync(cancellationToken)
+            .ContinueWith(t => (IReadOnlyList<Course>)t.Result, cancellationToken);
+    }
+
     public Task<Course?> GetByIdAsync(Guid courseId, CancellationToken cancellationToken = default)
     {
         return dbContext.Courses
             .FirstOrDefaultAsync(x => x.Id == courseId, cancellationToken);
+    }
+
+    public void Add(Course course)
+    {
+        dbContext.Courses.Add(course);
+    }
+
+    public void Update(Course course)
+    {
+        dbContext.Courses.Update(course);
+    }
+
+    public void Delete(Course course)
+    {
+        dbContext.Courses.Remove(course);
     }
 }
