@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "XTxpN35iF/c=",
+  "dgSpecHash": "Ej3l7BQncZg=",
   "success": true,
-  "projectFilePath": "D:\\AplicadaI\\Mentorly\\tests\\Mentorly.Tests\\Mentorly.Tests.csproj",
+  "projectFilePath": "D:\\AplicadaI\\Mentorly.Net\\tests\\Mentorly.Tests\\Mentorly.Tests.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\enelr\\.nuget\\packages\\coverlet.collector\\6.0.4\\coverlet.collector.6.0.4.nupkg.sha512",
     "C:\\Users\\enelr\\.nuget\\packages\\microsoft.codecoverage\\17.14.1\\microsoft.codecoverage.17.14.1.nupkg.sha512",

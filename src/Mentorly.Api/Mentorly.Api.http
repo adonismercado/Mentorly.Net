@@ -1,9 +1,5 @@
 @Mentorly.Api_HostAddress = https://localhost:7263
 
-GET {{Mentorly.Api_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
 
 GET {{Mentorly.Api_HostAddress}}/api/courses
 

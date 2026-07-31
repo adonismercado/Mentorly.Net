@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Mentorly.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8f22d2fbd85d7e1a39e355bce7ea326eac2c7a98")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bfb963f9020328d5ceb0dfed9599e5436196c1ee")]
 [assembly: System.Reflection.AssemblyProductAttribute("Mentorly.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Mentorly.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

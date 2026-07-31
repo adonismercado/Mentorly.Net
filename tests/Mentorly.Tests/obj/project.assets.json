@@ -1003,11 +1003,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\AplicadaI\\Mentorly\\tests\\Mentorly.Tests\\Mentorly.Tests.csproj",
+      "projectUniqueName": "D:\\AplicadaI\\Mentorly.Net\\tests\\Mentorly.Tests\\Mentorly.Tests.csproj",
       "projectName": "Mentorly.Tests",
-      "projectPath": "D:\\AplicadaI\\Mentorly\\tests\\Mentorly.Tests\\Mentorly.Tests.csproj",
+      "projectPath": "D:\\AplicadaI\\Mentorly.Net\\tests\\Mentorly.Tests\\Mentorly.Tests.csproj",
       "packagesPath": "C:\\Users\\enelr\\.nuget\\packages\\",
-      "outputPath": "D:\\AplicadaI\\Mentorly\\tests\\Mentorly.Tests\\obj\\",
+      "outputPath": "D:\\AplicadaI\\Mentorly.Net\\tests\\Mentorly.Tests\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -1030,11 +1030,11 @@
           "framework": "net10.0",
           "targetAlias": "net10.0",
           "projectReferences": {
-            "D:\\AplicadaI\\Mentorly\\src\\Mentorly.Application\\Mentorly.Application.csproj": {
-              "projectPath": "D:\\AplicadaI\\Mentorly\\src\\Mentorly.Application\\Mentorly.Application.csproj"
+            "D:\\AplicadaI\\Mentorly.Net\\src\\Mentorly.Application\\Mentorly.Application.csproj": {
+              "projectPath": "D:\\AplicadaI\\Mentorly.Net\\src\\Mentorly.Application\\Mentorly.Application.csproj"
             },
-            "D:\\AplicadaI\\Mentorly\\src\\Mentorly.Domain\\Mentorly.Domain.csproj": {
-              "projectPath": "D:\\AplicadaI\\Mentorly\\src\\Mentorly.Domain\\Mentorly.Domain.csproj"
+            "D:\\AplicadaI\\Mentorly.Net\\src\\Mentorly.Domain\\Mentorly.Domain.csproj": {
+              "projectPath": "D:\\AplicadaI\\Mentorly.Net\\src\\Mentorly.Domain\\Mentorly.Domain.csproj"
             }
           }
         }
