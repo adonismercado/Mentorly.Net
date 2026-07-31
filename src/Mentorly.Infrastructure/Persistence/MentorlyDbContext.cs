@@ -8,8 +8,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Mentorly.Infrastructure.Persistence;
 
-public sealed class MentorlyDbContext(DbContextOptions<MentorlyDbContext> options)
-    : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>(options), IUnitOfWork
+public sealed class MentorlyDbContext(
+    DbContextOptions<MentorlyDbContext> options
+) : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>(options), IUnitOfWork
 {
     public DbSet<Student> Students => Set<Student>();
 
@@ -20,7 +21,7 @@ public sealed class MentorlyDbContext(DbContextOptions<MentorlyDbContext> option
     public DbSet<Submission> Submissions => Set<Submission>();
 
     public DbSet<PeerReview> PeerReviews => Set<PeerReview>();
-
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new StudentConfiguration());

@@ -10,10 +10,10 @@ namespace Mentorly.Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, string sqliteConnectionString)
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, string connectionString)
     {
         services.AddDbContext<MentorlyDbContext>(options =>
-            options.UseSqlite(sqliteConnectionString));
+            options.UseSqlServer(connectionString));
 
         services.AddScoped<ICourseRepository, CourseRepository>();
         services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
