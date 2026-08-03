@@ -57,6 +57,17 @@ public class PeerReview
         return new PeerReview(Guid.NewGuid(), submissionId, reviewerStudentId, isApproved, feedbackComment, createdAtUtc);
     }
 
+    public void UpdateReview(bool isApproved, string feedbackComment)
+    {
+        if (string.IsNullOrWhiteSpace(feedbackComment))
+        {
+            throw new ArgumentException("Feedback comment is required.", nameof(feedbackComment));
+        }
+
+        IsApproved = isApproved;
+        FeedbackComment = feedbackComment.Trim();
+    }
+
     private static DateTime EnsureUtc(DateTime value)
     {
         return value.Kind switch

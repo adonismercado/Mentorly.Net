@@ -1,19 +1,144 @@
 @Mentorly.Api_HostAddress = https://localhost:7263
 
+# Courses API
 
+### Get all courses
 GET {{Mentorly.Api_HostAddress}}/api/courses
 
-###
+### Get course by id
+GET {{Mentorly.Api_HostAddress}}/api/courses/{id}
 
+### Create course
 POST {{Mentorly.Api_HostAddress}}/api/courses
 Content-Type: application/json
 
 {
-  //CreateCourseDto
+  "title": "Introduction to Programming",
+  "description": "Learn the basics of programming",
+  "createdByAdminId": "00000000-0000-0000-0000-000000000000",
+  "requiredPeerReviews": 3
 }
 
-###
+### Update course
+PUT {{Mentorly.Api_HostAddress}}/api/courses/{id}
+Content-Type: application/json
 
-GET {{Mentorly.Api_HostAddress}}/api/courses/{id}
+{
+  "title": "Advanced Programming",
+  "description": "Master programming concepts",
+  "requiredPeerReviews": 5
+}
+
+### Delete course
+DELETE {{Mentorly.Api_HostAddress}}/api/courses/{id}
+
+# Students API
+
+### Get all students
+GET {{Mentorly.Api_HostAddress}}/api/students
+
+### Get student by id
+GET {{Mentorly.Api_HostAddress}}/api/students/{id}
+
+### Create student
+POST {{Mentorly.Api_HostAddress}}/api/students
+Content-Type: application/json
+
+{
+  "googleUserId": "google_123456789",
+  "email": "student@example.com",
+  "displayName": "John Doe"
+}
+
+### Update student
+PUT {{Mentorly.Api_HostAddress}}/api/students/{id}
+Content-Type: application/json
+
+{
+  "email": "newemail@example.com",
+  "displayName": "John Updated"
+}
+
+### Delete student
+DELETE {{Mentorly.Api_HostAddress}}/api/students/{id}
+
+# Enrollments API
+
+### Get all enrollments
+GET {{Mentorly.Api_HostAddress}}/api/enrollments
+
+### Get enrollment by id
+GET {{Mentorly.Api_HostAddress}}/api/enrollments/{id}
+
+### Create enrollment
+POST {{Mentorly.Api_HostAddress}}/api/enrollments
+Content-Type: application/json
+
+{
+  "studentId": "00000000-0000-0000-0000-000000000000",
+  "courseId": "00000000-0000-0000-0000-000000000000",
+  "attemptNumber": 1
+}
+
+# Submissions API
+
+### Get all submissions
+GET {{Mentorly.Api_HostAddress}}/api/submissions
+
+### Get submission by id
+GET {{Mentorly.Api_HostAddress}}/api/submissions/{id}
+
+### Create submission
+POST {{Mentorly.Api_HostAddress}}/api/submissions
+Content-Type: application/json
+
+{
+  "enrollmentId": "00000000-0000-0000-0000-000000000000",
+  "activityId": "00000000-0000-0000-0000-000000000000",
+  "evidenceUrl": "https://example.com/evidence"
+}
+
+### Update submission
+PUT {{Mentorly.Api_HostAddress}}/api/submissions/{id}
+Content-Type: application/json
+
+{
+  "evidenceUrl": "https://example.com/updated-evidence"
+}
+
+### Delete submission
+DELETE {{Mentorly.Api_HostAddress}}/api/submissions/{id}
+
+# PeerReviews API
+
+### Get all peer reviews
+GET {{Mentorly.Api_HostAddress}}/api/peerreviews
+
+### Get peer review by id
+GET {{Mentorly.Api_HostAddress}}/api/peerreviews/{id}
+
+### Submit peer review
+POST {{Mentorly.Api_HostAddress}}/api/peerreviews
+Content-Type: application/json
+
+{
+  "submissionId": "00000000-0000-0000-0000-000000000000",
+  "reviewerStudentId": "00000000-0000-0000-0000-000000000000",
+  "isApproved": true,
+  "feedbackComment": "Great work! Well done.",
+  "createdAtUtc": "2024-01-01T00:00:00Z"
+}
+
+### Update peer review
+PUT {{Mentorly.Api_HostAddress}}/api/peerreviews/{id}
+Content-Type: application/json
+
+{
+  "isApproved": false,
+  "feedbackComment": "Needs improvement in XYZ area"
+}
+
+### Delete peer review
+DELETE {{Mentorly.Api_HostAddress}}/api/peerreviews/{id}
 
 ###
