@@ -12,6 +12,7 @@ public interface ISubmissionRepository
     Task<Submission?> GetByEnrollmentAndActivityAsync(Guid enrollmentId, Guid activityId, CancellationToken cancellationToken = default);
 
     Task<bool> HasStudentSubmittedActivityAsync(Guid studentId, Guid activityId, CancellationToken cancellationToken = default);
+    Task<bool> HasSubmissionsForActivityAsync(Guid activityId, CancellationToken cancellationToken = default);
 
     Task AddAsync(Submission submission, CancellationToken cancellationToken = default);
     void Add(Submission submission);

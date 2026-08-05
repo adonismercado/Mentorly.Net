@@ -25,6 +25,14 @@ public sealed class MentorlyDbContext(
     public DbSet<Badge> Badges => Set<Badge>();
 
     public DbSet<StudentBadge> StudentBadges => Set<StudentBadge>();
+
+    public DbSet<CourseImage> CourseImages => Set<CourseImage>();
+
+    public DbSet<Unit> Units => Set<Unit>();
+
+    public DbSet<Theme> Themes => Set<Theme>();
+
+    public DbSet<Activity> Activities => Set<Activity>();
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -35,6 +43,10 @@ public sealed class MentorlyDbContext(
         modelBuilder.ApplyConfiguration(new PeerReviewConfiguration());
         modelBuilder.ApplyConfiguration(new BadgeConfiguration());
         modelBuilder.ApplyConfiguration(new StudentBadgeConfiguration());
+        modelBuilder.ApplyConfiguration(new CourseImageConfiguration());
+        modelBuilder.ApplyConfiguration(new UnitConfiguration());
+        modelBuilder.ApplyConfiguration(new ThemeConfiguration());
+        modelBuilder.ApplyConfiguration(new ActivityConfiguration());
 
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfiguration(new ApplicationUserConfiguration());

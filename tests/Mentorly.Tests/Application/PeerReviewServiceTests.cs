@@ -89,11 +89,18 @@ public sealed class PeerReviewServiceTests
 
     private sealed class FakeStudentRepository(bool exists) : IStudentRepository
     {
+        public Task<IReadOnlyList<Student>> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Student>>([]);
+        public Task<Student?> GetByIdAsync(Guid studentId, CancellationToken cancellationToken = default) => Task.FromResult<Student?>(null);
+        public Task<Student?> GetByIdWithBadgesAsync(Guid studentId, CancellationToken cancellationToken = default) => Task.FromResult<Student?>(null);
         public Task<bool> ExistsAsync(Guid studentId, CancellationToken cancellationToken = default) => Task.FromResult(exists);
+        public void Add(Student student) { }
+        public void Update(Student student) { }
+        public void Delete(Student student) { }
     }
 
     private sealed class FakeSubmissionRepository(Submission submission, bool reviewerHasOwnSubmission) : ISubmissionRepository
     {
+        public Task<IReadOnlyList<Submission>> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Submission>>([]);
         public Task<Submission?> GetByIdAsync(Guid submissionId, CancellationToken cancellationToken = default)
             => Task.FromResult(submissionId == submission.Id ? submission : null);
 
@@ -106,13 +113,23 @@ public sealed class PeerReviewServiceTests
         public Task<bool> HasStudentSubmittedActivityAsync(Guid studentId, Guid activityId, CancellationToken cancellationToken = default)
             => Task.FromResult(reviewerHasOwnSubmission);
 
+        public Task<bool> HasSubmissionsForActivityAsync(Guid activityId, CancellationToken cancellationToken = default)
+            => Task.FromResult(false);
+
         public Task AddAsync(Submission submission, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
+
+        public void Add(Submission submission) { }
+        public void Update(Submission submission) { }
+        public void Delete(Submission submission) { }
     }
 
     private sealed class FakePeerReviewRepository(int existingApprovalCount, bool alreadyReviewed) : IPeerReviewRepository
     {
         public PeerReview? LastAdded { get; private set; }
+
+        public Task<IReadOnlyList<PeerReview>> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<PeerReview>>([]);
+        public Task<PeerReview?> GetByIdAsync(Guid peerReviewId, CancellationToken cancellationToken = default) => Task.FromResult<PeerReview?>(null);
 
         public Task<bool> HasReviewerAlreadyReviewedAsync(Guid submissionId, Guid reviewerStudentId, CancellationToken cancellationToken = default)
             => Task.FromResult(alreadyReviewed);
@@ -125,6 +142,9 @@ public sealed class PeerReviewServiceTests
             LastAdded = review;
             return Task.CompletedTask;
         }
+
+        public void Update(PeerReview review) { }
+        public void Delete(PeerReview review) { }
     }
 
     private sealed class FakeUnitOfWork : IUnitOfWork
