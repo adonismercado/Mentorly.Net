@@ -10,6 +10,7 @@ public sealed class PeerReviewService(
     IPeerReviewRepository peerReviewRepository,
     IPeerReviewWorkflowRepository peerReviewWorkflowRepository,
     ICourseCompletionService courseCompletionService,
+    IGamificationService gamificationService,
     IUnitOfWork unitOfWork) : IPeerReviewService
 {
     public async Task<IReadOnlyList<PeerReviewDto>> GetAllPeerReviewsAsync(CancellationToken cancellationToken = default)
@@ -96,6 +97,7 @@ public sealed class PeerReviewService(
 
         var requiredReviews = submission.Enrollment.Course.RequiredPeerReviews;
 
+        var wasApproved = submission.Status == Domain.Enums.SubmissionStatus.Approved;
         if (positiveReviews >= requiredReviews)
         {
             submission.Approve(request.CreatedAtUtc);
@@ -103,6 +105,14 @@ public sealed class PeerReviewService(
         // A negative peer review is feedback, not a final rejection. Only an administrator can reject definitively.
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
+        if (!wasApproved && submission.Status == Domain.Enums.SubmissionStatus.Approved)
+        {
+            await gamificationService.AwardAsync(submission.Enrollment.StudentId, Domain.Enums.GamificationEventType.ExerciseApproved, submission.Id, cancellationToken);
+        }
+        if (request.FeedbackComment.Trim().Length >= 20)
+        {
+            await gamificationService.AwardAsync(request.ReviewerStudentId, Domain.Enums.GamificationEventType.ConstructivePeerReview, review.Id, cancellationToken);
+        }
         await courseCompletionService.EvaluateAsync(submission.EnrollmentId, cancellationToken);
 
         return new PeerReviewResultDto(

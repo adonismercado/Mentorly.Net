@@ -68,6 +68,7 @@ public sealed class EnrollmentProgressServiceTests
             new FakeProgressRepository(enrollment.CourseId, themes, activities),
             new FakeSubmissionRepository(approved),
             new CertificateService(),
+            new FakeGamificationService(),
             new FakeUnitOfWork());
     }
 
@@ -120,4 +121,5 @@ public sealed class EnrollmentProgressServiceTests
     }
 
     private sealed class FakeUnitOfWork : IUnitOfWork { public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) => Task.FromResult(1); }
+    private sealed class FakeGamificationService : IGamificationService { public Task AwardAsync(Guid studentId, GamificationEventType type, Guid referenceId, CancellationToken cancellationToken = default) => Task.CompletedTask; }
 }

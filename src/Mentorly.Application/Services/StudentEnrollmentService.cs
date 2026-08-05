@@ -11,6 +11,7 @@ public sealed class StudentEnrollmentService(
     ISubmissionRepository submissionRepository,
     IPeerReviewWorkflowRepository peerReviewWorkflowRepository,
     ICourseCompletionService courseCompletionService,
+    IGamificationService gamificationService,
     IUnitOfWork unitOfWork) : IStudentEnrollmentService
 {
     public async Task<EnrollmentResultDto> EnrollAsync(CreateEnrollmentRequestDto request, CancellationToken cancellationToken = default)
@@ -117,8 +118,10 @@ public sealed class StudentEnrollmentService(
 
             await submissionRepository.AddAsync(newSubmission, cancellationToken);
             await unitOfWork.SaveChangesAsync(cancellationToken);
+            await gamificationService.AwardAsync(enrollment.StudentId, Domain.Enums.GamificationEventType.ExerciseSubmitted, newSubmission.Id, cancellationToken);
             if (newSubmission.Status == Domain.Enums.SubmissionStatus.Approved)
             {
+                await gamificationService.AwardAsync(enrollment.StudentId, Domain.Enums.GamificationEventType.ExerciseApproved, newSubmission.Id, cancellationToken);
                 await courseCompletionService.EvaluateAsync(request.EnrollmentId, cancellationToken);
             }
 

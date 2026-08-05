@@ -6,6 +6,7 @@ namespace Mentorly.Application.Services;
 
 public sealed class SubmissionService(
     ISubmissionRepository submissionRepository,
+    IGamificationService gamificationService,
     IUnitOfWork unitOfWork) : ISubmissionService
 {
     public async Task<IReadOnlyList<SubmissionDto>> GetAllSubmissionsAsync(CancellationToken cancellationToken = default)
@@ -111,7 +112,7 @@ public sealed class SubmissionService(
 
     public async Task<bool> DecideAsAdminAsync(Guid submissionId, bool isApproved, CancellationToken cancellationToken = default)
     {
-        var submission = await submissionRepository.GetByIdAsync(submissionId, cancellationToken);
+        var submission = await submissionRepository.GetByIdWithContextAsync(submissionId, cancellationToken);
         if (submission is null)
         {
             return false;
@@ -128,6 +129,10 @@ public sealed class SubmissionService(
 
         submissionRepository.Update(submission);
         await unitOfWork.SaveChangesAsync(cancellationToken);
+        if (isApproved)
+        {
+            await gamificationService.AwardAsync(submission.Enrollment.StudentId, Domain.Enums.GamificationEventType.ExerciseApproved, submission.Id, cancellationToken);
+        }
         return true;
     }
 }

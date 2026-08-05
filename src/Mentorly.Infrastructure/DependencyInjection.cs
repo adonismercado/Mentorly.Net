@@ -27,6 +27,8 @@ public static class DependencyInjection
         services.AddScoped<IThemeCompletionRepository, ThemeCompletionRepository>();
         services.AddScoped<IEnrollmentProgressRepository, EnrollmentProgressRepository>();
         services.AddScoped<IPeerReviewWorkflowRepository, PeerReviewWorkflowRepository>();
+        services.AddScoped<IGamificationEventRepository, GamificationEventRepository>();
+        services.AddScoped<ICourseCommunityRepository, CourseCommunityRepository>();
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<MentorlyDbContext>());
         services.AddScoped<IStudentIdentityMapper, StudentIdentityMapper>();
 

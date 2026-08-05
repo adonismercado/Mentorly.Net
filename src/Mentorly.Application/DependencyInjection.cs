@@ -21,6 +21,8 @@ public static class DependencyInjection
         services.AddScoped<IEnrollmentProgressService>(provider => provider.GetRequiredService<EnrollmentProgressService>());
         services.AddScoped<ICourseCompletionService>(provider => provider.GetRequiredService<EnrollmentProgressService>());
         services.AddScoped<ICertificateService, CertificateService>();
+        services.AddScoped<IGamificationService, GamificationService>();
+        services.AddScoped<ICourseCommunityService, CourseCommunityService>();
 
         return services;
     }

@@ -12,6 +12,7 @@ public sealed class EnrollmentProgressService(
     IEnrollmentProgressRepository progressRepository,
     ISubmissionRepository submissionRepository,
     ICertificateService certificateService,
+    IGamificationService gamificationService,
     IUnitOfWork unitOfWork) : IEnrollmentProgressService, ICourseCompletionService
 {
     public async Task<IReadOnlyList<EnrollmentDto>> GetStudentEnrollmentsAsync(Guid studentId, CancellationToken cancellationToken = default)
@@ -76,6 +77,7 @@ public sealed class EnrollmentProgressService(
         {
             themeCompletionRepository.Add(new ThemeCompletion(enrollmentId, themeId, DateTime.UtcNow));
             await unitOfWork.SaveChangesAsync(cancellationToken);
+            await gamificationService.AwardAsync(studentId, Domain.Enums.GamificationEventType.ThemeCompleted, themeId, cancellationToken);
         }
 
         return await EvaluateEnrollmentAsync(enrollment, cancellationToken);
