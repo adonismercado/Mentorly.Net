@@ -6,6 +6,13 @@ namespace Mentorly.Infrastructure.Persistence.Repositories;
 
 public sealed class SubmissionRepository(MentorlyDbContext dbContext) : ISubmissionRepository
 {
+    public async Task<IReadOnlyList<Submission>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Submissions
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
     public Task<Submission?> GetByIdAsync(Guid submissionId, CancellationToken cancellationToken = default)
     {
         return dbContext.Submissions
@@ -35,5 +42,20 @@ public sealed class SubmissionRepository(MentorlyDbContext dbContext) : ISubmiss
     public Task AddAsync(Submission submission, CancellationToken cancellationToken = default)
     {
         return dbContext.Submissions.AddAsync(submission, cancellationToken).AsTask();
+    }
+
+    public void Add(Submission submission)
+    {
+        dbContext.Submissions.Add(submission);
+    }
+
+    public void Update(Submission submission)
+    {
+        dbContext.Submissions.Update(submission);
+    }
+
+    public void Delete(Submission submission)
+    {
+        dbContext.Submissions.Remove(submission);
     }
 }

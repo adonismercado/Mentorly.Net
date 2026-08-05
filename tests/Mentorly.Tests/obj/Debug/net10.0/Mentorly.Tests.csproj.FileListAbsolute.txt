@@ -205,3 +205,6 @@ D:\AplicadaI\Mentorly.Net\tests\Mentorly.Tests\obj\Debug\net10.0\refint\Mentorly
 D:\AplicadaI\Mentorly.Net\tests\Mentorly.Tests\obj\Debug\net10.0\Mentorly.Tests.pdb
 D:\AplicadaI\Mentorly.Net\tests\Mentorly.Tests\obj\Debug\net10.0\Mentorly.Tests.genruntimeconfig.cache
 D:\AplicadaI\Mentorly.Net\tests\Mentorly.Tests\obj\Debug\net10.0\ref\Mentorly.Tests.dll
+C:\Aplicada_II\MentorlyApi\tests\Mentorly.Tests\obj\Debug\net10.0\Mentorly.Tests.dll
+C:\Aplicada_II\MentorlyApi\tests\Mentorly.Tests\obj\Debug\net10.0\refint\Mentorly.Tests.dll
+C:\Aplicada_II\MentorlyApi\tests\Mentorly.Tests\obj\Debug\net10.0\Mentorly.Tests.pdb
