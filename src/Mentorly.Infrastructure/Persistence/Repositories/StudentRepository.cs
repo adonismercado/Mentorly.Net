@@ -19,6 +19,14 @@ public sealed class StudentRepository(MentorlyDbContext dbContext) : IStudentRep
             .FirstOrDefaultAsync(x => x.Id == studentId, cancellationToken);
     }
 
+    public Task<Student?> GetByIdWithBadgesAsync(Guid studentId, CancellationToken cancellationToken = default)
+    {
+        return dbContext.Students
+            .Include(x => x.StudentBadges)
+            .ThenInclude(x => x.Badge)
+            .FirstOrDefaultAsync(x => x.Id == studentId, cancellationToken);
+    }
+
     public Task<bool> ExistsAsync(Guid studentId, CancellationToken cancellationToken = default)
     {
         return dbContext.Students

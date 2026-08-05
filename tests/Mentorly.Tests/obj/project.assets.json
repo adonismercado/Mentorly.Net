@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 3,
   "targets": {
     "net10.0": {
       "coverlet.collector/6.0.4": {
@@ -997,23 +997,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\enelr\\.nuget\\packages\\": {},
+    "C:\\Users\\merca\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\AplicadaI\\Mentorly.Net\\tests\\Mentorly.Tests\\Mentorly.Tests.csproj",
+      "projectUniqueName": "C:\\Aplicada_II\\MentorlyApi\\tests\\Mentorly.Tests\\Mentorly.Tests.csproj",
       "projectName": "Mentorly.Tests",
-      "projectPath": "D:\\AplicadaI\\Mentorly.Net\\tests\\Mentorly.Tests\\Mentorly.Tests.csproj",
-      "packagesPath": "C:\\Users\\enelr\\.nuget\\packages\\",
-      "outputPath": "D:\\AplicadaI\\Mentorly.Net\\tests\\Mentorly.Tests\\obj\\",
+      "projectPath": "C:\\Aplicada_II\\MentorlyApi\\tests\\Mentorly.Tests\\Mentorly.Tests.csproj",
+      "packagesPath": "C:\\Users\\merca\\.nuget\\packages\\",
+      "outputPath": "C:\\Aplicada_II\\MentorlyApi\\tests\\Mentorly.Tests\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\enelr\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\merca\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -1030,11 +1030,11 @@
           "framework": "net10.0",
           "targetAlias": "net10.0",
           "projectReferences": {
-            "D:\\AplicadaI\\Mentorly.Net\\src\\Mentorly.Application\\Mentorly.Application.csproj": {
-              "projectPath": "D:\\AplicadaI\\Mentorly.Net\\src\\Mentorly.Application\\Mentorly.Application.csproj"
+            "C:\\Aplicada_II\\MentorlyApi\\src\\Mentorly.Application\\Mentorly.Application.csproj": {
+              "projectPath": "C:\\Aplicada_II\\MentorlyApi\\src\\Mentorly.Application\\Mentorly.Application.csproj"
             },
-            "D:\\AplicadaI\\Mentorly.Net\\src\\Mentorly.Domain\\Mentorly.Domain.csproj": {
-              "projectPath": "D:\\AplicadaI\\Mentorly.Net\\src\\Mentorly.Domain\\Mentorly.Domain.csproj"
+            "C:\\Aplicada_II\\MentorlyApi\\src\\Mentorly.Domain\\Mentorly.Domain.csproj": {
+              "projectPath": "C:\\Aplicada_II\\MentorlyApi\\src\\Mentorly.Domain\\Mentorly.Domain.csproj"
             }
           }
         }
@@ -1049,7 +1049,7 @@
         "auditLevel": "low",
         "auditMode": "all"
       },
-      "SdkAnalysisLevel": "10.0.400"
+      "SdkAnalysisLevel": "10.0.200"
     },
     "frameworks": {
       "net10.0": {
@@ -1089,7 +1089,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.400-preview.0.26322.102/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.CSharp": "(,4.7.32767]",
           "Microsoft.VisualBasic": "(,10.4.32767]",

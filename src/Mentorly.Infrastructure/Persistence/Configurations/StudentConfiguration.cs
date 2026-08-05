@@ -1,4 +1,5 @@
 using Mentorly.Domain.Entities;
+using Mentorly.Domain.Enums;
 using Mentorly.Infrastructure.Persistence.Seed;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -31,11 +32,33 @@ public sealed class StudentConfiguration : IEntityTypeConfiguration<Student>
             .IsRequired()
             .HasMaxLength(128);
 
+        builder.Property(x => x.Role)
+            .HasColumnName("role")
+            .HasConversion<string>()
+            .HasMaxLength(32)
+            .HasDefaultValue(StudentRole.Student)
+            .IsRequired();
+
+        builder.Property(x => x.IsLeaderboardPublic)
+            .HasColumnName("is_leaderboard_public")
+            .HasDefaultValue(true)
+            .IsRequired();
+
+        builder.Property(x => x.TotalPoints)
+            .HasColumnName("total_points")
+            .HasDefaultValue(0)
+            .IsRequired();
+
         builder.HasIndex(x => x.GoogleUserId)
             .IsUnique();
 
         builder.HasIndex(x => x.Email)
             .IsUnique();
+
+        builder.HasMany(x => x.StudentBadges)
+            .WithOne(x => x.Student)
+            .HasForeignKey(x => x.StudentId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasData(
             new
@@ -43,14 +66,20 @@ public sealed class StudentConfiguration : IEntityTypeConfiguration<Student>
                 Id = SeedData.StudentId,
                 GoogleUserId = "google-student-001",
                 Email = "student1@mentorly.local",
-                DisplayName = "Student One"
+                DisplayName = "Student One",
+                Role = StudentRole.Student,
+                IsLeaderboardPublic = true,
+                TotalPoints = 0
             },
             new
             {
                 Id = SeedData.ReviewerStudentId,
                 GoogleUserId = "google-student-002",
                 Email = "student2@mentorly.local",
-                DisplayName = "Student Two"
+                DisplayName = "Student Two",
+                Role = StudentRole.Student,
+                IsLeaderboardPublic = true,
+                TotalPoints = 0
             });
     }
 }
