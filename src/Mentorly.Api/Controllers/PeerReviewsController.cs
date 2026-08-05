@@ -15,7 +15,7 @@ public class PeerReviewsController(IPeerReviewService peerReviewService) : Contr
         return Ok(peerReviews);
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:guid}", Name = "GetPeerReview")]
     public async Task<ActionResult<PeerReviewDto>> GetPeerReviewAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var peerReview = await peerReviewService.GetPeerReviewByIdAsync(id, cancellationToken);
@@ -32,10 +32,10 @@ public class PeerReviewsController(IPeerReviewService peerReviewService) : Contr
     public async Task<ActionResult<PeerReviewResultDto>> SubmitReviewAsync(CreatePeerReviewRequestDto dto, CancellationToken cancellationToken = default)
     {
         var result = await peerReviewService.SubmitReviewAsync(dto, cancellationToken);
-        return CreatedAtAction("GetPeerReview", new { id = result.PeerReviewId }, result);
+        return CreatedAtRoute("GetPeerReview", new { id = result.PeerReviewId }, result);
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{id:guid}")]
     public async Task<IActionResult> UpdatePeerReviewAsync(Guid id, UpdatePeerReviewDto dto, CancellationToken cancellationToken = default)
     {
         var updated = await peerReviewService.UpdatePeerReviewAsync(id, dto, cancellationToken);
@@ -48,7 +48,7 @@ public class PeerReviewsController(IPeerReviewService peerReviewService) : Contr
         return NoContent();
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeletePeerReviewAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var deleted = await peerReviewService.DeletePeerReviewAsync(id, cancellationToken);
