@@ -37,6 +37,8 @@ public sealed class MentorlyDbContext(
     public DbSet<ThemeCompletion> ThemeCompletions => Set<ThemeCompletion>();
 
     public DbSet<GamificationEvent> GamificationEvents => Set<GamificationEvent>();
+    public DbSet<QuizQuestion> QuizQuestions => Set<QuizQuestion>();
+    public DbSet<QuizAttempt> QuizAttempts => Set<QuizAttempt>();
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -53,6 +55,8 @@ public sealed class MentorlyDbContext(
         modelBuilder.ApplyConfiguration(new ActivityConfiguration());
         modelBuilder.ApplyConfiguration(new ThemeCompletionConfiguration());
         modelBuilder.ApplyConfiguration(new GamificationEventConfiguration());
+        modelBuilder.ApplyConfiguration(new QuizQuestionConfiguration());
+        modelBuilder.ApplyConfiguration(new QuizAttemptConfiguration());
 
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfiguration(new ApplicationUserConfiguration());

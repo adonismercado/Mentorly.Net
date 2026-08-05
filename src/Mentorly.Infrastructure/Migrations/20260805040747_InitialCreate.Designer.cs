@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Mentorly.Infrastructure.Migrations
 {
     [DbContext(typeof(MentorlyDbContext))]
-    [Migration("20260805035757_InitialCreate")]
+    [Migration("20260805040747_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -121,6 +121,26 @@ namespace Mentorly.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("badges", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("2f0e7983-659c-4d5e-9b14-2d794d67d52e"),
+                            Description = "Completed the first theme.",
+                            Name = "Explorer"
+                        },
+                        new
+                        {
+                            Id = new Guid("3392e234-30ef-4d8a-a7e8-390a27f5f501"),
+                            Description = "Approved the first exercise.",
+                            Name = "Builder"
+                        },
+                        new
+                        {
+                            Id = new Guid("a5312384-7f0e-4271-8f9c-82ab2575e4a0"),
+                            Description = "Completed a constructive peer review.",
+                            Name = "Collaborator"
+                        });
                 });
 
             modelBuilder.Entity("Mentorly.Domain.Entities.Course", b =>
@@ -386,6 +406,74 @@ namespace Mentorly.Infrastructure.Migrations
                             ReviewerStudentId = new Guid("b7e670c1-caf3-4da5-a8f7-34570fbb9d41"),
                             SubmissionId = new Guid("a1904ac6-c334-4126-9f2f-03dd9a6276e6")
                         });
+                });
+
+            modelBuilder.Entity("Mentorly.Domain.Entities.QuizAttempt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ActivityId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("activity_id");
+
+                    b.Property<Guid>("EnrollmentId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("enrollment_id");
+
+                    b.Property<bool>("Passed")
+                        .HasColumnType("bit")
+                        .HasColumnName("passed");
+
+                    b.Property<decimal>("Score")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("score");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("submitted_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EnrollmentId", "ActivityId");
+
+                    b.ToTable("quiz_attempts", (string)null);
+                });
+
+            modelBuilder.Entity("Mentorly.Domain.Entities.QuizQuestion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ActivityId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("activity_id");
+
+                    b.Property<string>("CorrectAnswer")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("correct_answer");
+
+                    b.Property<int>("OrderIndex")
+                        .HasColumnType("int")
+                        .HasColumnName("order_index");
+
+                    b.Property<string>("Prompt")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("prompt");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActivityId", "OrderIndex");
+
+                    b.ToTable("quiz_questions", (string)null);
                 });
 
             modelBuilder.Entity("Mentorly.Domain.Entities.Student", b =>

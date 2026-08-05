@@ -182,6 +182,19 @@ GET {{Mentorly.Api_HostAddress}}/api/students/me/enrollments
 ### Complete a theme
 POST {{Mentorly.Api_HostAddress}}/api/enrollments/{{enrollmentId}}/themes/{{themeId}}/complete
 
+### Get quiz questions (correct answers are never returned)
+GET {{Mentorly.Api_HostAddress}}/api/activities/{{activityId}}/quiz
+
+### Submit a quiz attempt
+POST {{Mentorly.Api_HostAddress}}/api/enrollments/{{enrollmentId}}/activities/{{activityId}}/quiz-attempts
+Content-Type: application/json
+
+{
+  "answers": [
+    { "questionId": "00000000-0000-0000-0000-000000000000", "answer": "Answer" }
+  ]
+}
+
 ### Peer review queue
 GET {{Mentorly.Api_HostAddress}}/api/peerreviews/queue
 

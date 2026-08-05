@@ -67,6 +67,7 @@ public sealed class EnrollmentProgressServiceTests
             new FakeThemeCompletionRepository(),
             new FakeProgressRepository(enrollment.CourseId, themes, activities),
             new FakeSubmissionRepository(approved),
+            new FakeQuizRepository(),
             new CertificateService(),
             new FakeGamificationService(),
             new FakeUnitOfWork());
@@ -119,6 +120,14 @@ public sealed class EnrollmentProgressServiceTests
         public Task<IReadOnlyList<Submission>> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Submission>>([]);
         public Task AddAsync(Submission submission, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public void Add(Submission submission) { } public void Update(Submission submission) { } public void Delete(Submission submission) { }
+    }
+
+    private sealed class FakeQuizRepository : IQuizRepository
+    {
+        public Task<IReadOnlyList<QuizQuestion>> GetQuestionsAsync(Guid activityId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<QuizQuestion>>([]);
+        public Task<QuizAttempt?> GetLatestAttemptAsync(Guid enrollmentId, Guid activityId, CancellationToken cancellationToken = default) => Task.FromResult<QuizAttempt?>(null);
+        public Task<IReadOnlySet<Guid>> GetPassedActivityIdsAsync(Guid enrollmentId, IReadOnlyCollection<Guid> activityIds, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlySet<Guid>>(new HashSet<Guid>());
+        public void AddQuestion(QuizQuestion question) { } public void AddAttempt(QuizAttempt attempt) { }
     }
 
     private sealed class FakeUnitOfWork : IUnitOfWork { public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) => Task.FromResult(1); }

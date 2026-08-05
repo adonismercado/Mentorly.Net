@@ -24,6 +24,7 @@ public static class DependencyInjection
         services.AddScoped<IGamificationService, GamificationService>();
         services.AddScoped<ICourseCommunityService, CourseCommunityService>();
         services.AddScoped<IAnalyticsService, AnalyticsService>();
+        services.AddScoped<IQuizService, QuizService>();
 
         return services;
     }

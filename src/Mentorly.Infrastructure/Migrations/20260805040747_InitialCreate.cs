@@ -85,6 +85,37 @@ namespace Mentorly.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "quiz_attempts",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    enrollment_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    activity_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    score = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    passed = table.Column<bool>(type: "bit", nullable: false),
+                    submitted_at = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_quiz_attempts", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "quiz_questions",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    activity_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    prompt = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
+                    correct_answer = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    order_index = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_quiz_questions", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "students",
                 columns: table => new
                 {
@@ -448,6 +479,16 @@ namespace Mentorly.Infrastructure.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "badges",
+                columns: new[] { "id", "description", "image_url", "name" },
+                values: new object[,]
+                {
+                    { new Guid("2f0e7983-659c-4d5e-9b14-2d794d67d52e"), "Completed the first theme.", null, "Explorer" },
+                    { new Guid("3392e234-30ef-4d8a-a7e8-390a27f5f501"), "Approved the first exercise.", null, "Builder" },
+                    { new Guid("a5312384-7f0e-4271-8f9c-82ab2575e4a0"), "Completed a constructive peer review.", null, "Collaborator" }
+                });
+
+            migrationBuilder.InsertData(
                 table: "courses",
                 columns: new[] { "id", "created_at", "created_by_admin_id", "description", "is_published", "required_peer_reviews", "title" },
                 values: new object[] { new Guid("cb57a2a9-aa8e-4538-aa86-d8e383136fdc"), new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), new Guid("80bbec34-8a28-4e38-ab64-92662f0b5b5b"), "Seed course for clean architecture demo.", true, 1, "Blazor Fundamentals" });
@@ -600,6 +641,16 @@ namespace Mentorly.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_quiz_attempts_enrollment_id_activity_id",
+                table: "quiz_attempts",
+                columns: new[] { "enrollment_id", "activity_id" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_quiz_questions_activity_id_order_index",
+                table: "quiz_questions",
+                columns: new[] { "activity_id", "order_index" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_student_badges_badge_id",
                 table: "student_badges",
                 column: "badge_id");
@@ -667,6 +718,12 @@ namespace Mentorly.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "peer_reviews");
+
+            migrationBuilder.DropTable(
+                name: "quiz_attempts");
+
+            migrationBuilder.DropTable(
+                name: "quiz_questions");
 
             migrationBuilder.DropTable(
                 name: "student_badges");

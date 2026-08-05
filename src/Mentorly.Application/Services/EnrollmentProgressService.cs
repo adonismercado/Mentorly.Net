@@ -11,6 +11,7 @@ public sealed class EnrollmentProgressService(
     IThemeCompletionRepository themeCompletionRepository,
     IEnrollmentProgressRepository progressRepository,
     ISubmissionRepository submissionRepository,
+    IQuizRepository quizRepository,
     ICertificateService certificateService,
     IGamificationService gamificationService,
     IUnitOfWork unitOfWork) : IEnrollmentProgressService, ICourseCompletionService
@@ -145,7 +146,8 @@ public sealed class EnrollmentProgressService(
         var themeIds = await progressRepository.GetThemeIdsAsync(enrollment.CourseId, cancellationToken);
         var completedThemeIds = (await themeCompletionRepository.GetByEnrollmentIdAsync(enrollment.Id, cancellationToken)).Select(x => x.ThemeId).ToHashSet();
         var requiredActivityIds = await progressRepository.GetMandatoryActivityIdsAsync(enrollment.CourseId, cancellationToken);
-        var approvedActivityIds = await submissionRepository.GetApprovedActivityIdsAsync(enrollment.Id, requiredActivityIds, cancellationToken);
+        var approvedActivityIds = (await submissionRepository.GetApprovedActivityIdsAsync(enrollment.Id, requiredActivityIds, cancellationToken)).ToHashSet();
+        approvedActivityIds.UnionWith(await quizRepository.GetPassedActivityIdsAsync(enrollment.Id, requiredActivityIds, cancellationToken));
         var completedThemes = themeIds.Count(x => completedThemeIds.Contains(x));
         var approvedActivities = requiredActivityIds.Count(approvedActivityIds.Contains);
         var total = themeIds.Count + requiredActivityIds.Count;

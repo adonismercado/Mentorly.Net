@@ -3,12 +3,15 @@ using Mentorly.Application.Services;
 using Mentorly.Infrastructure.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Mentorly.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class EnrollmentsController(IEnrollmentService enrollmentService) : ControllerBase
+public class EnrollmentsController(
+    IEnrollmentService enrollmentService,
+    IStudentEnrollmentService studentEnrollmentService) : ControllerBase
 {
     [HttpGet]
     [Authorize(Policy = MentorlyPolicies.Admin)]
@@ -33,9 +36,22 @@ public class EnrollmentsController(IEnrollmentService enrollmentService) : Contr
     }
 
     [HttpPost]
-    public async Task<ActionResult<EnrollmentDto>> CreateEnrollmentAsync(CreateEnrollmentDto dto, CancellationToken cancellationToken = default)
+    [Authorize(Policy = MentorlyPolicies.Student)]
+    public async Task<ActionResult<EnrollmentResultDto>> CreateEnrollmentAsync(CreateEnrollmentDto dto, CancellationToken cancellationToken = default)
     {
-        var enrollment = await enrollmentService.CreateEnrollmentAsync(dto, cancellationToken);
-        return CreatedAtAction("GetEnrollment", new { id = enrollment.Id }, enrollment);
+        if (!Guid.TryParse(User.FindFirstValue(MentorlyClaimTypes.StudentId), out var studentId))
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            var enrollment = await studentEnrollmentService.EnrollAsync(new CreateEnrollmentRequestDto(studentId, dto.CourseId, DateTime.UtcNow), cancellationToken);
+            return CreatedAtAction("GetEnrollment", new { id = enrollment.EnrollmentId }, enrollment);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new { message = exception.Message });
+        }
     }
 }

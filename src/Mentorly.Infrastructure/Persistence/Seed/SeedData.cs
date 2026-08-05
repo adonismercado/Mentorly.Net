@@ -17,6 +17,9 @@ public static class SeedData
     public static readonly Guid AuthorEnrollmentId = Guid.Parse("b82acd0a-9bd4-4e5e-b2d9-01e3283285f1");
     public static readonly Guid AuthorSubmissionId = Guid.Parse("a1904ac6-c334-4126-9f2f-03dd9a6276e6");
     public static readonly Guid SeedPeerReviewId = Guid.Parse("1f3c9c12-c628-4d29-9887-271c4cd71fe0");
+    public static readonly Guid ExplorerBadgeId = Guid.Parse("2f0e7983-659c-4d5e-9b14-2d794d67d52e");
+    public static readonly Guid BuilderBadgeId = Guid.Parse("3392e234-30ef-4d8a-a7e8-390a27f5f501");
+    public static readonly Guid CollaboratorBadgeId = Guid.Parse("a5312384-7f0e-4271-8f9c-82ab2575e4a0");
     public static readonly DateTime SeedStartedAtUtc = new(2026, 01, 05, 0, 0, 0, DateTimeKind.Utc);
     public static readonly DateTime SeedSubmittedAtUtc = new(2026, 01, 06, 0, 0, 0, DateTimeKind.Utc);
 }

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Mentorly.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ed095802f66f4a62cdce1c31ae8fa002800036bd")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+92cedc3951b5d5b6f6f55c5cfe548f6c8ba425df")]
 [assembly: System.Reflection.AssemblyProductAttribute("Mentorly.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Mentorly.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
