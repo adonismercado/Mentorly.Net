@@ -1,6 +1,9 @@
 using Mentorly.Application.DTOs;
 using Mentorly.Application.Services;
+using Mentorly.Infrastructure.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Mentorly.Api.Controllers;
 
@@ -8,7 +11,35 @@ namespace Mentorly.Api.Controllers;
 [Route("api/[controller]")]
 public class PeerReviewsController(IPeerReviewService peerReviewService) : ControllerBase
 {
+    [Authorize(Policy = MentorlyPolicies.Student)]
+    [HttpGet("queue")]
+    public async Task<ActionResult<IEnumerable<ReviewQueueItemDto>>> GetQueueAsync(CancellationToken cancellationToken = default)
+    {
+        if (!Guid.TryParse(User.FindFirstValue(MentorlyClaimTypes.StudentId), out var studentId))
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            return Ok(await peerReviewService.GetEligibleQueueAsync(studentId, cancellationToken));
+        }
+        catch (InvalidOperationException exception)
+        {
+            return NotFound(new { message = exception.Message });
+        }
+    }
+
+    [Authorize(Policy = MentorlyPolicies.Admin)]
+    [HttpGet("/api/admin/peer-reviews/{id:guid}/audit")]
+    public async Task<ActionResult<PeerReviewAuditDto>> GetAuditAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var audit = await peerReviewService.GetAuditAsync(id, cancellationToken);
+        return audit is null ? NotFound() : Ok(audit);
+    }
+
     [HttpGet]
+    [Authorize(Policy = MentorlyPolicies.Admin)]
     public async Task<ActionResult<IEnumerable<PeerReviewDto>>> GetPeerReviewsAsync(CancellationToken cancellationToken = default)
     {
         var peerReviews = await peerReviewService.GetAllPeerReviewsAsync(cancellationToken);
@@ -16,6 +47,7 @@ public class PeerReviewsController(IPeerReviewService peerReviewService) : Contr
     }
 
     [HttpGet("{id}")]
+    [Authorize(Policy = MentorlyPolicies.Admin)]
     public async Task<ActionResult<PeerReviewDto>> GetPeerReviewAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var peerReview = await peerReviewService.GetPeerReviewByIdAsync(id, cancellationToken);
@@ -29,13 +61,20 @@ public class PeerReviewsController(IPeerReviewService peerReviewService) : Contr
     }
 
     [HttpPost]
+    [Authorize(Policy = MentorlyPolicies.Student)]
     public async Task<ActionResult<PeerReviewResultDto>> SubmitReviewAsync(CreatePeerReviewRequestDto dto, CancellationToken cancellationToken = default)
     {
-        var result = await peerReviewService.SubmitReviewAsync(dto, cancellationToken);
+        if (!Guid.TryParse(User.FindFirstValue(MentorlyClaimTypes.StudentId), out var studentId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await peerReviewService.SubmitReviewAsync(dto with { ReviewerStudentId = studentId }, cancellationToken);
         return CreatedAtAction("GetPeerReview", new { id = result.PeerReviewId }, result);
     }
 
     [HttpPut("{id}")]
+    [Authorize(Policy = MentorlyPolicies.Admin)]
     public async Task<IActionResult> UpdatePeerReviewAsync(Guid id, UpdatePeerReviewDto dto, CancellationToken cancellationToken = default)
     {
         var updated = await peerReviewService.UpdatePeerReviewAsync(id, dto, cancellationToken);
@@ -49,6 +88,7 @@ public class PeerReviewsController(IPeerReviewService peerReviewService) : Contr
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Policy = MentorlyPolicies.Admin)]
     public async Task<IActionResult> DeletePeerReviewAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var deleted = await peerReviewService.DeletePeerReviewAsync(id, cancellationToken);

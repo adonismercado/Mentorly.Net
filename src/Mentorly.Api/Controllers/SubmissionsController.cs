@@ -1,6 +1,9 @@
 using Mentorly.Application.DTOs;
 using Mentorly.Application.Services;
+using Mentorly.Infrastructure.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Mentorly.Api.Controllers;
 
@@ -8,7 +11,21 @@ namespace Mentorly.Api.Controllers;
 [Route("api/[controller]")]
 public class SubmissionsController(ISubmissionService submissionService) : ControllerBase
 {
+    [Authorize(Policy = MentorlyPolicies.Student)]
+    [HttpPost("{id}/escalate")]
+    public async Task<IActionResult> EscalateAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        if (!Guid.TryParse(User.FindFirstValue(MentorlyClaimTypes.StudentId), out var studentId)) return Unauthorized();
+        return await submissionService.EscalateAsync(id, studentId, cancellationToken) ? NoContent() : NotFound();
+    }
+
+    [Authorize(Policy = MentorlyPolicies.Admin)]
+    [HttpPost("{id}/admin-decision")]
+    public async Task<IActionResult> DecideAsync(Guid id, AdminSubmissionDecisionDto dto, CancellationToken cancellationToken = default)
+        => await submissionService.DecideAsAdminAsync(id, dto.IsApproved, cancellationToken) ? NoContent() : NotFound();
+
     [HttpGet]
+    [Authorize(Policy = MentorlyPolicies.Admin)]
     public async Task<ActionResult<IEnumerable<SubmissionDto>>> GetSubmissionsAsync(CancellationToken cancellationToken = default)
     {
         var submissions = await submissionService.GetAllSubmissionsAsync(cancellationToken);
@@ -16,6 +33,7 @@ public class SubmissionsController(ISubmissionService submissionService) : Contr
     }
 
     [HttpGet("{id}")]
+    [Authorize(Policy = MentorlyPolicies.Admin)]
     public async Task<ActionResult<SubmissionDto>> GetSubmissionAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var submission = await submissionService.GetSubmissionByIdAsync(id, cancellationToken);

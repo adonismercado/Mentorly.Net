@@ -9,6 +9,8 @@ public sealed class StudentEnrollmentService(
     ICourseRepository courseRepository,
     IEnrollmentRepository enrollmentRepository,
     ISubmissionRepository submissionRepository,
+    IPeerReviewWorkflowRepository peerReviewWorkflowRepository,
+    ICourseCompletionService courseCompletionService,
     IUnitOfWork unitOfWork) : IStudentEnrollmentService
 {
     public async Task<EnrollmentResultDto> EnrollAsync(CreateEnrollmentRequestDto request, CancellationToken cancellationToken = default)
@@ -82,6 +84,19 @@ public sealed class StudentEnrollmentService(
             throw new InvalidOperationException("Enrollment is expired or inactive. Submission is not allowed.");
         }
 
+        var activity = await peerReviewWorkflowRepository.GetActivityAsync(request.ActivityId, cancellationToken)
+            ?? throw new InvalidOperationException("Activity not found.");
+
+        if (activity.CourseId != enrollment.CourseId)
+        {
+            throw new InvalidOperationException("The activity does not belong to the enrollment course.");
+        }
+
+        if (!await peerReviewWorkflowRepository.CanSubmitMandatoryActivityAsync(request.EnrollmentId, request.ActivityId, cancellationToken))
+        {
+            throw new InvalidOperationException("Previous mandatory exercises must be approved and the peer-review quota completed before submitting this unit.");
+        }
+
         var existingSubmission = await submissionRepository.GetByEnrollmentAndActivityAsync(
             request.EnrollmentId,
             request.ActivityId,
@@ -95,8 +110,17 @@ public sealed class StudentEnrollmentService(
                 request.EvidenceUrl,
                 request.SubmittedAtUtc);
 
+            if (activity.ApprovalStrategy == Domain.Enums.ApprovalStrategy.Auto)
+            {
+                newSubmission.Approve(request.SubmittedAtUtc);
+            }
+
             await submissionRepository.AddAsync(newSubmission, cancellationToken);
             await unitOfWork.SaveChangesAsync(cancellationToken);
+            if (newSubmission.Status == Domain.Enums.SubmissionStatus.Approved)
+            {
+                await courseCompletionService.EvaluateAsync(request.EnrollmentId, cancellationToken);
+            }
 
             return new SubmissionResultDto(
                 newSubmission.Id,
@@ -108,7 +132,15 @@ public sealed class StudentEnrollmentService(
         }
 
         existingSubmission.ReplaceEvidence(request.EvidenceUrl);
+        if (activity.ApprovalStrategy == Domain.Enums.ApprovalStrategy.Auto)
+        {
+            existingSubmission.Approve(request.SubmittedAtUtc);
+        }
         await unitOfWork.SaveChangesAsync(cancellationToken);
+        if (existingSubmission.Status == Domain.Enums.SubmissionStatus.Approved)
+        {
+            await courseCompletionService.EvaluateAsync(request.EnrollmentId, cancellationToken);
+        }
 
         return new SubmissionResultDto(
             existingSubmission.Id,

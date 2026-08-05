@@ -1,5 +1,7 @@
 using Mentorly.Application.DTOs;
 using Mentorly.Application.Services;
+using Mentorly.Infrastructure.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mentorly.Api.Controllers;
@@ -9,6 +11,7 @@ namespace Mentorly.Api.Controllers;
 public class EnrollmentsController(IEnrollmentService enrollmentService) : ControllerBase
 {
     [HttpGet]
+    [Authorize(Policy = MentorlyPolicies.Admin)]
     public async Task<ActionResult<IEnumerable<EnrollmentDto>>> GetEnrollmentsAsync(CancellationToken cancellationToken = default)
     {
         var enrollments = await enrollmentService.GetAllEnrollmentsAsync(cancellationToken);
@@ -16,6 +19,7 @@ public class EnrollmentsController(IEnrollmentService enrollmentService) : Contr
     }
 
     [HttpGet("{id}")]
+    [Authorize(Policy = MentorlyPolicies.Admin)]
     public async Task<ActionResult<EnrollmentDto>> GetEnrollmentAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var enrollment = await enrollmentService.GetEnrollmentByIdAsync(id, cancellationToken);

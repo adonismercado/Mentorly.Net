@@ -8,6 +8,7 @@ public sealed class PeerReviewService(
     IStudentRepository studentRepository,
     ISubmissionRepository submissionRepository,
     IPeerReviewRepository peerReviewRepository,
+    IPeerReviewWorkflowRepository peerReviewWorkflowRepository,
     ICourseCompletionService courseCompletionService,
     IUnitOfWork unitOfWork) : IPeerReviewService
 {
@@ -99,10 +100,7 @@ public sealed class PeerReviewService(
         {
             submission.Approve(request.CreatedAtUtc);
         }
-        else if (!request.IsApproved)
-        {
-            submission.Reject(request.CreatedAtUtc);
-        }
+        // A negative peer review is feedback, not a final rejection. Only an administrator can reject definitively.
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
         await courseCompletionService.EvaluateAsync(submission.EnrollmentId, cancellationToken);
@@ -117,6 +115,23 @@ public sealed class PeerReviewService(
             positiveReviews,
             requiredReviews,
             submission.Status);
+    }
+
+    public async Task<IReadOnlyList<ReviewQueueItemDto>> GetEligibleQueueAsync(Guid reviewerStudentId, CancellationToken cancellationToken = default)
+    {
+        if (!await studentRepository.ExistsAsync(reviewerStudentId, cancellationToken))
+        {
+            throw new InvalidOperationException("Reviewer student not found.");
+        }
+
+        var queue = await peerReviewWorkflowRepository.GetEligibleQueueAsync(reviewerStudentId, cancellationToken);
+        return queue.Select(x => new ReviewQueueItemDto(x.SubmissionId, x.ActivityId, x.ActivityTitle, x.EvidenceUrl, x.SubmittedAtUtc)).ToList();
+    }
+
+    public async Task<PeerReviewAuditDto?> GetAuditAsync(Guid peerReviewId, CancellationToken cancellationToken = default)
+    {
+        var audit = await peerReviewWorkflowRepository.GetAuditAsync(peerReviewId, cancellationToken);
+        return audit is null ? null : new PeerReviewAuditDto(audit.PeerReviewId, audit.SubmissionId, audit.AuthorStudentId, audit.ReviewerStudentId, audit.IsApproved, audit.FeedbackComment, audit.CreatedAtUtc, audit.EvidenceUrl);
     }
 
     public async Task<bool> UpdatePeerReviewAsync(Guid peerReviewId, UpdatePeerReviewDto dto, CancellationToken cancellationToken = default)

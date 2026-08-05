@@ -19,7 +19,7 @@ public sealed class PeerReviewServiceTests
         var peerReviewRepo = new FakePeerReviewRepository(existingApprovalCount: 0, alreadyReviewed: false);
         var unitOfWork = new FakeUnitOfWork();
 
-        var service = new PeerReviewService(studentRepo, submissionRepo, peerReviewRepo, new FakeCourseCompletionService(), unitOfWork);
+        var service = new PeerReviewService(studentRepo, submissionRepo, peerReviewRepo, new FakePeerReviewWorkflowRepository(), new FakeCourseCompletionService(), unitOfWork);
 
         var result = await service.SubmitReviewAsync(new CreatePeerReviewRequestDto(
             submission.Id,
@@ -44,6 +44,7 @@ public sealed class PeerReviewServiceTests
             new FakeStudentRepository(exists: true),
             new FakeSubmissionRepository(submission, reviewerHasOwnSubmission: false),
             new FakePeerReviewRepository(existingApprovalCount: 0, alreadyReviewed: false),
+            new FakePeerReviewWorkflowRepository(),
             new FakeCourseCompletionService(),
             new FakeUnitOfWork());
 
@@ -56,6 +57,24 @@ public sealed class PeerReviewServiceTests
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(action);
         Assert.Contains("must submit their own solution", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task SubmitReviewAsync_KeepsSubmissionPending_WhenReviewIsNegative()
+    {
+        var submission = BuildSubmissionGraph(requiredPeerReviews: 2);
+        var service = new PeerReviewService(
+            new FakeStudentRepository(exists: true),
+            new FakeSubmissionRepository(submission, reviewerHasOwnSubmission: true),
+            new FakePeerReviewRepository(existingApprovalCount: 0, alreadyReviewed: false),
+            new FakePeerReviewWorkflowRepository(),
+            new FakeCourseCompletionService(),
+            new FakeUnitOfWork());
+
+        var result = await service.SubmitReviewAsync(new CreatePeerReviewRequestDto(
+            submission.Id, ReviewerStudentId, false, "Needs improvement.", DateTime.UtcNow));
+
+        Assert.Equal(SubmissionStatus.Pending, result.SubmissionStatus);
     }
 
     private static readonly Guid SubmissionOwnerStudentId = Guid.Parse("2c2e7be7-75c0-4ef4-9648-8dbf66f790ec");
@@ -165,5 +184,13 @@ public sealed class PeerReviewServiceTests
     private sealed class FakeCourseCompletionService : ICourseCompletionService
     {
         public Task<EnrollmentProgressDto?> EvaluateAsync(Guid enrollmentId, CancellationToken cancellationToken = default) => Task.FromResult<EnrollmentProgressDto?>(null);
+    }
+
+    private sealed class FakePeerReviewWorkflowRepository : IPeerReviewWorkflowRepository
+    {
+        public Task<ActivityWorkflowData?> GetActivityAsync(Guid activityId, CancellationToken cancellationToken = default) => Task.FromResult<ActivityWorkflowData?>(null);
+        public Task<bool> CanSubmitMandatoryActivityAsync(Guid enrollmentId, Guid activityId, CancellationToken cancellationToken = default) => Task.FromResult(true);
+        public Task<IReadOnlyList<ReviewQueueItemData>> GetEligibleQueueAsync(Guid reviewerStudentId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<ReviewQueueItemData>>([]);
+        public Task<ReviewAuditData?> GetAuditAsync(Guid peerReviewId, CancellationToken cancellationToken = default) => Task.FromResult<ReviewAuditData?>(null);
     }
 }

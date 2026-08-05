@@ -94,4 +94,40 @@ public sealed class SubmissionService(
 
         return true;
     }
+
+    public async Task<bool> EscalateAsync(Guid submissionId, Guid studentId, CancellationToken cancellationToken = default)
+    {
+        var submission = await submissionRepository.GetByIdWithContextAsync(submissionId, cancellationToken);
+        if (submission is null || submission.Enrollment.StudentId != studentId)
+        {
+            return false;
+        }
+
+        submission.Escalate(DateTime.UtcNow);
+        submissionRepository.Update(submission);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
+    public async Task<bool> DecideAsAdminAsync(Guid submissionId, bool isApproved, CancellationToken cancellationToken = default)
+    {
+        var submission = await submissionRepository.GetByIdAsync(submissionId, cancellationToken);
+        if (submission is null)
+        {
+            return false;
+        }
+
+        if (isApproved)
+        {
+            submission.Approve(DateTime.UtcNow);
+        }
+        else
+        {
+            submission.Reject(DateTime.UtcNow);
+        }
+
+        submissionRepository.Update(submission);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        return true;
+    }
 }

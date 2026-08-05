@@ -9,4 +9,6 @@ public interface ISubmissionService
     Task<SubmissionDto> CreateSubmissionAsync(CreateSubmissionDto dto, CancellationToken cancellationToken = default);
     Task<bool> UpdateSubmissionAsync(Guid submissionId, UpdateSubmissionDto dto, CancellationToken cancellationToken = default);
     Task<bool> DeleteSubmissionAsync(Guid submissionId, CancellationToken cancellationToken = default);
+    Task<bool> EscalateAsync(Guid submissionId, Guid studentId, CancellationToken cancellationToken = default);
+    Task<bool> DecideAsAdminAsync(Guid submissionId, bool isApproved, CancellationToken cancellationToken = default);
 }
