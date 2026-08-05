@@ -4,6 +4,7 @@ using Mentorly.Infrastructure.Identity;
 using Mentorly.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -65,6 +66,9 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
+    var dbContext = scope.ServiceProvider.GetRequiredService<MentorlyDbContext>();
+    await dbContext.Database.MigrateAsync();
+
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
     foreach (var role in new[] { MentorlyRoles.Student, MentorlyRoles.Admin })
     {

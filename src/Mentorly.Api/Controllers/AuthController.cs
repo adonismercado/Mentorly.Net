@@ -20,6 +20,7 @@ public class AuthController(
     SignInManager<ApplicationUser> signInManager) : ControllerBase
 {
     [AllowAnonymous]
+    [HttpGet("google")]
     [HttpPost("google")]
     public IActionResult LoginWithGoogle()
     {
