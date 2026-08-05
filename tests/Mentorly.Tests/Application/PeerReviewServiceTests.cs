@@ -19,7 +19,7 @@ public sealed class PeerReviewServiceTests
         var peerReviewRepo = new FakePeerReviewRepository(existingApprovalCount: 0, alreadyReviewed: false);
         var unitOfWork = new FakeUnitOfWork();
 
-        var service = new PeerReviewService(studentRepo, submissionRepo, peerReviewRepo, unitOfWork);
+        var service = new PeerReviewService(studentRepo, submissionRepo, peerReviewRepo, new FakeCourseCompletionService(), unitOfWork);
 
         var result = await service.SubmitReviewAsync(new CreatePeerReviewRequestDto(
             submission.Id,
@@ -44,6 +44,7 @@ public sealed class PeerReviewServiceTests
             new FakeStudentRepository(exists: true),
             new FakeSubmissionRepository(submission, reviewerHasOwnSubmission: false),
             new FakePeerReviewRepository(existingApprovalCount: 0, alreadyReviewed: false),
+            new FakeCourseCompletionService(),
             new FakeUnitOfWork());
 
         var action = async () => await service.SubmitReviewAsync(new CreatePeerReviewRequestDto(
@@ -116,6 +117,9 @@ public sealed class PeerReviewServiceTests
         public Task<bool> HasSubmissionsForActivityAsync(Guid activityId, CancellationToken cancellationToken = default)
             => Task.FromResult(false);
 
+        public Task<IReadOnlySet<Guid>> GetApprovedActivityIdsAsync(Guid enrollmentId, IReadOnlyCollection<Guid> activityIds, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlySet<Guid>>(new HashSet<Guid>());
+
         public Task AddAsync(Submission submission, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 
@@ -156,5 +160,10 @@ public sealed class PeerReviewServiceTests
             SaveChangesCalls++;
             return Task.FromResult(1);
         }
+    }
+
+    private sealed class FakeCourseCompletionService : ICourseCompletionService
+    {
+        public Task<EnrollmentProgressDto?> EvaluateAsync(Guid enrollmentId, CancellationToken cancellationToken = default) => Task.FromResult<EnrollmentProgressDto?>(null);
     }
 }

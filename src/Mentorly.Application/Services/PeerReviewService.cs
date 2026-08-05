@@ -8,6 +8,7 @@ public sealed class PeerReviewService(
     IStudentRepository studentRepository,
     ISubmissionRepository submissionRepository,
     IPeerReviewRepository peerReviewRepository,
+    ICourseCompletionService courseCompletionService,
     IUnitOfWork unitOfWork) : IPeerReviewService
 {
     public async Task<IReadOnlyList<PeerReviewDto>> GetAllPeerReviewsAsync(CancellationToken cancellationToken = default)
@@ -104,6 +105,7 @@ public sealed class PeerReviewService(
         }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
+        await courseCompletionService.EvaluateAsync(submission.EnrollmentId, cancellationToken);
 
         return new PeerReviewResultDto(
             review.Id,

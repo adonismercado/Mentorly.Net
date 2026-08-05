@@ -33,6 +33,8 @@ public sealed class MentorlyDbContext(
     public DbSet<Theme> Themes => Set<Theme>();
 
     public DbSet<Activity> Activities => Set<Activity>();
+
+    public DbSet<ThemeCompletion> ThemeCompletions => Set<ThemeCompletion>();
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -47,6 +49,7 @@ public sealed class MentorlyDbContext(
         modelBuilder.ApplyConfiguration(new UnitConfiguration());
         modelBuilder.ApplyConfiguration(new ThemeConfiguration());
         modelBuilder.ApplyConfiguration(new ActivityConfiguration());
+        modelBuilder.ApplyConfiguration(new ThemeCompletionConfiguration());
 
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfiguration(new ApplicationUserConfiguration());

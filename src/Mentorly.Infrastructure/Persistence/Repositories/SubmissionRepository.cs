@@ -1,5 +1,6 @@
 using Mentorly.Application.Abstractions.Persistence;
 using Mentorly.Domain.Entities;
+using Mentorly.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Mentorly.Infrastructure.Persistence.Repositories;
@@ -48,6 +49,19 @@ public sealed class SubmissionRepository(MentorlyDbContext dbContext) : ISubmiss
     {
         return dbContext.Submissions
             .AnyAsync(x => x.ActivityId == activityId, cancellationToken);
+    }
+
+    public async Task<IReadOnlySet<Guid>> GetApprovedActivityIdsAsync(Guid enrollmentId, IReadOnlyCollection<Guid> activityIds, CancellationToken cancellationToken = default)
+    {
+        if (activityIds.Count == 0)
+        {
+            return new HashSet<Guid>();
+        }
+
+        return await dbContext.Submissions
+            .Where(x => x.EnrollmentId == enrollmentId && activityIds.Contains(x.ActivityId) && x.Status == SubmissionStatus.Approved)
+            .Select(x => x.ActivityId)
+            .ToHashSetAsync(cancellationToken);
     }
 
     public void Add(Submission submission)

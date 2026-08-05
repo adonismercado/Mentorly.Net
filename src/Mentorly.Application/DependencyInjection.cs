@@ -17,6 +17,10 @@ public static class DependencyInjection
         services.AddScoped<IUnitService, UnitService>();
         services.AddScoped<IThemeService, ThemeService>();
         services.AddScoped<IActivityService, ActivityService>();
+        services.AddScoped<EnrollmentProgressService>();
+        services.AddScoped<IEnrollmentProgressService>(provider => provider.GetRequiredService<EnrollmentProgressService>());
+        services.AddScoped<ICourseCompletionService>(provider => provider.GetRequiredService<EnrollmentProgressService>());
+        services.AddScoped<ICertificateService, CertificateService>();
 
         return services;
     }
