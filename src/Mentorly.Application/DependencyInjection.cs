@@ -23,6 +23,7 @@ public static class DependencyInjection
         services.AddScoped<ICertificateService, CertificateService>();
         services.AddScoped<IGamificationService, GamificationService>();
         services.AddScoped<ICourseCommunityService, CourseCommunityService>();
+        services.AddScoped<IAnalyticsService, AnalyticsService>();
 
         return services;
     }
