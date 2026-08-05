@@ -30,6 +30,23 @@ public class PeerReviewsController(IPeerReviewService peerReviewService) : Contr
         }
     }
 
+    [Authorize(Policy = MentorlyPolicies.Student)]
+    [HttpGet("me")]
+    public async Task<ActionResult<IEnumerable<PeerReviewDto>>> GetMyReviewsAsync(CancellationToken cancellationToken = default)
+    {
+        if (!Guid.TryParse(User.FindFirstValue(MentorlyClaimTypes.StudentId), out var studentId)) return Unauthorized();
+        return Ok(await peerReviewService.GetMyPeerReviewsAsync(studentId, cancellationToken));
+    }
+
+    [Authorize(Policy = MentorlyPolicies.Student)]
+    [HttpGet("{id:guid}/anonymous-submission")]
+    public async Task<ActionResult<AnonymousSubmissionDto>> GetAnonymousSubmissionAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        if (!Guid.TryParse(User.FindFirstValue(MentorlyClaimTypes.StudentId), out var studentId)) return Unauthorized();
+        var submission = await peerReviewService.GetAnonymousSubmissionAsync(id, studentId, cancellationToken);
+        return submission is null ? NotFound() : Ok(submission);
+    }
+
     [Authorize(Policy = MentorlyPolicies.Admin)]
     [HttpGet("/api/admin/peer-reviews/{id:guid}/audit")]
     public async Task<ActionResult<PeerReviewAuditDto>> GetAuditAsync(Guid id, CancellationToken cancellationToken = default)

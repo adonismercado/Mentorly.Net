@@ -12,6 +12,23 @@ namespace Mentorly.Api.Controllers;
 public class SubmissionsController(ISubmissionService submissionService) : ControllerBase
 {
     [Authorize(Policy = MentorlyPolicies.Student)]
+    [HttpGet("me")]
+    public async Task<ActionResult<IEnumerable<SubmissionDto>>> GetMySubmissionsAsync(CancellationToken cancellationToken = default)
+    {
+        if (!Guid.TryParse(User.FindFirstValue(MentorlyClaimTypes.StudentId), out var studentId)) return Unauthorized();
+        return Ok(await submissionService.GetMySubmissionsAsync(studentId, cancellationToken));
+    }
+
+    [Authorize(Policy = MentorlyPolicies.Student)]
+    [HttpGet("{id}/reviews")]
+    public async Task<ActionResult<IEnumerable<PeerReviewFeedbackDto>>> GetMySubmissionReviewsAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        if (!Guid.TryParse(User.FindFirstValue(MentorlyClaimTypes.StudentId), out var studentId)) return Unauthorized();
+        var reviews = await submissionService.GetMySubmissionReviewsAsync(id, studentId, cancellationToken);
+        return reviews is null ? NotFound() : Ok(reviews);
+    }
+
+    [Authorize(Policy = MentorlyPolicies.Student)]
     [HttpPost("{id}/escalate")]
     public async Task<IActionResult> EscalateAsync(Guid id, CancellationToken cancellationToken = default)
     {

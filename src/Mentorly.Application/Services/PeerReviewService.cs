@@ -144,6 +144,17 @@ public sealed class PeerReviewService(
         return audit is null ? null : new PeerReviewAuditDto(audit.PeerReviewId, audit.SubmissionId, audit.AuthorStudentId, audit.ReviewerStudentId, audit.IsApproved, audit.FeedbackComment, audit.CreatedAtUtc, audit.EvidenceUrl);
     }
 
+    public async Task<IReadOnlyList<PeerReviewDto>> GetMyPeerReviewsAsync(Guid reviewerStudentId, CancellationToken cancellationToken = default)
+    {
+        return (await peerReviewRepository.GetByReviewerStudentIdAsync(reviewerStudentId, cancellationToken)).Select(pr => new PeerReviewDto(pr.Id, pr.SubmissionId, pr.ReviewerStudentId, pr.IsApproved, pr.FeedbackComment, pr.CreatedAt)).ToList();
+    }
+
+    public async Task<AnonymousSubmissionDto?> GetAnonymousSubmissionAsync(Guid peerReviewId, Guid reviewerStudentId, CancellationToken cancellationToken = default)
+    {
+        var submission = await peerReviewWorkflowRepository.GetAnonymousSubmissionAsync(peerReviewId, reviewerStudentId, cancellationToken);
+        return submission is null ? null : new AnonymousSubmissionDto(submission.SubmissionId, submission.ActivityId, submission.ActivityTitle, submission.EvidenceUrl, submission.SubmittedAtUtc);
+    }
+
     public async Task<bool> UpdatePeerReviewAsync(Guid peerReviewId, UpdatePeerReviewDto dto, CancellationToken cancellationToken = default)
     {
         var peerReview = await peerReviewRepository.GetByIdAsync(peerReviewId, cancellationToken);

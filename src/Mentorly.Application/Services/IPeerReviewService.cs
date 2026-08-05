@@ -11,4 +11,6 @@ public interface IPeerReviewService
     Task<bool> DeletePeerReviewAsync(Guid peerReviewId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<ReviewQueueItemDto>> GetEligibleQueueAsync(Guid reviewerStudentId, CancellationToken cancellationToken = default);
     Task<PeerReviewAuditDto?> GetAuditAsync(Guid peerReviewId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<PeerReviewDto>> GetMyPeerReviewsAsync(Guid reviewerStudentId, CancellationToken cancellationToken = default);
+    Task<AnonymousSubmissionDto?> GetAnonymousSubmissionAsync(Guid peerReviewId, Guid reviewerStudentId, CancellationToken cancellationToken = default);
 }

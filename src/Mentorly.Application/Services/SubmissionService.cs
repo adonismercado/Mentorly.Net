@@ -6,6 +6,7 @@ namespace Mentorly.Application.Services;
 
 public sealed class SubmissionService(
     ISubmissionRepository submissionRepository,
+    IPeerReviewRepository peerReviewRepository,
     IGamificationService gamificationService,
     IUnitOfWork unitOfWork) : ISubmissionService
 {
@@ -135,4 +136,18 @@ public sealed class SubmissionService(
         }
         return true;
     }
+
+    public async Task<IReadOnlyList<SubmissionDto>> GetMySubmissionsAsync(Guid studentId, CancellationToken cancellationToken = default)
+    {
+        return (await submissionRepository.GetByStudentIdAsync(studentId, cancellationToken)).Select(Map).ToList();
+    }
+
+    public async Task<IReadOnlyList<PeerReviewFeedbackDto>?> GetMySubmissionReviewsAsync(Guid submissionId, Guid studentId, CancellationToken cancellationToken = default)
+    {
+        var submission = await submissionRepository.GetByIdWithContextAsync(submissionId, cancellationToken);
+        if (submission is null || submission.Enrollment.StudentId != studentId) return null;
+        return (await peerReviewRepository.GetBySubmissionIdAsync(submissionId, cancellationToken)).Select(x => new PeerReviewFeedbackDto(x.Id, x.IsApproved, x.FeedbackComment, x.CreatedAt)).ToList();
+    }
+
+    private static SubmissionDto Map(Submission submission) => new(submission.Id, submission.EnrollmentId, submission.ActivityId, submission.EvidenceUrl, submission.Status, submission.SubmittedAt, submission.ReviewedAt);
 }

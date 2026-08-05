@@ -141,6 +141,9 @@ public sealed class PeerReviewServiceTests
         public Task<IReadOnlySet<Guid>> GetApprovedActivityIdsAsync(Guid enrollmentId, IReadOnlyCollection<Guid> activityIds, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlySet<Guid>>(new HashSet<Guid>());
 
+        public Task<IReadOnlyList<Submission>> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<Submission>>([]);
+
         public Task AddAsync(Submission submission, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 
@@ -155,6 +158,8 @@ public sealed class PeerReviewServiceTests
 
         public Task<IReadOnlyList<PeerReview>> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<PeerReview>>([]);
         public Task<PeerReview?> GetByIdAsync(Guid peerReviewId, CancellationToken cancellationToken = default) => Task.FromResult<PeerReview?>(null);
+        public Task<IReadOnlyList<PeerReview>> GetBySubmissionIdAsync(Guid submissionId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<PeerReview>>([]);
+        public Task<IReadOnlyList<PeerReview>> GetByReviewerStudentIdAsync(Guid reviewerStudentId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<PeerReview>>([]);
 
         public Task<bool> HasReviewerAlreadyReviewedAsync(Guid submissionId, Guid reviewerStudentId, CancellationToken cancellationToken = default)
             => Task.FromResult(alreadyReviewed);
@@ -194,6 +199,7 @@ public sealed class PeerReviewServiceTests
         public Task<bool> CanSubmitMandatoryActivityAsync(Guid enrollmentId, Guid activityId, CancellationToken cancellationToken = default) => Task.FromResult(true);
         public Task<IReadOnlyList<ReviewQueueItemData>> GetEligibleQueueAsync(Guid reviewerStudentId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<ReviewQueueItemData>>([]);
         public Task<ReviewAuditData?> GetAuditAsync(Guid peerReviewId, CancellationToken cancellationToken = default) => Task.FromResult<ReviewAuditData?>(null);
+        public Task<AnonymousSubmissionData?> GetAnonymousSubmissionAsync(Guid peerReviewId, Guid reviewerStudentId, CancellationToken cancellationToken = default) => Task.FromResult<AnonymousSubmissionData?>(null);
     }
 
     private sealed class FakeGamificationService : IGamificationService

@@ -45,6 +45,11 @@ public sealed class SubmissionRepository(MentorlyDbContext dbContext) : ISubmiss
         return dbContext.Submissions.AddAsync(submission, cancellationToken).AsTask();
     }
 
+    public async Task<IReadOnlyList<Submission>> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Submissions.Where(x => x.Enrollment.StudentId == studentId).OrderByDescending(x => x.SubmittedAt).ToListAsync(cancellationToken);
+    }
+
     public Task<bool> HasSubmissionsForActivityAsync(Guid activityId, CancellationToken cancellationToken = default)
     {
         return dbContext.Submissions

@@ -11,4 +11,6 @@ public interface ISubmissionService
     Task<bool> DeleteSubmissionAsync(Guid submissionId, CancellationToken cancellationToken = default);
     Task<bool> EscalateAsync(Guid submissionId, Guid studentId, CancellationToken cancellationToken = default);
     Task<bool> DecideAsAdminAsync(Guid submissionId, bool isApproved, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<SubmissionDto>> GetMySubmissionsAsync(Guid studentId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<PeerReviewFeedbackDto>?> GetMySubmissionReviewsAsync(Guid submissionId, Guid studentId, CancellationToken cancellationToken = default);
 }

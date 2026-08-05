@@ -77,4 +77,14 @@ public sealed class PeerReviewWorkflowRepository(MentorlyDbContext dbContext) : 
                 select new ReviewAuditData(review.Id, submission.Id, enrollment.StudentId, review.ReviewerStudentId, review.IsApproved, review.FeedbackComment, review.CreatedAt, submission.EvidenceUrl))
             .FirstOrDefaultAsync(cancellationToken);
     }
+
+    public Task<AnonymousSubmissionData?> GetAnonymousSubmissionAsync(Guid peerReviewId, Guid reviewerStudentId, CancellationToken cancellationToken = default)
+    {
+        return (from review in dbContext.PeerReviews
+                join submission in dbContext.Submissions on review.SubmissionId equals submission.Id
+                join activity in dbContext.Activities on submission.ActivityId equals activity.Id
+                where review.Id == peerReviewId && review.ReviewerStudentId == reviewerStudentId
+                select new AnonymousSubmissionData(submission.Id, activity.Id, activity.Title, submission.EvidenceUrl, submission.SubmittedAt))
+            .FirstOrDefaultAsync(cancellationToken);
+    }
 }
