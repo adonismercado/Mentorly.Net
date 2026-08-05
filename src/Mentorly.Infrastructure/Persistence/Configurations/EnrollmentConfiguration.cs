@@ -80,6 +80,18 @@ public sealed class EnrollmentConfiguration : IEntityTypeConfiguration<Enrollmen
             Status = EnrollmentStatus.Active,
             CertificateUrl = (string?)null,
             CompletedAt = (DateTime?)null
+        },
+        new
+        {
+            Id = SeedData.AuthorEnrollmentId,
+            StudentId = SeedData.StudentId,
+            CourseId = SeedData.CourseId,
+            AttemptNumber = 1,
+            StartedAt = SeedData.SeedStartedAtUtc,
+            ExpiresAt = SeedData.SeedStartedAtUtc.AddMonths(3),
+            Status = EnrollmentStatus.Active,
+            CertificateUrl = (string?)null,
+            CompletedAt = (DateTime?)null
         });
     }
 }

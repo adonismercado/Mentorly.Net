@@ -61,6 +61,16 @@ public sealed class SubmissionConfiguration : IEntityTypeConfiguration<Submissio
             Status = SubmissionStatus.Approved,
             SubmittedAt = SeedData.SeedSubmittedAtUtc,
             ReviewedAt = (DateTime?)SeedData.SeedSubmittedAtUtc
+        },
+        new
+        {
+            Id = SeedData.AuthorSubmissionId,
+            EnrollmentId = SeedData.AuthorEnrollmentId,
+            ActivityId = SeedData.ActivityId,
+            EvidenceUrl = "https://github.com/example/author-seed",
+            Status = SubmissionStatus.Approved,
+            SubmittedAt = SeedData.SeedSubmittedAtUtc,
+            ReviewedAt = (DateTime?)SeedData.SeedSubmittedAtUtc
         });
     }
 }

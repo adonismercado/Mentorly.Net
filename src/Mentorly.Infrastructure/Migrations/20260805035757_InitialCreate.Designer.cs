@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Mentorly.Infrastructure.Migrations
 {
     [DbContext(typeof(MentorlyDbContext))]
-    [Migration("20260805034203_AddEnrollmentProgressAndCertificates")]
-    partial class AddEnrollmentProgressAndCertificates
+    [Migration("20260805035757_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -67,6 +67,28 @@ namespace Mentorly.Infrastructure.Migrations
                     b.HasIndex("ThemeId", "OrderIndex");
 
                     b.ToTable("activities", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("f3af6a42-266d-4468-b840-f26e95ec6e6b"),
+                            ApprovalStrategy = "PeerReview",
+                            IsMandatory = true,
+                            OrderIndex = 1,
+                            ThemeId = new Guid("a8466ce6-95c6-4d7d-a998-38925240cd70"),
+                            Title = "Build a component",
+                            Type = "Exercise"
+                        },
+                        new
+                        {
+                            Id = new Guid("6a6538ef-9454-4a5d-80ac-344d8a4068de"),
+                            ApprovalStrategy = "Auto",
+                            IsMandatory = true,
+                            OrderIndex = 2,
+                            ThemeId = new Guid("a8466ce6-95c6-4d7d-a998-38925240cd70"),
+                            Title = "Fundamentals quiz",
+                            Type = "Quiz"
+                        });
                 });
 
             modelBuilder.Entity("Mentorly.Domain.Entities.Badge", b =>
@@ -190,6 +212,17 @@ namespace Mentorly.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("course_images", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("f74e10ed-86b4-47e5-8caf-d07af6cd2b25"),
+                            AltText = "Blazor Fundamentals course cover",
+                            CourseId = new Guid("cb57a2a9-aa8e-4538-aa86-d8e383136fdc"),
+                            ImageUrl = "https://images.example.com/blazor-fundamentals.png",
+                            IsCover = true,
+                            OrderIndex = 1
+                        });
                 });
 
             modelBuilder.Entity("Mentorly.Domain.Entities.Enrollment", b =>
@@ -255,7 +288,54 @@ namespace Mentorly.Infrastructure.Migrations
                             StartedAt = new DateTime(2026, 1, 5, 0, 0, 0, 0, DateTimeKind.Utc),
                             Status = "Active",
                             StudentId = new Guid("b7e670c1-caf3-4da5-a8f7-34570fbb9d41")
+                        },
+                        new
+                        {
+                            Id = new Guid("b82acd0a-9bd4-4e5e-b2d9-01e3283285f1"),
+                            AttemptNumber = 1,
+                            CourseId = new Guid("cb57a2a9-aa8e-4538-aa86-d8e383136fdc"),
+                            ExpiresAt = new DateTime(2026, 4, 5, 0, 0, 0, 0, DateTimeKind.Utc),
+                            StartedAt = new DateTime(2026, 1, 5, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Status = "Active",
+                            StudentId = new Guid("f43f2c2f-2db4-47cd-8a42-7b0f3c495601")
                         });
+                });
+
+            modelBuilder.Entity("Mentorly.Domain.Entities.GamificationEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<int>("Points")
+                        .HasColumnType("int")
+                        .HasColumnName("points");
+
+                    b.Property<Guid>("ReferenceId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("reference_id");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("student_id");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)")
+                        .HasColumnName("type");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId", "Type", "ReferenceId")
+                        .IsUnique();
+
+                    b.ToTable("gamification_events", (string)null);
                 });
 
             modelBuilder.Entity("Mentorly.Domain.Entities.PeerReview", b =>
@@ -295,6 +375,17 @@ namespace Mentorly.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("peer_reviews", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("1f3c9c12-c628-4d29-9887-271c4cd71fe0"),
+                            CreatedAt = new DateTime(2026, 1, 6, 0, 0, 0, 0, DateTimeKind.Utc),
+                            FeedbackComment = "The component structure is clear and the state handling is correct.",
+                            IsApproved = true,
+                            ReviewerStudentId = new Guid("b7e670c1-caf3-4da5-a8f7-34570fbb9d41"),
+                            SubmissionId = new Guid("a1904ac6-c334-4126-9f2f-03dd9a6276e6")
+                        });
                 });
 
             modelBuilder.Entity("Mentorly.Domain.Entities.Student", b =>
@@ -450,6 +541,16 @@ namespace Mentorly.Infrastructure.Migrations
                             ReviewedAt = new DateTime(2026, 1, 6, 0, 0, 0, 0, DateTimeKind.Utc),
                             Status = "Approved",
                             SubmittedAt = new DateTime(2026, 1, 6, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("a1904ac6-c334-4126-9f2f-03dd9a6276e6"),
+                            ActivityId = new Guid("f3af6a42-266d-4468-b840-f26e95ec6e6b"),
+                            EnrollmentId = new Guid("b82acd0a-9bd4-4e5e-b2d9-01e3283285f1"),
+                            EvidenceUrl = "https://github.com/example/author-seed",
+                            ReviewedAt = new DateTime(2026, 1, 6, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Status = "Approved",
+                            SubmittedAt = new DateTime(2026, 1, 6, 0, 0, 0, 0, DateTimeKind.Utc)
                         });
                 });
 
@@ -485,6 +586,16 @@ namespace Mentorly.Infrastructure.Migrations
                     b.HasIndex("UnitId", "OrderIndex");
 
                     b.ToTable("themes", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("a8466ce6-95c6-4d7d-a998-38925240cd70"),
+                            ContentText = "Introduction to components, parameters, and state.",
+                            OrderIndex = 1,
+                            Title = "Components and state",
+                            UnitId = new Guid("be480fd4-6392-4a0d-91fd-5a3e773e9c10")
+                        });
                 });
 
             modelBuilder.Entity("Mentorly.Domain.Entities.ThemeCompletion", b =>
@@ -534,6 +645,15 @@ namespace Mentorly.Infrastructure.Migrations
                     b.HasIndex("CourseId", "OrderIndex");
 
                     b.ToTable("units", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("be480fd4-6392-4a0d-91fd-5a3e773e9c10"),
+                            CourseId = new Guid("cb57a2a9-aa8e-4538-aa86-d8e383136fdc"),
+                            OrderIndex = 1,
+                            Title = "Unit 1: Fundamentals"
+                        });
                 });
 
             modelBuilder.Entity("Mentorly.Infrastructure.Identity.ApplicationUser", b =>
@@ -778,6 +898,17 @@ namespace Mentorly.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Course");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("Mentorly.Domain.Entities.GamificationEvent", b =>
+                {
+                    b.HasOne("Mentorly.Domain.Entities.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Student");
                 });

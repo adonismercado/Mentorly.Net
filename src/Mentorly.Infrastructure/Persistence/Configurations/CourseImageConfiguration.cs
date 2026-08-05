@@ -1,4 +1,5 @@
 using Mentorly.Domain.Entities;
+using Mentorly.Infrastructure.Persistence.Seed;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -17,5 +18,6 @@ public sealed class CourseImageConfiguration : IEntityTypeConfiguration<CourseIm
         builder.Property(x => x.IsCover).HasColumnName("is_cover").IsRequired();
         builder.Property(x => x.OrderIndex).HasColumnName("order_index").IsRequired();
         builder.HasIndex(x => new { x.CourseId, x.OrderIndex }).IsUnique();
+        builder.HasData(new { Id = SeedData.CourseImageId, CourseId = SeedData.CourseId, ImageUrl = "https://images.example.com/blazor-fundamentals.png", AltText = "Blazor Fundamentals course cover", IsCover = true, OrderIndex = 1 });
     }
 }

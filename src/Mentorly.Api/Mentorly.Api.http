@@ -142,3 +142,55 @@ Content-Type: application/json
 DELETE {{Mentorly.Api_HostAddress}}/api/peerreviews/{id}
 
 ###
+
+# Auth and current profile (Google OAuth opens a redirect flow)
+### Start Google OAuth
+POST {{Mentorly.Api_HostAddress}}/api/auth/google
+
+### Current profile
+GET {{Mentorly.Api_HostAddress}}/api/auth/me
+
+### Update leaderboard privacy
+PATCH {{Mentorly.Api_HostAddress}}/api/students/me/privacy
+Content-Type: application/json
+
+{ "isLeaderboardPublic": false }
+
+# Academic content
+### Create a unit
+POST {{Mentorly.Api_HostAddress}}/api/courses/{{courseId}}/units
+Content-Type: application/json
+
+{ "title": "Unit 1", "orderIndex": 1 }
+
+### Create a theme
+POST {{Mentorly.Api_HostAddress}}/api/units/{{unitId}}/themes
+Content-Type: application/json
+
+{ "title": "Theme 1", "contentText": "Lesson content", "orderIndex": 1 }
+
+### Create an exercise
+POST {{Mentorly.Api_HostAddress}}/api/themes/{{themeId}}/activities
+Content-Type: application/json
+
+{ "title": "Practice", "type": "Exercise", "isMandatory": true, "approvalStrategy": "PeerReview", "orderIndex": 1 }
+
+# Enrollment, progress and peer review
+### My enrollments
+GET {{Mentorly.Api_HostAddress}}/api/students/me/enrollments
+
+### Complete a theme
+POST {{Mentorly.Api_HostAddress}}/api/enrollments/{{enrollmentId}}/themes/{{themeId}}/complete
+
+### Peer review queue
+GET {{Mentorly.Api_HostAddress}}/api/peerreviews/queue
+
+### Escalate a submission
+POST {{Mentorly.Api_HostAddress}}/api/submissions/{{submissionId}}/escalate
+
+# Community and analytics
+### Course leaderboard
+GET {{Mentorly.Api_HostAddress}}/api/courses/{{courseId}}/leaderboard
+
+### Admin analytics overview
+GET {{Mentorly.Api_HostAddress}}/api/admin/analytics/overview

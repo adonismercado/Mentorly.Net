@@ -1,4 +1,5 @@
 using Mentorly.Domain.Entities;
+using Mentorly.Infrastructure.Persistence.Seed;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -15,5 +16,6 @@ public sealed class UnitConfiguration : IEntityTypeConfiguration<Unit>
         builder.Property(x => x.OrderIndex).HasColumnName("order_index").IsRequired();
         builder.HasIndex(x => new { x.CourseId, x.OrderIndex });
         builder.HasMany(x => x.Themes).WithOne(x => x.Unit).HasForeignKey(x => x.UnitId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasData(new { Id = SeedData.UnitId, CourseId = SeedData.CourseId, Title = "Unit 1: Fundamentals", OrderIndex = 1 });
     }
 }

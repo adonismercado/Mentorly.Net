@@ -1,4 +1,5 @@
 using Mentorly.Domain.Entities;
+using Mentorly.Infrastructure.Persistence.Seed;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -16,5 +17,6 @@ public sealed class ThemeConfiguration : IEntityTypeConfiguration<Theme>
         builder.Property(x => x.OrderIndex).HasColumnName("order_index").IsRequired();
         builder.HasIndex(x => new { x.UnitId, x.OrderIndex });
         builder.HasMany(x => x.Activities).WithOne(x => x.Theme).HasForeignKey(x => x.ThemeId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasData(new { Id = SeedData.ThemeId, UnitId = SeedData.UnitId, Title = "Components and state", ContentText = "Introduction to components, parameters, and state.", OrderIndex = 1 });
     }
 }
