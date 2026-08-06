@@ -1,5 +1,4 @@
 using System.Reflection;
-using Mentorly.Application.Abstractions.Persistence;
 using Mentorly.Application.DTOs;
 using Mentorly.Application.Services;
 using Mentorly.Domain.Entities;
@@ -85,56 +84,5 @@ public sealed class PeerReviewServiceTests
             ?? throw new InvalidOperationException($"Property '{propertyName}' was not found on {typeof(TTarget).Name}.");
 
         property.SetValue(target, value);
-    }
-
-    private sealed class FakeStudentRepository(bool exists) : IStudentRepository
-    {
-        public Task<bool> ExistsAsync(Guid studentId, CancellationToken cancellationToken = default) => Task.FromResult(exists);
-    }
-
-    private sealed class FakeSubmissionRepository(Submission submission, bool reviewerHasOwnSubmission) : ISubmissionRepository
-    {
-        public Task<Submission?> GetByIdAsync(Guid submissionId, CancellationToken cancellationToken = default)
-            => Task.FromResult(submissionId == submission.Id ? submission : null);
-
-        public Task<Submission?> GetByIdWithContextAsync(Guid submissionId, CancellationToken cancellationToken = default)
-            => Task.FromResult(submissionId == submission.Id ? submission : null);
-
-        public Task<Submission?> GetByEnrollmentAndActivityAsync(Guid enrollmentId, Guid activityId, CancellationToken cancellationToken = default)
-            => Task.FromResult<Submission?>(null);
-
-        public Task<bool> HasStudentSubmittedActivityAsync(Guid studentId, Guid activityId, CancellationToken cancellationToken = default)
-            => Task.FromResult(reviewerHasOwnSubmission);
-
-        public Task AddAsync(Submission submission, CancellationToken cancellationToken = default)
-            => Task.CompletedTask;
-    }
-
-    private sealed class FakePeerReviewRepository(int existingApprovalCount, bool alreadyReviewed) : IPeerReviewRepository
-    {
-        public PeerReview? LastAdded { get; private set; }
-
-        public Task<bool> HasReviewerAlreadyReviewedAsync(Guid submissionId, Guid reviewerStudentId, CancellationToken cancellationToken = default)
-            => Task.FromResult(alreadyReviewed);
-
-        public Task<int> CountApprovalsForSubmissionAsync(Guid submissionId, CancellationToken cancellationToken = default)
-            => Task.FromResult(existingApprovalCount);
-
-        public Task AddAsync(PeerReview review, CancellationToken cancellationToken = default)
-        {
-            LastAdded = review;
-            return Task.CompletedTask;
-        }
-    }
-
-    private sealed class FakeUnitOfWork : IUnitOfWork
-    {
-        public int SaveChangesCalls { get; private set; }
-
-        public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            SaveChangesCalls++;
-            return Task.FromResult(1);
-        }
     }
 }
