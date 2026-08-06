@@ -4,7 +4,7 @@ namespace Mentorly.Application.Abstractions.Persistence;
 
 public interface ISubmissionRepository
 {
-    Task<IReadOnlyList<Submission>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<Submission[]> GetAllAsync(CancellationToken cancellationToken = default);
     Task<Submission?> GetByIdAsync(Guid submissionId, CancellationToken cancellationToken = default);
 
     Task<Submission?> GetByIdWithContextAsync(Guid submissionId, CancellationToken cancellationToken = default);
