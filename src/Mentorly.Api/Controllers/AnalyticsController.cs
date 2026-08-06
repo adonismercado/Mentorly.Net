@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace Mentorly.Api.Controllers;
 
 [ApiController]
-[Authorize(Policy = MentorlyPolicies.Admin)]
 [Route("api/admin/analytics")]
 public class AnalyticsController(IAnalyticsService analyticsService) : ControllerBase
 {

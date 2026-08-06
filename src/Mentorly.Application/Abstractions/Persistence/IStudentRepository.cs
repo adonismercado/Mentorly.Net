@@ -4,14 +4,12 @@ namespace Mentorly.Application.Abstractions.Persistence;
 
 public interface IStudentRepository
 {
-    Task<IReadOnlyList<Student>> GetAllAsync(CancellationToken cancellationToken = default);
-    Task<Student?> GetByIdAsync(Guid studentId, CancellationToken cancellationToken = default);
     Task<Student?> GetByIdWithBadgesAsync(Guid studentId, CancellationToken cancellationToken = default);
     Task<bool> ExistsAsync(Guid studentId, CancellationToken cancellationToken = default);
 
     Task<Student?> GetByIdAsync(Guid studentId, CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<Student>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<Student[]> GetAllAsync(CancellationToken cancellationToken = default);
 
     void Add(Student student);
 
