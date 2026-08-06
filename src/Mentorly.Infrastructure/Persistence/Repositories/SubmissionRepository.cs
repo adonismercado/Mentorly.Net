@@ -7,11 +7,10 @@ namespace Mentorly.Infrastructure.Persistence.Repositories;
 
 public sealed class SubmissionRepository(MentorlyDbContext dbContext) : ISubmissionRepository
 {
-    public async Task<IReadOnlyList<Submission>> GetAllAsync(CancellationToken cancellationToken = default)
+    public Task<Submission[]> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return await dbContext.Submissions
-            .AsNoTracking()
-            .ToListAsync(cancellationToken);
+        return dbContext.Submissions
+            .ToArrayAsync(cancellationToken);
     }
 
     public Task<Submission?> GetByIdAsync(Guid submissionId, CancellationToken cancellationToken = default)

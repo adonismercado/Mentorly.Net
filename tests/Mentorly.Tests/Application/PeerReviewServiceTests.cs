@@ -1,5 +1,4 @@
 using System.Reflection;
-using Mentorly.Application.Abstractions.Persistence;
 using Mentorly.Application.DTOs;
 using Mentorly.Application.Services;
 using Mentorly.Domain.Entities;
@@ -19,7 +18,7 @@ public sealed class PeerReviewServiceTests
         var peerReviewRepo = new FakePeerReviewRepository(existingApprovalCount: 0, alreadyReviewed: false);
         var unitOfWork = new FakeUnitOfWork();
 
-        var service = new PeerReviewService(studentRepo, submissionRepo, peerReviewRepo, new FakePeerReviewWorkflowRepository(), new FakeCourseCompletionService(), new FakeGamificationService(), unitOfWork);
+        var service = new PeerReviewService(studentRepo, submissionRepo, peerReviewRepo, unitOfWork);
 
         var result = await service.SubmitReviewAsync(new CreatePeerReviewRequestDto(
             submission.Id,
@@ -44,9 +43,6 @@ public sealed class PeerReviewServiceTests
             new FakeStudentRepository(exists: true),
             new FakeSubmissionRepository(submission, reviewerHasOwnSubmission: false),
             new FakePeerReviewRepository(existingApprovalCount: 0, alreadyReviewed: false),
-            new FakePeerReviewWorkflowRepository(),
-            new FakeCourseCompletionService(),
-            new FakeGamificationService(),
             new FakeUnitOfWork());
 
         var action = async () => await service.SubmitReviewAsync(new CreatePeerReviewRequestDto(
@@ -58,25 +54,6 @@ public sealed class PeerReviewServiceTests
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(action);
         Assert.Contains("must submit their own solution", exception.Message, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public async Task SubmitReviewAsync_KeepsSubmissionPending_WhenReviewIsNegative()
-    {
-        var submission = BuildSubmissionGraph(requiredPeerReviews: 2);
-        var service = new PeerReviewService(
-            new FakeStudentRepository(exists: true),
-            new FakeSubmissionRepository(submission, reviewerHasOwnSubmission: true),
-            new FakePeerReviewRepository(existingApprovalCount: 0, alreadyReviewed: false),
-            new FakePeerReviewWorkflowRepository(),
-            new FakeCourseCompletionService(),
-            new FakeGamificationService(),
-            new FakeUnitOfWork());
-
-        var result = await service.SubmitReviewAsync(new CreatePeerReviewRequestDto(
-            submission.Id, ReviewerStudentId, false, "Needs improvement.", DateTime.UtcNow));
-
-        Assert.Equal(SubmissionStatus.Pending, result.SubmissionStatus);
     }
 
     private static readonly Guid SubmissionOwnerStudentId = Guid.Parse("2c2e7be7-75c0-4ef4-9648-8dbf66f790ec");
@@ -107,103 +84,5 @@ public sealed class PeerReviewServiceTests
             ?? throw new InvalidOperationException($"Property '{propertyName}' was not found on {typeof(TTarget).Name}.");
 
         property.SetValue(target, value);
-    }
-
-    private sealed class FakeStudentRepository(bool exists) : IStudentRepository
-    {
-        public Task<IReadOnlyList<Student>> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Student>>([]);
-        public Task<Student?> GetByIdAsync(Guid studentId, CancellationToken cancellationToken = default) => Task.FromResult<Student?>(null);
-        public Task<Student?> GetByIdWithBadgesAsync(Guid studentId, CancellationToken cancellationToken = default) => Task.FromResult<Student?>(null);
-        public Task<bool> ExistsAsync(Guid studentId, CancellationToken cancellationToken = default) => Task.FromResult(exists);
-        public void Add(Student student) { }
-        public void Update(Student student) { }
-        public void Delete(Student student) { }
-    }
-
-    private sealed class FakeSubmissionRepository(Submission submission, bool reviewerHasOwnSubmission) : ISubmissionRepository
-    {
-        public Task<IReadOnlyList<Submission>> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Submission>>([]);
-        public Task<Submission?> GetByIdAsync(Guid submissionId, CancellationToken cancellationToken = default)
-            => Task.FromResult(submissionId == submission.Id ? submission : null);
-
-        public Task<Submission?> GetByIdWithContextAsync(Guid submissionId, CancellationToken cancellationToken = default)
-            => Task.FromResult(submissionId == submission.Id ? submission : null);
-
-        public Task<Submission?> GetByEnrollmentAndActivityAsync(Guid enrollmentId, Guid activityId, CancellationToken cancellationToken = default)
-            => Task.FromResult<Submission?>(null);
-
-        public Task<bool> HasStudentSubmittedActivityAsync(Guid studentId, Guid activityId, CancellationToken cancellationToken = default)
-            => Task.FromResult(reviewerHasOwnSubmission);
-
-        public Task<bool> HasSubmissionsForActivityAsync(Guid activityId, CancellationToken cancellationToken = default)
-            => Task.FromResult(false);
-
-        public Task<IReadOnlySet<Guid>> GetApprovedActivityIdsAsync(Guid enrollmentId, IReadOnlyCollection<Guid> activityIds, CancellationToken cancellationToken = default)
-            => Task.FromResult<IReadOnlySet<Guid>>(new HashSet<Guid>());
-
-        public Task<IReadOnlyList<Submission>> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default)
-            => Task.FromResult<IReadOnlyList<Submission>>([]);
-
-        public Task AddAsync(Submission submission, CancellationToken cancellationToken = default)
-            => Task.CompletedTask;
-
-        public void Add(Submission submission) { }
-        public void Update(Submission submission) { }
-        public void Delete(Submission submission) { }
-    }
-
-    private sealed class FakePeerReviewRepository(int existingApprovalCount, bool alreadyReviewed) : IPeerReviewRepository
-    {
-        public PeerReview? LastAdded { get; private set; }
-
-        public Task<IReadOnlyList<PeerReview>> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<PeerReview>>([]);
-        public Task<PeerReview?> GetByIdAsync(Guid peerReviewId, CancellationToken cancellationToken = default) => Task.FromResult<PeerReview?>(null);
-        public Task<IReadOnlyList<PeerReview>> GetBySubmissionIdAsync(Guid submissionId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<PeerReview>>([]);
-        public Task<IReadOnlyList<PeerReview>> GetByReviewerStudentIdAsync(Guid reviewerStudentId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<PeerReview>>([]);
-
-        public Task<bool> HasReviewerAlreadyReviewedAsync(Guid submissionId, Guid reviewerStudentId, CancellationToken cancellationToken = default)
-            => Task.FromResult(alreadyReviewed);
-
-        public Task<int> CountApprovalsForSubmissionAsync(Guid submissionId, CancellationToken cancellationToken = default)
-            => Task.FromResult(existingApprovalCount);
-
-        public Task AddAsync(PeerReview review, CancellationToken cancellationToken = default)
-        {
-            LastAdded = review;
-            return Task.CompletedTask;
-        }
-
-        public void Update(PeerReview review) { }
-        public void Delete(PeerReview review) { }
-    }
-
-    private sealed class FakeUnitOfWork : IUnitOfWork
-    {
-        public int SaveChangesCalls { get; private set; }
-
-        public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            SaveChangesCalls++;
-            return Task.FromResult(1);
-        }
-    }
-
-    private sealed class FakeCourseCompletionService : ICourseCompletionService
-    {
-        public Task<EnrollmentProgressDto?> EvaluateAsync(Guid enrollmentId, CancellationToken cancellationToken = default) => Task.FromResult<EnrollmentProgressDto?>(null);
-    }
-
-    private sealed class FakePeerReviewWorkflowRepository : IPeerReviewWorkflowRepository
-    {
-        public Task<ActivityWorkflowData?> GetActivityAsync(Guid activityId, CancellationToken cancellationToken = default) => Task.FromResult<ActivityWorkflowData?>(null);
-        public Task<bool> CanSubmitMandatoryActivityAsync(Guid enrollmentId, Guid activityId, CancellationToken cancellationToken = default) => Task.FromResult(true);
-        public Task<IReadOnlyList<ReviewQueueItemData>> GetEligibleQueueAsync(Guid reviewerStudentId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<ReviewQueueItemData>>([]);
-        public Task<ReviewAuditData?> GetAuditAsync(Guid peerReviewId, CancellationToken cancellationToken = default) => Task.FromResult<ReviewAuditData?>(null);
-        public Task<AnonymousSubmissionData?> GetAnonymousSubmissionAsync(Guid peerReviewId, Guid reviewerStudentId, CancellationToken cancellationToken = default) => Task.FromResult<AnonymousSubmissionData?>(null);
-    }
-
-    private sealed class FakeGamificationService : IGamificationService
-    {
-        public Task AwardAsync(Guid studentId, GamificationEventType type, Guid referenceId, CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 }

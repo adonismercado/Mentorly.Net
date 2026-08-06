@@ -63,8 +63,7 @@ public class PeerReviewsController(IPeerReviewService peerReviewService) : Contr
         return Ok(peerReviews);
     }
 
-    [HttpGet("{id}")]
-    [Authorize(Policy = MentorlyPolicies.Admin)]
+    [HttpGet("{id:guid}", Name = "GetPeerReview")]
     public async Task<ActionResult<PeerReviewDto>> GetPeerReviewAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var peerReview = await peerReviewService.GetPeerReviewByIdAsync(id, cancellationToken);
@@ -81,17 +80,11 @@ public class PeerReviewsController(IPeerReviewService peerReviewService) : Contr
     [Authorize(Policy = MentorlyPolicies.Student)]
     public async Task<ActionResult<PeerReviewResultDto>> SubmitReviewAsync(CreatePeerReviewRequestDto dto, CancellationToken cancellationToken = default)
     {
-        if (!Guid.TryParse(User.FindFirstValue(MentorlyClaimTypes.StudentId), out var studentId))
-        {
-            return Unauthorized();
-        }
-
-        var result = await peerReviewService.SubmitReviewAsync(dto with { ReviewerStudentId = studentId }, cancellationToken);
-        return CreatedAtAction("GetPeerReview", new { id = result.PeerReviewId }, result);
+        var result = await peerReviewService.SubmitReviewAsync(dto, cancellationToken);
+        return CreatedAtRoute("GetPeerReview", new { id = result.PeerReviewId }, result);
     }
 
-    [HttpPut("{id}")]
-    [Authorize(Policy = MentorlyPolicies.Admin)]
+    [HttpPut("{id:guid}")]
     public async Task<IActionResult> UpdatePeerReviewAsync(Guid id, UpdatePeerReviewDto dto, CancellationToken cancellationToken = default)
     {
         var updated = await peerReviewService.UpdatePeerReviewAsync(id, dto, cancellationToken);
@@ -104,8 +97,7 @@ public class PeerReviewsController(IPeerReviewService peerReviewService) : Contr
         return NoContent();
     }
 
-    [HttpDelete("{id}")]
-    [Authorize(Policy = MentorlyPolicies.Admin)]
+    [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeletePeerReviewAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var deleted = await peerReviewService.DeletePeerReviewAsync(id, cancellationToken);

@@ -5,6 +5,7 @@ namespace Mentorly.Application.Abstractions.Persistence;
 public interface IEnrollmentRepository
 {
     Task<IReadOnlyList<Enrollment>> GetAllAsync(CancellationToken cancellationToken = default);
+
     Task<Enrollment?> GetByIdAsync(Guid enrollmentId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Enrollment>> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default);
     Task<Enrollment?> GetLatestByStudentAndCourseAsync(Guid studentId, Guid courseId, CancellationToken cancellationToken = default);

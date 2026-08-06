@@ -10,7 +10,7 @@ public sealed class EnrollmentRepository(MentorlyDbContext dbContext) : IEnrollm
     public async Task<IReadOnlyList<Enrollment>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await dbContext.Enrollments
-            .AsNoTracking()
+            .Include(x => x.Course)
             .ToListAsync(cancellationToken);
     }
 
