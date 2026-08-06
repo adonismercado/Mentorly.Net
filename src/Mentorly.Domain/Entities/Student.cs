@@ -1,3 +1,5 @@
+using Mentorly.Domain.Enums;
+
 namespace Mentorly.Domain.Entities;
 
 public class Student
@@ -32,6 +34,8 @@ public class Student
         GoogleUserId = googleUserId.Trim();
         Email = email.Trim();
         DisplayName = displayName.Trim();
+        Role = StudentRole.Student;
+        IsLeaderboardPublic = true;
     }
 
     public Guid Id { get; private set; }
@@ -42,9 +46,17 @@ public class Student
 
     public string DisplayName { get; private set; } = string.Empty;
 
+    public StudentRole Role { get; private set; }
+
+    public bool IsLeaderboardPublic { get; private set; }
+
+    public int TotalPoints { get; private set; }
+
     public ICollection<Enrollment> Enrollments { get; private set; } = [];
 
     public ICollection<PeerReview> PeerReviewsWritten { get; private set; } = [];
+
+    public ICollection<StudentBadge> StudentBadges { get; private set; } = [];
 
     public void UpdateProfile(string email, string displayName)
     {
@@ -60,5 +72,25 @@ public class Student
 
         Email = email.Trim();
         DisplayName = displayName.Trim();
+    }
+
+    public void PromoteToAdmin()
+    {
+        Role = StudentRole.Admin;
+    }
+
+    public void SetLeaderboardVisibility(bool isPublic)
+    {
+        IsLeaderboardPublic = isPublic;
+    }
+
+    public void AddPoints(int points)
+    {
+        if (points <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(points), "Points must be greater than zero.");
+        }
+
+        TotalPoints += points;
     }
 }

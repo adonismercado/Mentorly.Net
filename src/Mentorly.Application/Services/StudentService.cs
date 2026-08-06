@@ -16,7 +16,10 @@ public sealed class StudentService(
             s.Id,
             s.GoogleUserId,
             s.Email,
-            s.DisplayName))
+            s.DisplayName,
+            s.Role,
+            s.IsLeaderboardPublic,
+            s.TotalPoints))
             .ToList();
     }
 
@@ -33,7 +36,10 @@ public sealed class StudentService(
             student.Id,
             student.GoogleUserId,
             student.Email,
-            student.DisplayName);
+            student.DisplayName,
+            student.Role,
+            student.IsLeaderboardPublic,
+            student.TotalPoints);
     }
 
     public async Task<StudentDto> CreateStudentAsync(CreateStudentDto dto, CancellationToken cancellationToken = default)
@@ -51,7 +57,10 @@ public sealed class StudentService(
             student.Id,
             student.GoogleUserId,
             student.Email,
-            student.DisplayName);
+            student.DisplayName,
+            student.Role,
+            student.IsLeaderboardPublic,
+            student.TotalPoints);
     }
 
     public async Task<bool> UpdateStudentAsync(Guid studentId, UpdateStudentDto dto, CancellationToken cancellationToken = default)
@@ -81,6 +90,62 @@ public sealed class StudentService(
         }
 
         studentRepository.Delete(student);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return true;
+    }
+
+    public async Task<bool> UpdateLeaderboardPrivacyAsync(Guid studentId, bool isLeaderboardPublic, CancellationToken cancellationToken = default)
+    {
+        var student = await studentRepository.GetByIdAsync(studentId, cancellationToken);
+        if (student is null)
+        {
+            return false;
+        }
+
+        student.SetLeaderboardVisibility(isLeaderboardPublic);
+        studentRepository.Update(student);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return true;
+    }
+
+    public async Task<StudentStatisticsDto?> GetStudentStatisticsAsync(Guid studentId, CancellationToken cancellationToken = default)
+    {
+        var student = await studentRepository.GetByIdWithBadgesAsync(studentId, cancellationToken);
+        if (student is null)
+        {
+            return null;
+        }
+
+        var badges = student.StudentBadges
+            .OrderBy(x => x.GrantedAt)
+            .Select(x => new BadgeDto(
+                x.Badge.Id,
+                x.Badge.Name,
+                x.Badge.Description,
+                x.Badge.ImageUrl,
+                x.GrantedAt))
+            .ToList();
+
+        return new StudentStatisticsDto(
+            student.Id,
+            student.Role,
+            student.IsLeaderboardPublic,
+            student.TotalPoints,
+            badges);
+    }
+
+    public async Task<bool> PromoteToAdminAsync(Guid studentId, CancellationToken cancellationToken = default)
+    {
+        var student = await studentRepository.GetByIdAsync(studentId, cancellationToken);
+        if (student is null)
+        {
+            return false;
+        }
+
+        student.PromoteToAdmin();
+        studentRepository.Update(student);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return true;

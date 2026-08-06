@@ -1,0 +1,3 @@
+using Mentorly.Application.Abstractions.Persistence; using Mentorly.Domain.Entities; using Microsoft.EntityFrameworkCore;
+namespace Mentorly.Infrastructure.Persistence.Repositories;
+public sealed class BadgeRepository(MentorlyDbContext db):IBadgeRepository { public Task<Badge?> GetByNameAsync(string name,CancellationToken c=default)=>db.Badges.FirstOrDefaultAsync(x=>x.Name==name,c); public Task<bool> HasStudentBadgeAsync(Guid studentId,Guid badgeId,CancellationToken c=default)=>db.StudentBadges.AnyAsync(x=>x.StudentId==studentId&&x.BadgeId==badgeId,c); public void AddStudentBadge(StudentBadge badge)=>db.StudentBadges.Add(badge); }

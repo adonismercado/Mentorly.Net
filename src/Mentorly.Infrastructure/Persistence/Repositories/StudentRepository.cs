@@ -6,22 +6,31 @@ namespace Mentorly.Infrastructure.Persistence.Repositories;
 
 public sealed class StudentRepository(MentorlyDbContext dbContext) : IStudentRepository
 {
+    public async Task<IReadOnlyList<Student>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Students
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
+    public Task<Student?> GetByIdAsync(Guid studentId, CancellationToken cancellationToken = default)
+    {
+        return dbContext.Students
+            .FirstOrDefaultAsync(x => x.Id == studentId, cancellationToken);
+    }
+
+    public Task<Student?> GetByIdWithBadgesAsync(Guid studentId, CancellationToken cancellationToken = default)
+    {
+        return dbContext.Students
+            .Include(x => x.StudentBadges)
+            .ThenInclude(x => x.Badge)
+            .FirstOrDefaultAsync(x => x.Id == studentId, cancellationToken);
+    }
+
     public Task<bool> ExistsAsync(Guid studentId, CancellationToken cancellationToken = default)
     {
         return dbContext.Students
             .AnyAsync(x => x.Id == studentId, cancellationToken);
-    }
-
-    public async Task<Student?> GetByIdAsync(Guid studentId, CancellationToken cancellationToken = default)
-    {
-        return await dbContext.Students
-            .FirstOrDefaultAsync(x => x.Id == studentId, cancellationToken);
-    }
-
-    public async Task<IEnumerable<Student>> GetAllAsync(CancellationToken cancellationToken = default)
-    {
-        return await dbContext.Students
-            .ToListAsync(cancellationToken);
     }
 
     public void Add(Student student)

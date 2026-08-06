@@ -19,6 +19,16 @@ public sealed class PeerReviewRepository(MentorlyDbContext dbContext) : IPeerRev
             .FirstOrDefaultAsync(x => x.Id == peerReviewId, cancellationToken);
     }
 
+    public async Task<IReadOnlyList<PeerReview>> GetBySubmissionIdAsync(Guid submissionId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.PeerReviews.Where(x => x.SubmissionId == submissionId).OrderBy(x => x.CreatedAt).ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<PeerReview>> GetByReviewerStudentIdAsync(Guid reviewerStudentId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.PeerReviews.Where(x => x.ReviewerStudentId == reviewerStudentId).OrderByDescending(x => x.CreatedAt).ToListAsync(cancellationToken);
+    }
+
     public Task<bool> HasReviewerAlreadyReviewedAsync(Guid submissionId, Guid reviewerStudentId, CancellationToken cancellationToken = default)
     {
         return dbContext.PeerReviews

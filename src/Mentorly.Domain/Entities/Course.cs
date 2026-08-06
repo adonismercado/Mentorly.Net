@@ -48,6 +48,10 @@ public class Course
 
     public ICollection<Enrollment> Enrollments { get; private set; } = [];
 
+    public ICollection<CourseImage> Images { get; private set; } = [];
+
+    public ICollection<Unit> Units { get; private set; } = [];
+
     public void UpdateRequiredPeerReviews(int requiredPeerReviews)
     {
         if (requiredPeerReviews <= 0)

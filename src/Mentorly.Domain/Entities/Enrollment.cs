@@ -55,11 +55,15 @@ public class Enrollment
 
     public string? CertificateUrl { get; private set; }
 
+    public DateTime? CompletedAt { get; private set; }
+
     public Student Student { get; private set; } = null!;
 
     public Course Course { get; private set; } = null!;
 
     public ICollection<Submission> Submissions { get; private set; } = [];
+
+    public ICollection<ThemeCompletion> ThemeCompletions { get; private set; } = [];
 
     public static Enrollment CreateNew(Guid studentId, Guid courseId, int attemptNumber, DateTime startedAtUtc)
     {
@@ -90,7 +94,7 @@ public class Enrollment
         return Status == EnrollmentStatus.Active;
     }
 
-    public void Complete(string certificateUrl)
+    public void Complete(string certificateUrl, DateTime completedAtUtc)
     {
         if (string.IsNullOrWhiteSpace(certificateUrl))
         {
@@ -104,6 +108,7 @@ public class Enrollment
 
         Status = EnrollmentStatus.Completed;
         CertificateUrl = certificateUrl.Trim();
+        CompletedAt = EnsureUtc(completedAtUtc);
     }
 
     private static DateTime EnsureUtc(DateTime value)
