@@ -50,7 +50,8 @@ public sealed class SubmissionService(
             dto.EvidenceUrl,
             DateTime.UtcNow);
 
-        submissionRepository.Add(submission);
+       
+        await submissionRepository.AddAsync(submission, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new SubmissionDto(

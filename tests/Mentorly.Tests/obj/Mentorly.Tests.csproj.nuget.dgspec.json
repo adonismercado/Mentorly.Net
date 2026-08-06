@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "D:\\AplicadaI\\Mentorly.Net\\tests\\Mentorly.Tests\\Mentorly.Tests.csproj": {}
+    "C:\\Users\\jesus\\source\\repos\\Mentorly1.Net\\tests\\Mentorly.Tests\\Mentorly.Tests.csproj": {}
   },
   "projects": {
-    "D:\\AplicadaI\\Mentorly.Net\\src\\Mentorly.Application\\Mentorly.Application.csproj": {
+    "C:\\Users\\jesus\\source\\repos\\Mentorly1.Net\\src\\Mentorly.Application\\Mentorly.Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\AplicadaI\\Mentorly.Net\\src\\Mentorly.Application\\Mentorly.Application.csproj",
+        "projectUniqueName": "C:\\Users\\jesus\\source\\repos\\Mentorly1.Net\\src\\Mentorly.Application\\Mentorly.Application.csproj",
         "projectName": "Mentorly.Application",
-        "projectPath": "D:\\AplicadaI\\Mentorly.Net\\src\\Mentorly.Application\\Mentorly.Application.csproj",
-        "packagesPath": "C:\\Users\\enelr\\.nuget\\packages\\",
-        "outputPath": "D:\\AplicadaI\\Mentorly.Net\\src\\Mentorly.Application\\obj\\",
+        "projectPath": "C:\\Users\\jesus\\source\\repos\\Mentorly1.Net\\src\\Mentorly.Application\\Mentorly.Application.csproj",
+        "packagesPath": "C:\\Users\\jesus\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\jesus\\source\\repos\\Mentorly1.Net\\src\\Mentorly.Application\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\enelr\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\jesus\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -26,16 +26,14 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net10.0": {
-            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {
-              "D:\\AplicadaI\\Mentorly.Net\\src\\Mentorly.Domain\\Mentorly.Domain.csproj": {
-                "projectPath": "D:\\AplicadaI\\Mentorly.Net\\src\\Mentorly.Domain\\Mentorly.Domain.csproj"
+              "C:\\Users\\jesus\\source\\repos\\Mentorly1.Net\\src\\Mentorly.Domain\\Mentorly.Domain.csproj": {
+                "projectPath": "C:\\Users\\jesus\\source\\repos\\Mentorly1.Net\\src\\Mentorly.Domain\\Mentorly.Domain.csproj"
               }
             }
           }
@@ -50,11 +48,10 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.400"
+        "SdkAnalysisLevel": "10.0.200"
       },
       "frameworks": {
         "net10.0": {
-          "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
             "Microsoft.Extensions.DependencyInjection.Abstractions": {
@@ -78,7 +75,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.400-preview.0.26322.102/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.200/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
@@ -356,20 +353,20 @@
         }
       }
     },
-    "D:\\AplicadaI\\Mentorly.Net\\src\\Mentorly.Domain\\Mentorly.Domain.csproj": {
+    "C:\\Users\\jesus\\source\\repos\\Mentorly1.Net\\src\\Mentorly.Domain\\Mentorly.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\AplicadaI\\Mentorly.Net\\src\\Mentorly.Domain\\Mentorly.Domain.csproj",
+        "projectUniqueName": "C:\\Users\\jesus\\source\\repos\\Mentorly1.Net\\src\\Mentorly.Domain\\Mentorly.Domain.csproj",
         "projectName": "Mentorly.Domain",
-        "projectPath": "D:\\AplicadaI\\Mentorly.Net\\src\\Mentorly.Domain\\Mentorly.Domain.csproj",
-        "packagesPath": "C:\\Users\\enelr\\.nuget\\packages\\",
-        "outputPath": "D:\\AplicadaI\\Mentorly.Net\\src\\Mentorly.Domain\\obj\\",
+        "projectPath": "C:\\Users\\jesus\\source\\repos\\Mentorly1.Net\\src\\Mentorly.Domain\\Mentorly.Domain.csproj",
+        "packagesPath": "C:\\Users\\jesus\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\jesus\\source\\repos\\Mentorly1.Net\\src\\Mentorly.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\enelr\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\jesus\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -378,12 +375,10 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net10.0": {
-            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {}
           }
@@ -398,11 +393,10 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.400"
+        "SdkAnalysisLevel": "10.0.200"
       },
       "frameworks": {
         "net10.0": {
-          "framework": "net10.0",
           "targetAlias": "net10.0",
           "imports": [
             "net461",
@@ -420,7 +414,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.400-preview.0.26322.102/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.200/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
@@ -698,20 +692,20 @@
         }
       }
     },
-    "D:\\AplicadaI\\Mentorly.Net\\tests\\Mentorly.Tests\\Mentorly.Tests.csproj": {
+    "C:\\Users\\jesus\\source\\repos\\Mentorly1.Net\\tests\\Mentorly.Tests\\Mentorly.Tests.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\AplicadaI\\Mentorly.Net\\tests\\Mentorly.Tests\\Mentorly.Tests.csproj",
+        "projectUniqueName": "C:\\Users\\jesus\\source\\repos\\Mentorly1.Net\\tests\\Mentorly.Tests\\Mentorly.Tests.csproj",
         "projectName": "Mentorly.Tests",
-        "projectPath": "D:\\AplicadaI\\Mentorly.Net\\tests\\Mentorly.Tests\\Mentorly.Tests.csproj",
-        "packagesPath": "C:\\Users\\enelr\\.nuget\\packages\\",
-        "outputPath": "D:\\AplicadaI\\Mentorly.Net\\tests\\Mentorly.Tests\\obj\\",
+        "projectPath": "C:\\Users\\jesus\\source\\repos\\Mentorly1.Net\\tests\\Mentorly.Tests\\Mentorly.Tests.csproj",
+        "packagesPath": "C:\\Users\\jesus\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\jesus\\source\\repos\\Mentorly1.Net\\tests\\Mentorly.Tests\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\enelr\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\jesus\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -720,19 +714,17 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net10.0": {
-            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {
-              "D:\\AplicadaI\\Mentorly.Net\\src\\Mentorly.Application\\Mentorly.Application.csproj": {
-                "projectPath": "D:\\AplicadaI\\Mentorly.Net\\src\\Mentorly.Application\\Mentorly.Application.csproj"
+              "C:\\Users\\jesus\\source\\repos\\Mentorly1.Net\\src\\Mentorly.Application\\Mentorly.Application.csproj": {
+                "projectPath": "C:\\Users\\jesus\\source\\repos\\Mentorly1.Net\\src\\Mentorly.Application\\Mentorly.Application.csproj"
               },
-              "D:\\AplicadaI\\Mentorly.Net\\src\\Mentorly.Domain\\Mentorly.Domain.csproj": {
-                "projectPath": "D:\\AplicadaI\\Mentorly.Net\\src\\Mentorly.Domain\\Mentorly.Domain.csproj"
+              "C:\\Users\\jesus\\source\\repos\\Mentorly1.Net\\src\\Mentorly.Domain\\Mentorly.Domain.csproj": {
+                "projectPath": "C:\\Users\\jesus\\source\\repos\\Mentorly1.Net\\src\\Mentorly.Domain\\Mentorly.Domain.csproj"
               }
             }
           }
@@ -747,11 +739,10 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.400"
+        "SdkAnalysisLevel": "10.0.200"
       },
       "frameworks": {
         "net10.0": {
-          "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
             "Microsoft.NET.Test.Sdk": {
@@ -787,7 +778,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.400-preview.0.26322.102/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.200/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
