@@ -7,6 +7,13 @@ namespace Mentorly.Infrastructure.Persistence.Repositories;
 
 public sealed class EnrollmentRepository(MentorlyDbContext dbContext) : IEnrollmentRepository
 {
+    public async Task<IReadOnlyList<Enrollment>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Enrollments
+            .Include(x => x.Course)
+            .ToListAsync(cancellationToken);
+    }
+
     public Task<Enrollment?> GetByIdAsync(Guid enrollmentId, CancellationToken cancellationToken = default)
     {
         return dbContext.Enrollments
