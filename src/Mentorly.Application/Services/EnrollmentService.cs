@@ -8,7 +8,7 @@ public sealed class EnrollmentService(
     IEnrollmentRepository enrollmentRepository,
     IUnitOfWork unitOfWork) : IEnrollmentService
 {
-    public async Task<IReadOnlyList<EnrollmentDto>> GetAllEnrollmentsAsync(CancellationToken cancellationToken = default)
+    public async Task<EnrollmentDto[]> GetAllEnrollmentsAsync(CancellationToken cancellationToken = default)
     {
         var enrollments = await enrollmentRepository.GetAllAsync(cancellationToken);
 
@@ -21,7 +21,7 @@ public sealed class EnrollmentService(
             e.ExpiresAt,
             e.Status,
             e.CertificateUrl))
-            .ToList();
+            .ToArray();
     }
 
     public async Task<EnrollmentDto?> GetEnrollmentByIdAsync(Guid enrollmentId, CancellationToken cancellationToken = default)

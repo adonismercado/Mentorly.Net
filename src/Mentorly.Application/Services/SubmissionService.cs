@@ -10,7 +10,7 @@ public sealed class SubmissionService(
     IGamificationService gamificationService,
     IUnitOfWork unitOfWork) : ISubmissionService
 {
-    public async Task<IReadOnlyList<SubmissionDto>> GetAllSubmissionsAsync(CancellationToken cancellationToken = default)
+    public async Task<SubmissionDto[]> GetAllSubmissionsAsync(CancellationToken cancellationToken = default)
     {
         var submissions = await submissionRepository.GetAllAsync(cancellationToken);
 
@@ -22,7 +22,7 @@ public sealed class SubmissionService(
             s.Status,
             s.SubmittedAt,
             s.ReviewedAt))
-            .ToList();
+            .ToArray();
     }
 
     public async Task<SubmissionDto?> GetSubmissionByIdAsync(Guid submissionId, CancellationToken cancellationToken = default)
@@ -137,16 +137,16 @@ public sealed class SubmissionService(
         return true;
     }
 
-    public async Task<IReadOnlyList<SubmissionDto>> GetMySubmissionsAsync(Guid studentId, CancellationToken cancellationToken = default)
+    public async Task<SubmissionDto[]> GetMySubmissionsAsync(Guid studentId, CancellationToken cancellationToken = default)
     {
-        return (await submissionRepository.GetByStudentIdAsync(studentId, cancellationToken)).Select(Map).ToList();
+        return (await submissionRepository.GetByStudentIdAsync(studentId, cancellationToken)).Select(Map).ToArray();
     }
 
-    public async Task<IReadOnlyList<PeerReviewFeedbackDto>?> GetMySubmissionReviewsAsync(Guid submissionId, Guid studentId, CancellationToken cancellationToken = default)
+    public async Task<PeerReviewFeedbackDto[]?> GetMySubmissionReviewsAsync(Guid submissionId, Guid studentId, CancellationToken cancellationToken = default)
     {
         var submission = await submissionRepository.GetByIdWithContextAsync(submissionId, cancellationToken);
         if (submission is null || submission.Enrollment.StudentId != studentId) return null;
-        return (await peerReviewRepository.GetBySubmissionIdAsync(submissionId, cancellationToken)).Select(x => new PeerReviewFeedbackDto(x.Id, x.IsApproved, x.FeedbackComment, x.CreatedAt)).ToList();
+        return (await peerReviewRepository.GetBySubmissionIdAsync(submissionId, cancellationToken)).Select(x => new PeerReviewFeedbackDto(x.Id, x.IsApproved, x.FeedbackComment, x.CreatedAt)).ToArray();
     }
 
     private static SubmissionDto Map(Submission submission) => new(submission.Id, submission.EnrollmentId, submission.ActivityId, submission.EvidenceUrl, submission.Status, submission.SubmittedAt, submission.ReviewedAt);

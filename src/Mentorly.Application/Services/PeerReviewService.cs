@@ -13,7 +13,7 @@ public sealed class PeerReviewService(
     IGamificationService gamificationService,
     IUnitOfWork unitOfWork) : IPeerReviewService
 {
-    public async Task<IReadOnlyList<PeerReviewDto>> GetAllPeerReviewsAsync(CancellationToken cancellationToken = default)
+    public async Task<PeerReviewDto[]> GetAllPeerReviewsAsync(CancellationToken cancellationToken = default)
     {
         var peerReviews = await peerReviewRepository.GetAllAsync(cancellationToken);
 
@@ -24,7 +24,7 @@ public sealed class PeerReviewService(
             pr.IsApproved,
             pr.FeedbackComment,
             pr.CreatedAt))
-            .ToList();
+            .ToArray();
     }
 
     public async Task<PeerReviewDto?> GetPeerReviewByIdAsync(Guid peerReviewId, CancellationToken cancellationToken = default)
@@ -127,7 +127,7 @@ public sealed class PeerReviewService(
             submission.Status);
     }
 
-    public async Task<IReadOnlyList<ReviewQueueItemDto>> GetEligibleQueueAsync(Guid reviewerStudentId, CancellationToken cancellationToken = default)
+    public async Task<ReviewQueueItemDto[]> GetEligibleQueueAsync(Guid reviewerStudentId, CancellationToken cancellationToken = default)
     {
         if (!await studentRepository.ExistsAsync(reviewerStudentId, cancellationToken))
         {
@@ -135,7 +135,7 @@ public sealed class PeerReviewService(
         }
 
         var queue = await peerReviewWorkflowRepository.GetEligibleQueueAsync(reviewerStudentId, cancellationToken);
-        return queue.Select(x => new ReviewQueueItemDto(x.SubmissionId, x.ActivityId, x.ActivityTitle, x.EvidenceUrl, x.SubmittedAtUtc)).ToList();
+        return queue.Select(x => new ReviewQueueItemDto(x.SubmissionId, x.ActivityId, x.ActivityTitle, x.EvidenceUrl, x.SubmittedAtUtc)).ToArray();
     }
 
     public async Task<PeerReviewAuditDto?> GetAuditAsync(Guid peerReviewId, CancellationToken cancellationToken = default)
@@ -144,9 +144,9 @@ public sealed class PeerReviewService(
         return audit is null ? null : new PeerReviewAuditDto(audit.PeerReviewId, audit.SubmissionId, audit.AuthorStudentId, audit.ReviewerStudentId, audit.IsApproved, audit.FeedbackComment, audit.CreatedAtUtc, audit.EvidenceUrl);
     }
 
-    public async Task<IReadOnlyList<PeerReviewDto>> GetMyPeerReviewsAsync(Guid reviewerStudentId, CancellationToken cancellationToken = default)
+    public async Task<PeerReviewDto[]> GetMyPeerReviewsAsync(Guid reviewerStudentId, CancellationToken cancellationToken = default)
     {
-        return (await peerReviewRepository.GetByReviewerStudentIdAsync(reviewerStudentId, cancellationToken)).Select(pr => new PeerReviewDto(pr.Id, pr.SubmissionId, pr.ReviewerStudentId, pr.IsApproved, pr.FeedbackComment, pr.CreatedAt)).ToList();
+        return (await peerReviewRepository.GetByReviewerStudentIdAsync(reviewerStudentId, cancellationToken)).Select(pr => new PeerReviewDto(pr.Id, pr.SubmissionId, pr.ReviewerStudentId, pr.IsApproved, pr.FeedbackComment, pr.CreatedAt)).ToArray();
     }
 
     public async Task<AnonymousSubmissionDto?> GetAnonymousSubmissionAsync(Guid peerReviewId, Guid reviewerStudentId, CancellationToken cancellationToken = default)
