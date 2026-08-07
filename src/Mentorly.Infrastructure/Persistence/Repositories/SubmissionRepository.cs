@@ -43,8 +43,18 @@ public sealed class SubmissionRepository(MentorlyDbContext dbContext) : ISubmiss
         return Task.CompletedTask;
     }
 
-    public Task<Submission[]> GetAllAsync(CancellationToken cancellationToken)
+    public Task<Submission[]> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return dbContext.Submissions
+            .AsNoTracking()
+            .OrderByDescending(submission => submission.SubmittedAt)
+            .ToArrayAsync(cancellationToken);
+    }
+
+    public Task DeleteAsync(Submission submission, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        dbContext.Submissions.Remove(submission);
+        return Task.CompletedTask;
     }
 }
