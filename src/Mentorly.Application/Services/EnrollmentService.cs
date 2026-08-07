@@ -52,7 +52,7 @@ public sealed class EnrollmentService(
             dto.AttemptNumber,
             DateTime.UtcNow);
 
-        enrollmentRepository.Add(enrollment);
+        await enrollmentRepository.AddAsync(enrollment);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new EnrollmentDto(

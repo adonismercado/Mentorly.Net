@@ -48,6 +48,9 @@ public sealed class EnrollmentConfiguration : IEntityTypeConfiguration<Enrollmen
             .HasColumnName("certificate_url")
             .HasMaxLength(500);
 
+        builder.Property(x => x.CompletedAt)
+            .HasColumnName("completed_at");
+
         builder.HasIndex(x => new { x.StudentId, x.CourseId, x.AttemptNumber })
             .IsUnique();
 
@@ -61,6 +64,11 @@ public sealed class EnrollmentConfiguration : IEntityTypeConfiguration<Enrollmen
             .HasForeignKey(x => x.EnrollmentId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.HasMany(x => x.ThemeCompletions)
+            .WithOne(x => x.Enrollment)
+            .HasForeignKey(x => x.EnrollmentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.HasData(new
         {
             Id = SeedData.SeedEnrollmentId,
@@ -70,7 +78,20 @@ public sealed class EnrollmentConfiguration : IEntityTypeConfiguration<Enrollmen
             StartedAt = SeedData.SeedStartedAtUtc,
             ExpiresAt = SeedData.SeedStartedAtUtc.AddMonths(3),
             Status = EnrollmentStatus.Active,
-            CertificateUrl = (string?)null
+            CertificateUrl = (string?)null,
+            CompletedAt = (DateTime?)null
+        },
+        new
+        {
+            Id = SeedData.AuthorEnrollmentId,
+            StudentId = SeedData.StudentId,
+            CourseId = SeedData.CourseId,
+            AttemptNumber = 1,
+            StartedAt = SeedData.SeedStartedAtUtc,
+            ExpiresAt = SeedData.SeedStartedAtUtc.AddMonths(3),
+            Status = EnrollmentStatus.Active,
+            CertificateUrl = (string?)null,
+            CompletedAt = (DateTime?)null
         });
     }
 }

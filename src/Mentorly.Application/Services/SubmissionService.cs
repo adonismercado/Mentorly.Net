@@ -6,6 +6,8 @@ namespace Mentorly.Application.Services;
 
 public sealed class SubmissionService(
     ISubmissionRepository submissionRepository,
+    IPeerReviewRepository peerReviewRepository,
+    IGamificationService gamificationService,
     IUnitOfWork unitOfWork) : ISubmissionService
 {
     public async Task<IReadOnlyList<SubmissionDto>> GetAllSubmissionsAsync(CancellationToken cancellationToken = default)
@@ -49,7 +51,7 @@ public sealed class SubmissionService(
             dto.ActivityId,
             dto.EvidenceUrl,
             DateTime.UtcNow);
-
+       
         await submissionRepository.AddAsync(submission, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -94,4 +96,58 @@ public sealed class SubmissionService(
 
         return true;
     }
+
+    public async Task<bool> EscalateAsync(Guid submissionId, Guid studentId, CancellationToken cancellationToken = default)
+    {
+        var submission = await submissionRepository.GetByIdWithContextAsync(submissionId, cancellationToken);
+        if (submission is null || submission.Enrollment.StudentId != studentId)
+        {
+            return false;
+        }
+
+        submission.Escalate(DateTime.UtcNow);
+        submissionRepository.Update(submission);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
+    public async Task<bool> DecideAsAdminAsync(Guid submissionId, bool isApproved, CancellationToken cancellationToken = default)
+    {
+        var submission = await submissionRepository.GetByIdWithContextAsync(submissionId, cancellationToken);
+        if (submission is null)
+        {
+            return false;
+        }
+
+        if (isApproved)
+        {
+            submission.Approve(DateTime.UtcNow);
+        }
+        else
+        {
+            submission.Reject(DateTime.UtcNow);
+        }
+
+        submissionRepository.Update(submission);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        if (isApproved)
+        {
+            await gamificationService.AwardAsync(submission.Enrollment.StudentId, Domain.Enums.GamificationEventType.ExerciseApproved, submission.Id, cancellationToken);
+        }
+        return true;
+    }
+
+    public async Task<IReadOnlyList<SubmissionDto>> GetMySubmissionsAsync(Guid studentId, CancellationToken cancellationToken = default)
+    {
+        return (await submissionRepository.GetByStudentIdAsync(studentId, cancellationToken)).Select(Map).ToList();
+    }
+
+    public async Task<IReadOnlyList<PeerReviewFeedbackDto>?> GetMySubmissionReviewsAsync(Guid submissionId, Guid studentId, CancellationToken cancellationToken = default)
+    {
+        var submission = await submissionRepository.GetByIdWithContextAsync(submissionId, cancellationToken);
+        if (submission is null || submission.Enrollment.StudentId != studentId) return null;
+        return (await peerReviewRepository.GetBySubmissionIdAsync(submissionId, cancellationToken)).Select(x => new PeerReviewFeedbackDto(x.Id, x.IsApproved, x.FeedbackComment, x.CreatedAt)).ToList();
+    }
+
+    private static SubmissionDto Map(Submission submission) => new(submission.Id, submission.EnrollmentId, submission.ActivityId, submission.EvidenceUrl, submission.Status, submission.SubmittedAt, submission.ReviewedAt);
 }
