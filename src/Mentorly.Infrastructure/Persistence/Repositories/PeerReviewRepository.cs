@@ -6,11 +6,11 @@ namespace Mentorly.Infrastructure.Persistence.Repositories;
 
 public sealed class PeerReviewRepository(MentorlyDbContext dbContext) : IPeerReviewRepository
 {
-    public async Task<IReadOnlyList<PeerReview>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<PeerReview[]> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await dbContext.PeerReviews
             .AsNoTracking()
-            .ToListAsync(cancellationToken);
+            .ToArrayAsync(cancellationToken);
     }
 
     public Task<PeerReview?> GetByIdAsync(Guid peerReviewId, CancellationToken cancellationToken = default)
@@ -19,14 +19,14 @@ public sealed class PeerReviewRepository(MentorlyDbContext dbContext) : IPeerRev
             .FirstOrDefaultAsync(x => x.Id == peerReviewId, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<PeerReview>> GetBySubmissionIdAsync(Guid submissionId, CancellationToken cancellationToken = default)
+    public async Task<PeerReview[]> GetBySubmissionIdAsync(Guid submissionId, CancellationToken cancellationToken = default)
     {
-        return await dbContext.PeerReviews.Where(x => x.SubmissionId == submissionId).OrderBy(x => x.CreatedAt).ToListAsync(cancellationToken);
+        return await dbContext.PeerReviews.Where(x => x.SubmissionId == submissionId).OrderBy(x => x.CreatedAt).ToArrayAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<PeerReview>> GetByReviewerStudentIdAsync(Guid reviewerStudentId, CancellationToken cancellationToken = default)
+    public async Task<PeerReview[]> GetByReviewerStudentIdAsync(Guid reviewerStudentId, CancellationToken cancellationToken = default)
     {
-        return await dbContext.PeerReviews.Where(x => x.ReviewerStudentId == reviewerStudentId).OrderByDescending(x => x.CreatedAt).ToListAsync(cancellationToken);
+        return await dbContext.PeerReviews.Where(x => x.ReviewerStudentId == reviewerStudentId).OrderByDescending(x => x.CreatedAt).ToArrayAsync(cancellationToken);
     }
 
     public Task<bool> HasReviewerAlreadyReviewedAsync(Guid submissionId, Guid reviewerStudentId, CancellationToken cancellationToken = default)

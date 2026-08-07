@@ -7,11 +7,11 @@ namespace Mentorly.Infrastructure.Persistence.Repositories;
 
 public sealed class EnrollmentRepository(MentorlyDbContext dbContext) : IEnrollmentRepository
 {
-    public async Task<IReadOnlyList<Enrollment>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<Enrollment[]> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await dbContext.Enrollments
             .Include(x => x.Course)
-            .ToListAsync(cancellationToken);
+            .ToArrayAsync(cancellationToken);
     }
 
     public Task<Enrollment?> GetByIdAsync(Guid enrollmentId, CancellationToken cancellationToken = default)
@@ -46,9 +46,9 @@ public sealed class EnrollmentRepository(MentorlyDbContext dbContext) : IEnrollm
         return dbContext.Enrollments.AddAsync(enrollment, cancellationToken).AsTask();
     }
 
-    public async Task<IReadOnlyList<Enrollment>> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default)
+    public async Task<Enrollment[]> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default)
     {
-        return await dbContext.Enrollments.Where(x => x.StudentId == studentId).OrderByDescending(x => x.StartedAt).ToListAsync(cancellationToken);
+        return await dbContext.Enrollments.Where(x => x.StudentId == studentId).OrderByDescending(x => x.StartedAt).ToArrayAsync(cancellationToken);
     }
 
     public Task<Enrollment?> GetLatestByStudentAndCourseAsync(Guid studentId, Guid courseId, CancellationToken cancellationToken = default)
