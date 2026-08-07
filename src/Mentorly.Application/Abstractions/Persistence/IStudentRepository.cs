@@ -9,10 +9,6 @@ public interface IStudentRepository
     Task<Student?> GetByIdWithBadgesAsync(Guid studentId, CancellationToken cancellationToken = default);
     Task<bool> ExistsAsync(Guid studentId, CancellationToken cancellationToken = default);
 
-    Task<Student?> GetByIdAsync(Guid studentId, CancellationToken cancellationToken = default);
-
-    Task<IEnumerable<Student>> GetAllAsync(CancellationToken cancellationToken = default);
-
     void Add(Student student);
 
     void Update(Student student);
