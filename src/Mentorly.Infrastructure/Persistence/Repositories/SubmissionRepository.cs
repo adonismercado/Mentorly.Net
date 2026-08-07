@@ -36,4 +36,15 @@ public sealed class SubmissionRepository(MentorlyDbContext dbContext) : ISubmiss
     {
         return dbContext.Submissions.AddAsync(submission, cancellationToken).AsTask();
     }
+
+    public Task UpdateAsync(Submission submission, CancellationToken cancellationToken = default)
+    {
+        dbContext.Submissions.Update(submission);
+        return Task.CompletedTask;
+    }
+
+    public Task<Submission[]> GetAllAsync(CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
 }
