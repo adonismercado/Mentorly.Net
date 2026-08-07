@@ -30,4 +30,14 @@ public sealed class FakeStudentRepository(bool exists) : IStudentRepository
     {
         throw new NotImplementedException();
     }
+
+    Task<IReadOnlyList<Student>> IStudentRepository.GetAllAsync(CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<Student?> GetByIdWithBadgesAsync(Guid studentId, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
 }
