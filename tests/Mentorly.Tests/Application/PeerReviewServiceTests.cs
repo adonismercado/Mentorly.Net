@@ -108,6 +108,15 @@ public sealed class PeerReviewServiceTests
 
         public Task AddAsync(Submission submission, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
+
+        public Task UpdateAsync(Submission submission, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task DeleteAsync(Submission submission, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task<Submission[]> GetAllAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(Array.Empty<Submission>());
     }
 
     private sealed class FakePeerReviewRepository(int existingApprovalCount, bool alreadyReviewed) : IPeerReviewRepository
