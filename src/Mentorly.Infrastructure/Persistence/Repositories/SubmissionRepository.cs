@@ -44,42 +44,24 @@ public sealed class SubmissionRepository(MentorlyDbContext dbContext) : ISubmiss
         return dbContext.Submissions.AddAsync(submission, cancellationToken).AsTask();
     }
 
-    public async Task<IReadOnlyList<Submission>> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default)
-    {
-        return await dbContext.Submissions.Where(x => x.Enrollment.StudentId == studentId).OrderByDescending(x => x.SubmittedAt).ToListAsync(cancellationToken);
-    }
-
-    public Task<bool> HasSubmissionsForActivityAsync(Guid activityId, CancellationToken cancellationToken = default)
-    {
-        return dbContext.Submissions
-            .AnyAsync(x => x.ActivityId == activityId, cancellationToken);
-    }
-
-    public async Task<IReadOnlySet<Guid>> GetApprovedActivityIdsAsync(Guid enrollmentId, IReadOnlyCollection<Guid> activityIds, CancellationToken cancellationToken = default)
-    {
-        if (activityIds.Count == 0)
-        {
-            return new HashSet<Guid>();
-        }
-
-        return await dbContext.Submissions
-            .Where(x => x.EnrollmentId == enrollmentId && activityIds.Contains(x.ActivityId) && x.Status == SubmissionStatus.Approved)
-            .Select(x => x.ActivityId)
-            .ToHashSetAsync(cancellationToken);
-    }
-
-    public void Add(Submission submission)
-    {
-        dbContext.Submissions.Add(submission);
-    }
-
-    public void Update(Submission submission)
+    public Task UpdateAsync(Submission submission, CancellationToken cancellationToken = default)
     {
         dbContext.Submissions.Update(submission);
+        return Task.CompletedTask;
     }
 
-    public void Delete(Submission submission)
+    public Task<Submission[]> GetAllAsync(CancellationToken cancellationToken = default)
     {
+        return dbContext.Submissions
+            .AsNoTracking()
+            .OrderByDescending(submission => submission.SubmittedAt)
+            .ToArrayAsync(cancellationToken);
+    }
+
+    public Task DeleteAsync(Submission submission, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
         dbContext.Submissions.Remove(submission);
+        return Task.CompletedTask;
     }
 }

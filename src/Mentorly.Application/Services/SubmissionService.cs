@@ -51,7 +51,6 @@ public sealed class SubmissionService(
             dto.ActivityId,
             dto.EvidenceUrl,
             DateTime.UtcNow);
-
        
         await submissionRepository.AddAsync(submission, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -77,7 +76,7 @@ public sealed class SubmissionService(
 
         submission.ReplaceEvidence(dto.EvidenceUrl);
 
-        submissionRepository.Update(submission);
+        await submissionRepository.UpdateAsync(submission, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return true;
@@ -92,7 +91,7 @@ public sealed class SubmissionService(
             return false;
         }
 
-        submissionRepository.Delete(submission);
+        await submissionRepository.DeleteAsync(submission, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return true;
