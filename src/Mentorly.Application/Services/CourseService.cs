@@ -8,7 +8,7 @@ public sealed class CourseService(
     ICourseRepository courseRepository,
     IUnitOfWork unitOfWork) : ICourseService
 {
-    public async Task<IReadOnlyList<CourseDto>> GetAllCoursesAsync(CancellationToken cancellationToken = default)
+    public async Task<CourseDto[]> GetAllCoursesAsync(CancellationToken cancellationToken = default)
     {
         var courses = await courseRepository.GetAllAsync(cancellationToken);
 
@@ -20,7 +20,7 @@ public sealed class CourseService(
             c.IsPublished,
             c.RequiredPeerReviews,
             c.CreatedAt))
-            .ToList();
+            .ToArray();
     }
 
     public async Task<CourseDto?> GetCourseByIdAsync(Guid courseId, CancellationToken cancellationToken = default)
