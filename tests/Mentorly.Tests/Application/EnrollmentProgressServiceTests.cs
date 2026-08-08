@@ -75,9 +75,9 @@ public sealed class EnrollmentProgressServiceTests
 
     private sealed class FakeEnrollmentRepository(Enrollment enrollment) : IEnrollmentRepository
     {
-        public Task<IReadOnlyList<Enrollment>> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Enrollment>>([enrollment]);
+        public Task<Enrollment[]> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult<Enrollment[]>([enrollment]);
         public Task<Enrollment?> GetByIdAsync(Guid enrollmentId, CancellationToken cancellationToken = default) => Task.FromResult<Enrollment?>(enrollmentId == enrollment.Id ? enrollment : null);
-        public Task<IReadOnlyList<Enrollment>> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Enrollment>>(studentId == enrollment.StudentId ? [enrollment] : []);
+        public Task<Enrollment[]> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default) => Task.FromResult<Enrollment[]>(studentId == enrollment.StudentId ? [enrollment] : []);
         public Task<Enrollment?> GetLatestByStudentAndCourseAsync(Guid studentId, Guid courseId, CancellationToken cancellationToken = default) => Task.FromResult<Enrollment?>(studentId == enrollment.StudentId && courseId == enrollment.CourseId ? enrollment : null);
         public Task<bool> HasActiveEnrollmentAsync(Guid studentId, Guid courseId, DateTime utcNow, CancellationToken cancellationToken = default) => Task.FromResult(false);
         public Task<int> GetNextAttemptNumberAsync(Guid studentId, Guid courseId, CancellationToken cancellationToken = default) => Task.FromResult(enrollment.AttemptNumber + 1);
@@ -88,7 +88,7 @@ public sealed class EnrollmentProgressServiceTests
     private sealed class FakeCourseRepository(Guid courseId) : ICourseRepository
     {
         private readonly Course _course = new(courseId, "Course", "Description", Guid.NewGuid(), 1);
-        public Task<IReadOnlyList<Course>> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Course>>([_course]);
+        public Task<Course[]> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult<Course[]>([_course]);
         public Task<Course?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<Course?>(id == courseId ? _course : null);
         public void Add(Course course) { } public void Update(Course course) { } public void Delete(Course course) { }
     }
