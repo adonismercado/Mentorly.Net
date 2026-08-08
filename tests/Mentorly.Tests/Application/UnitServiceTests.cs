@@ -14,9 +14,10 @@ public sealed class UnitServiceTests
         var first = new Unit(Guid.NewGuid(), courseId, "First", 1);
         var second = new Unit(Guid.NewGuid(), courseId, "Second", 2);
         var repository = new FakeUnitRepository([first, second]);
-        var service = new UnitService(new FakeCourseRepository(courseId), repository, new FakeUnitOfWork());
+        var admin = CreateAdmin();
+        var service = new UnitService(new FakeCourseRepository(courseId), repository, new FakeStudentRepository(admin), new FakeUnitOfWork());
 
-        var reordered = await service.ReorderAsync(courseId, new ReorderItemsDto([second.Id, first.Id]));
+        var reordered = await service.ReorderAsync(admin.Id, courseId, new ReorderItemsDto([second.Id, first.Id]));
 
         Assert.True(reordered);
         Assert.Equal(2, first.OrderIndex);
@@ -28,9 +29,10 @@ public sealed class UnitServiceTests
     {
         var courseId = Guid.NewGuid();
         var unit = new Unit(Guid.NewGuid(), courseId, "Unit", 1);
-        var service = new UnitService(new FakeCourseRepository(courseId), new FakeUnitRepository([unit], hasThemes: true), new FakeUnitOfWork());
+        var admin = CreateAdmin();
+        var service = new UnitService(new FakeCourseRepository(courseId), new FakeUnitRepository([unit], hasThemes: true), new FakeStudentRepository(admin), new FakeUnitOfWork());
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => service.DeleteAsync(courseId, unit.Id));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.DeleteAsync(admin.Id, unit.Id));
     }
 
     private sealed class FakeCourseRepository(Guid courseId) : ICourseRepository
@@ -56,5 +58,23 @@ public sealed class UnitServiceTests
     private sealed class FakeUnitOfWork : IUnitOfWork
     {
         public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) => Task.FromResult(1);
+    }
+
+    private static Student CreateAdmin()
+    {
+        var admin = new Student(Guid.NewGuid(), "admin", "admin@mentorly.dev", "Admin");
+        admin.PromoteToAdmin();
+        return admin;
+    }
+
+    private sealed class FakeStudentRepository(Student admin) : IStudentRepository
+    {
+        public Task<Student?> GetByIdWithBadgesAsync(Guid studentId, CancellationToken cancellationToken = default) => Task.FromResult<Student?>(studentId == admin.Id ? admin : null);
+        public Task<bool> ExistsAsync(Guid studentId, CancellationToken cancellationToken = default) => Task.FromResult(studentId == admin.Id);
+        public Task<Student?> GetByIdAsync(Guid studentId, CancellationToken cancellationToken = default) => Task.FromResult<Student?>(studentId == admin.Id ? admin : null);
+        public Task<Student[]> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult<Student[]>([admin]);
+        public void Add(Student student) { }
+        public void Update(Student student) { }
+        public void Delete(Student student) { }
     }
 }
