@@ -5,17 +5,48 @@ using Microsoft.AspNetCore.Mvc;
 namespace Mentorly.Api.Controllers;
 
 [ApiController]
-[Route("api/admin/analytics")]
+[Route("api/admins/{adminId:guid}/analytics")]
 public class AnalyticsController(IAnalyticsService analyticsService) : ControllerBase
 {
     [HttpGet("overview")]
-    public async Task<ActionResult<AnalyticsOverviewDto>> GetOverviewAsync(CancellationToken cancellationToken = default) => Ok(await analyticsService.GetOverviewAsync(cancellationToken));
+    public async Task<ActionResult<AnalyticsOverviewDto>> GetOverviewAsync(Guid adminId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return Ok(await analyticsService.GetOverviewAsync(adminId, cancellationToken));
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new { message = exception.Message });
+        }
+    }
+
     [HttpGet("courses/{courseId:guid}/drop-off")]
-    public async Task<ActionResult<IEnumerable<DropOffDto>>> GetDropOffAsync(Guid courseId, CancellationToken cancellationToken = default) { var result = await analyticsService.GetDropOffAsync(courseId, cancellationToken); return result is null ? NotFound() : Ok(result); }
+    public Task<ActionResult<IReadOnlyList<DropOffDto>>> GetDropOffAsync(Guid adminId, Guid courseId, CancellationToken cancellationToken = default)
+        => GetCourseReportAsync(() => analyticsService.GetDropOffAsync(adminId, courseId, cancellationToken));
+
     [HttpGet("courses/{courseId:guid}/completion-time")]
-    public async Task<ActionResult<CompletionTimeReportDto>> GetCompletionTimeAsync(Guid courseId, CancellationToken cancellationToken = default) { var result = await analyticsService.GetCompletionTimesAsync(courseId, cancellationToken); return result is null ? NotFound() : Ok(result); }
+    public Task<ActionResult<CompletionTimeReportDto>> GetCompletionTimeAsync(Guid adminId, Guid courseId, CancellationToken cancellationToken = default)
+        => GetCourseReportAsync(() => analyticsService.GetCompletionTimesAsync(adminId, courseId, cancellationToken));
+
     [HttpGet("courses/{courseId:guid}/peer-review-bottlenecks")]
-    public async Task<ActionResult<IEnumerable<PeerReviewBottleneckDto>>> GetBottlenecksAsync(Guid courseId, CancellationToken cancellationToken = default) { var result = await analyticsService.GetPeerReviewBottlenecksAsync(courseId, cancellationToken); return result is null ? NotFound() : Ok(result); }
+    public Task<ActionResult<IReadOnlyList<PeerReviewBottleneckDto>>> GetBottlenecksAsync(Guid adminId, Guid courseId, CancellationToken cancellationToken = default)
+        => GetCourseReportAsync(() => analyticsService.GetPeerReviewBottlenecksAsync(adminId, courseId, cancellationToken));
+
     [HttpGet("courses/{courseId:guid}/enrollment-history")]
-    public async Task<ActionResult<IEnumerable<EnrollmentHistoryDto>>> GetHistoryAsync(Guid courseId, CancellationToken cancellationToken = default) { var result = await analyticsService.GetEnrollmentHistoryAsync(courseId, cancellationToken); return result is null ? NotFound() : Ok(result); }
+    public Task<ActionResult<IReadOnlyList<EnrollmentHistoryDto>>> GetHistoryAsync(Guid adminId, Guid courseId, CancellationToken cancellationToken = default)
+        => GetCourseReportAsync(() => analyticsService.GetEnrollmentHistoryAsync(adminId, courseId, cancellationToken));
+
+    private static async Task<ActionResult<T>> GetCourseReportAsync<T>(Func<Task<T?>> getReportAsync) where T : class
+    {
+        try
+        {
+            var report = await getReportAsync();
+            return report is null ? new NotFoundResult() : new OkObjectResult(report);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return new ConflictObjectResult(new { message = exception.Message });
+        }
+    }
 }
