@@ -1,6 +1,7 @@
 using Mentorly.Application.Abstractions.Persistence;
 using Mentorly.Application.DTOs;
 using Mentorly.Domain.Entities;
+using Mentorly.Domain.Enums;
 
 namespace Mentorly.Application.Services;
 
@@ -14,8 +15,6 @@ public sealed class StudentService(
 
         return students.Select(s => new StudentDto(
             s.Id,
-            s.GoogleUserId,
-            s.Email,
             s.DisplayName,
             s.Role,
             s.IsLeaderboardPublic,
@@ -23,7 +22,7 @@ public sealed class StudentService(
             .ToArray();
     }
 
-    public async Task<StudentDto?> GetStudentByIdAsync(Guid studentId, CancellationToken cancellationToken = default)
+    public async Task<StudentProfileDto?> GetStudentByIdAsync(Guid studentId, CancellationToken cancellationToken = default)
     {
         var student = await studentRepository.GetByIdAsync(studentId, cancellationToken);
 
@@ -32,9 +31,8 @@ public sealed class StudentService(
             return null;
         }
 
-        return new StudentDto(
+        return new StudentProfileDto(
             student.Id,
-            student.GoogleUserId,
             student.Email,
             student.DisplayName,
             student.Role,
@@ -42,20 +40,31 @@ public sealed class StudentService(
             student.TotalPoints);
     }
 
-    public async Task<StudentDto> CreateStudentAsync(CreateStudentDto dto, CancellationToken cancellationToken = default)
+    public async Task<StudentProfileDto> ProvisionStudentAsync(ProvisionStudentDto dto, CancellationToken cancellationToken = default)
     {
-        var student = new Student(
-            Guid.NewGuid(),
-            dto.GoogleUserId,
-            dto.Email,
-            dto.DisplayName);
+        var students = await studentRepository.GetAllAsync(cancellationToken);
+        var student = students.FirstOrDefault(x => x.GoogleUserId == dto.GoogleUserId);
 
-        studentRepository.Add(student);
+        if (student is null)
+        {
+            student = new Student(
+                Guid.NewGuid(),
+                dto.GoogleUserId,
+                dto.Email,
+                dto.DisplayName);
+
+            studentRepository.Add(student);
+        }
+        else
+        {
+            student.UpdateProfile(dto.Email, dto.DisplayName);
+            studentRepository.Update(student);
+        }
+
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return new StudentDto(
+        return new StudentProfileDto(
             student.Id,
-            student.GoogleUserId,
             student.Email,
             student.DisplayName,
             student.Role,
@@ -75,21 +84,6 @@ public sealed class StudentService(
         student.UpdateProfile(dto.Email, dto.DisplayName);
 
         studentRepository.Update(student);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
-
-        return true;
-    }
-
-    public async Task<bool> DeleteStudentAsync(Guid studentId, CancellationToken cancellationToken = default)
-    {
-        var student = await studentRepository.GetByIdAsync(studentId, cancellationToken);
-
-        if (student is null)
-        {
-            return false;
-        }
-
-        studentRepository.Delete(student);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return true;
@@ -136,8 +130,14 @@ public sealed class StudentService(
             badges);
     }
 
-    public async Task<bool> PromoteToAdminAsync(Guid studentId, CancellationToken cancellationToken = default)
+    public async Task<bool> PromoteToAdminAsync(Guid adminId, Guid studentId, CancellationToken cancellationToken = default)
     {
+        var admin = await studentRepository.GetByIdAsync(adminId, cancellationToken);
+        if (admin?.Role != StudentRole.Admin)
+        {
+            return false;
+        }
+
         var student = await studentRepository.GetByIdAsync(studentId, cancellationToken);
         if (student is null)
         {

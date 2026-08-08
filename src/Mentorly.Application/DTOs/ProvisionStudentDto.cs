@@ -1,6 +1,6 @@
 namespace Mentorly.Application.DTOs;
 
-public sealed record CreateStudentDto(
+public sealed record ProvisionStudentDto(
     string GoogleUserId,
     string Email,
     string DisplayName);

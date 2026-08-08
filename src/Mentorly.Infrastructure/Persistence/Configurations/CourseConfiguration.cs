@@ -26,6 +26,10 @@ public sealed class CourseConfiguration : IEntityTypeConfiguration<Course>
             .IsRequired()
             .HasMaxLength(2000);
 
+        builder.Property(x => x.ImageUrl)
+            .HasColumnName("image_url")
+            .HasMaxLength(1000);
+
         builder.Property(x => x.CreatedByAdminId)
             .HasColumnName("created_by_admin_id")
             .IsRequired();
@@ -47,11 +51,6 @@ public sealed class CourseConfiguration : IEntityTypeConfiguration<Course>
             .HasForeignKey(x => x.CourseId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasMany(x => x.Images)
-            .WithOne(x => x.Course)
-            .HasForeignKey(x => x.CourseId)
-            .OnDelete(DeleteBehavior.Cascade);
-
         builder.HasMany(x => x.Units)
             .WithOne(x => x.Course)
             .HasForeignKey(x => x.CourseId)
@@ -62,6 +61,7 @@ public sealed class CourseConfiguration : IEntityTypeConfiguration<Course>
             Id = SeedData.CourseId,
             Title = "Blazor Fundamentals",
             Description = "Seed course for clean architecture demo.",
+            ImageUrl = "https://images.example.com/blazor-fundamentals.png",
             CreatedByAdminId = SeedData.AdminId,
             IsPublished = true,
             RequiredPeerReviews = 1,

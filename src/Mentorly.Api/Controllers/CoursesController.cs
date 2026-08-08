@@ -5,59 +5,60 @@ using Microsoft.AspNetCore.Mvc;
 namespace Mentorly.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/courses")]
 public class CoursesController(ICourseService courseService) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<CourseDto>>> GetCoursesAsync(CancellationToken cancellationToken = default)
+    public async Task<ActionResult<CourseDto[]>> GetCoursesAsync(CancellationToken cancellationToken = default)
     {
         var courses = await courseService.GetAllCoursesAsync(cancellationToken);
         return Ok(courses);
     }
 
-    [HttpGet("{id}")]
-    public async Task<ActionResult<CourseDto>> GetCourseAsync(Guid id, CancellationToken cancellationToken = default)
+    [HttpGet("{courseId:guid}")]
+    public async Task<ActionResult<CourseDetailDto>> GetCourseAsync(Guid courseId, CancellationToken cancellationToken = default)
     {
-        var course = await courseService.GetCourseByIdAsync(id, cancellationToken);
-
-        if (course is null)
-        {
-            return NotFound();
-        }
-
-        return Ok(course);
+        var course = await courseService.GetCourseByIdAsync(courseId, cancellationToken);
+        return course is null ? NotFound() : Ok(course);
     }
 
-    [HttpPost]
-    public async Task<ActionResult<CourseDto>> CreateCourseAsync(CreateCourseDto dto, CancellationToken cancellationToken = default)
+    [HttpGet("{courseId:guid}/content")]
+    public async Task<ActionResult<CourseContentDto>> GetCourseContentAsync(Guid courseId, CancellationToken cancellationToken = default)
     {
-        var course = await courseService.CreateCourseAsync(dto, cancellationToken);
-        return CreatedAtAction("GetCourse", new { id = course.Id }, course);
+        var content = await courseService.GetCourseContentAsync(courseId, cancellationToken);
+        return content is null ? NotFound() : Ok(content);
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateCourseAsync(Guid id, UpdateCourseDto dto, CancellationToken cancellationToken = default)
+    [HttpPost("/api/admins/{adminId:guid}/courses")]
+    public async Task<ActionResult<CourseDto>> CreateCourseAsync(Guid adminId, CreateCourseDto dto, CancellationToken cancellationToken = default)
     {
-        var updated = await courseService.UpdateCourseAsync(id, dto, cancellationToken);
-
-        if (!updated)
-        {
-            return NotFound();
-        }
-
-        return NoContent();
+        var course = await courseService.CreateCourseAsync(adminId, dto, cancellationToken);
+        return course is null
+            ? NotFound()
+            : CreatedAtAction(nameof(GetCourseAsync), new { courseId = course.Id }, course);
     }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteCourseAsync(Guid id, CancellationToken cancellationToken = default)
+    [HttpPut("/api/admins/{adminId:guid}/courses/{courseId:guid}")]
+    public async Task<IActionResult> UpdateCourseAsync(Guid adminId, Guid courseId, UpdateCourseDto dto, CancellationToken cancellationToken = default)
     {
-        var deleted = await courseService.DeleteCourseAsync(id, cancellationToken);
+        return await courseService.UpdateCourseAsync(adminId, courseId, dto, cancellationToken)
+            ? NoContent()
+            : NotFound();
+    }
 
-        if (!deleted)
-        {
-            return NotFound();
-        }
+    [HttpPatch("/api/admins/{adminId:guid}/courses/{courseId:guid}/publication")]
+    public async Task<IActionResult> UpdatePublicationAsync(Guid adminId, Guid courseId, UpdateCoursePublicationDto dto, CancellationToken cancellationToken = default)
+    {
+        return await courseService.UpdatePublicationAsync(adminId, courseId, dto.IsPublished, cancellationToken)
+            ? NoContent()
+            : NotFound();
+    }
 
-        return NoContent();
+    [HttpDelete("/api/admins/{adminId:guid}/courses/{courseId:guid}")]
+    public async Task<IActionResult> DeleteCourseAsync(Guid adminId, Guid courseId, CancellationToken cancellationToken = default)
+    {
+        return await courseService.DeleteCourseAsync(adminId, courseId, cancellationToken)
+            ? NoContent()
+            : NotFound();
     }
 }
