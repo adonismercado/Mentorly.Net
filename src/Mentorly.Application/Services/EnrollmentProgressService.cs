@@ -12,6 +12,9 @@ public sealed class EnrollmentProgressService(
     IEnrollmentProgressRepository progressRepository,
     ISubmissionRepository submissionRepository,
     IQuizRepository quizRepository,
+    IUnitRepository unitRepository,
+    IThemeRepository themeRepository,
+    IActivityRepository activityRepository,
     ICertificateService certificateService,
     IGamificationService gamificationService,
     IUnitOfWork unitOfWork) : IEnrollmentProgressService, ICourseCompletionService
@@ -54,9 +57,9 @@ public sealed class EnrollmentProgressService(
         return enrollment is null ? null : await BuildProgressAsync(enrollment, cancellationToken);
     }
 
-    public async Task<EnrollmentProgressDto?> CompleteThemeAsync(Guid enrollmentId, Guid studentId, Guid themeId, CancellationToken cancellationToken = default)
+    public async Task<EnrollmentProgressDto?> CompleteThemeAsync(Guid enrollmentId, Guid themeId, CancellationToken cancellationToken = default)
     {
-        var enrollment = await GetOwnedEnrollmentAsync(enrollmentId, studentId, cancellationToken);
+        var enrollment = await enrollmentRepository.GetByIdAsync(enrollmentId, cancellationToken);
         if (enrollment is null)
         {
             return null;
@@ -78,7 +81,7 @@ public sealed class EnrollmentProgressService(
         {
             themeCompletionRepository.Add(new ThemeCompletion(enrollmentId, themeId, DateTime.UtcNow));
             await unitOfWork.SaveChangesAsync(cancellationToken);
-            await gamificationService.AwardAsync(studentId, Domain.Enums.GamificationEventType.ThemeCompleted, themeId, cancellationToken);
+            await gamificationService.AwardAsync(enrollment.StudentId, Domain.Enums.GamificationEventType.ThemeCompleted, themeId, cancellationToken);
         }
 
         return await EvaluateEnrollmentAsync(enrollment, cancellationToken);
@@ -154,13 +157,60 @@ public sealed class EnrollmentProgressService(
         var completed = completedThemes + approvedActivities;
         var isCompleted = total > 0 && completed == total && enrollment.Status == EnrollmentStatus.Active;
         var percentage = total == 0 ? 0 : (int)Math.Round(completed * 100m / total, MidpointRounding.AwayFromZero);
+        var units = await unitRepository.GetByCourseIdAsync(enrollment.CourseId, cancellationToken);
+        var unitProgress = new List<EnrollmentUnitProgressDto>();
+
+        foreach (var unit in units)
+        {
+            var themes = await themeRepository.GetByUnitIdAsync(unit.Id, cancellationToken);
+            var activities = new List<Activity>();
+            foreach (var theme in themes)
+            {
+                activities.AddRange(await activityRepository.GetByThemeIdAsync(theme.Id, cancellationToken));
+            }
+
+            var mandatoryActivities = activities.Where(activity => activity.IsMandatory).ToArray();
+            unitProgress.Add(new EnrollmentUnitProgressDto(
+                unit.Id,
+                unit.Title,
+                themes.Count(theme => completedThemeIds.Contains(theme.Id)),
+                themes.Count,
+                mandatoryActivities.Count(activity => approvedActivityIds.Contains(activity.Id)),
+                mandatoryActivities.Length,
+                activities.Select(activity => new EnrollmentActivityProgressDto(
+                    activity.Id,
+                    activity.Title,
+                    activity.IsMandatory,
+                    !activity.IsMandatory || approvedActivityIds.Contains(activity.Id))).ToArray()));
+        }
+
+        var blockedUnit = unitProgress.FirstOrDefault(unit =>
+            unit.ApprovedMandatoryActivities < unit.TotalMandatoryActivities);
+        var canSubmitNextUnit = blockedUnit is null;
+        var blockedReason = canSubmitNextUnit
+            ? null
+            : "Debes aprobar el ejercicio obligatorio de la unidad anterior.";
 
         if (saveStatus)
         {
             await unitOfWork.SaveChangesAsync(cancellationToken);
         }
 
-        return new EnrollmentProgressDto(enrollment.Id, enrollment.Status, enrollment.StartedAt, enrollment.ExpiresAt, themeIds.Count, completedThemes, requiredActivityIds.Count, approvedActivities, percentage, isCompleted, enrollment.CertificateUrl);
+        return new EnrollmentProgressDto(
+            enrollment.Id,
+            enrollment.Status,
+            enrollment.StartedAt,
+            enrollment.ExpiresAt,
+            themeIds.Count,
+            completedThemes,
+            requiredActivityIds.Count,
+            approvedActivities,
+            percentage,
+            isCompleted,
+            enrollment.CertificateUrl,
+            canSubmitNextUnit,
+            blockedReason,
+            unitProgress.ToArray());
     }
 
     private static EnrollmentDto MapEnrollment(Enrollment enrollment) => new(enrollment.Id, enrollment.StudentId, enrollment.CourseId, enrollment.AttemptNumber, enrollment.StartedAt, enrollment.ExpiresAt, enrollment.Status, enrollment.CertificateUrl);
