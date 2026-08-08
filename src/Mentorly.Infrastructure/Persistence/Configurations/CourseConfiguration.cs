@@ -47,11 +47,6 @@ public sealed class CourseConfiguration : IEntityTypeConfiguration<Course>
             .HasForeignKey(x => x.CourseId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasMany(x => x.Images)
-            .WithOne(x => x.Course)
-            .HasForeignKey(x => x.CourseId)
-            .OnDelete(DeleteBehavior.Cascade);
-
         builder.HasMany(x => x.Units)
             .WithOne(x => x.Course)
             .HasForeignKey(x => x.CourseId)

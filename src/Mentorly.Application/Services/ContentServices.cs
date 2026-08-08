@@ -4,15 +4,6 @@ using Mentorly.Domain.Entities;
 
 namespace Mentorly.Application.Services;
 
-public sealed class CourseImageService(ICourseRepository courseRepository, ICourseImageRepository imageRepository, IUnitOfWork unitOfWork) : ICourseImageService
-{
-    public async Task<IReadOnlyList<CourseImageDto>> GetByCourseAsync(Guid courseId, CancellationToken c = default) => (await imageRepository.GetByCourseIdAsync(courseId, c)).Select(Map).ToList();
-    public async Task<CourseImageDto?> CreateAsync(Guid courseId, CreateCourseImageDto dto, CancellationToken c = default) { if (await courseRepository.GetByIdAsync(courseId, c) is null) return null; var image = new CourseImage(Guid.NewGuid(), courseId, dto.ImageUrl, dto.AltText, dto.IsCover, dto.OrderIndex); imageRepository.Add(image); await unitOfWork.SaveChangesAsync(c); return Map(image); }
-    public async Task<bool> UpdateAsync(Guid courseId, Guid imageId, UpdateCourseImageDto dto, CancellationToken c = default) { var image = await imageRepository.GetByIdAsync(imageId, c); if (image is null || image.CourseId != courseId) return false; image.Update(dto.ImageUrl, dto.AltText, dto.IsCover, dto.OrderIndex); imageRepository.Update(image); await unitOfWork.SaveChangesAsync(c); return true; }
-    public async Task<bool> DeleteAsync(Guid courseId, Guid imageId, CancellationToken c = default) { var image = await imageRepository.GetByIdAsync(imageId, c); if (image is null || image.CourseId != courseId) return false; imageRepository.Delete(image); await unitOfWork.SaveChangesAsync(c); return true; }
-    private static CourseImageDto Map(CourseImage x) => new(x.Id, x.CourseId, x.ImageUrl, x.AltText, x.IsCover, x.OrderIndex);
-}
-
 public sealed class UnitService(ICourseRepository courseRepository, IUnitRepository unitRepository, IUnitOfWork unitOfWork) : IUnitService
 {
     public async Task<IReadOnlyList<UnitDto>> GetByCourseAsync(Guid courseId, CancellationToken c = default) => (await unitRepository.GetByCourseIdAsync(courseId, c)).Select(Map).ToList();
