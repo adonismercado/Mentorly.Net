@@ -6,6 +6,6 @@ public interface ICourseCommunityRepository
 {
     Task<bool> CourseExistsAsync(Guid courseId, CancellationToken cancellationToken = default);
     Task<bool> IsStudentEnrolledAsync(Guid courseId, Guid studentId, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<CourseCommunityStudentData>> GetStudentsAsync(Guid courseId, bool includePrivate, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<CourseCommunityStudentData>> GetVisibleStudentsAsync(Guid courseId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<CourseCommunityStudentData>> GetAllStudentsAsync(Guid courseId, CancellationToken cancellationToken = default);
 }
