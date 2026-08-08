@@ -105,6 +105,15 @@ public sealed class PeerReviewServiceTests
         public Task<bool> HasStudentSubmittedActivityAsync(Guid studentId, Guid activityId, CancellationToken cancellationToken = default)
             => Task.FromResult(reviewerHasOwnSubmission);
 
+        public Task<bool> HasSubmissionsForActivityAsync(Guid activityId, CancellationToken cancellationToken = default)
+            => Task.FromResult(false);
+
+        public Task<IReadOnlySet<Guid>> GetApprovedActivityIdsAsync(Guid enrollmentId, IReadOnlyCollection<Guid> activityIds, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlySet<Guid>>(new HashSet<Guid>());
+
+        public Task<Submission[]> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default)
+            => Task.FromResult(Array.Empty<Submission>());
+
         public Task AddAsync(Submission submission, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 
