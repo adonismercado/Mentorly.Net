@@ -61,6 +61,11 @@ public sealed class PeerReviewWorkflowRepository(MentorlyDbContext dbContext) : 
                       where submission.Status == Domain.Enums.SubmissionStatus.Pending
                           && activity.ApprovalStrategy == Domain.Enums.ApprovalStrategy.PeerReview
                           && enrollment.StudentId != reviewerStudentId
+                          && dbContext.Enrollments.Any(reviewerEnrollment =>
+                              reviewerEnrollment.StudentId == reviewerStudentId &&
+                              reviewerEnrollment.CourseId == unit.CourseId &&
+                              reviewerEnrollment.Status == Domain.Enums.EnrollmentStatus.Active &&
+                              reviewerEnrollment.ExpiresAt >= DateTime.UtcNow)
                           && dbContext.Submissions.Any(own => own.ActivityId == submission.ActivityId && own.Enrollment.StudentId == reviewerStudentId)
                           && !dbContext.PeerReviews.Any(review => review.SubmissionId == submission.Id && review.ReviewerStudentId == reviewerStudentId)
                       orderby submission.SubmittedAt
@@ -78,12 +83,24 @@ public sealed class PeerReviewWorkflowRepository(MentorlyDbContext dbContext) : 
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public Task<AnonymousSubmissionData?> GetAnonymousSubmissionAsync(Guid peerReviewId, Guid reviewerStudentId, CancellationToken cancellationToken = default)
+    public Task<AnonymousSubmissionData?> GetAnonymousSubmissionAsync(Guid submissionId, Guid reviewerStudentId, CancellationToken cancellationToken = default)
     {
-        return (from review in dbContext.PeerReviews
-                join submission in dbContext.Submissions on review.SubmissionId equals submission.Id
+        return (from submission in dbContext.Submissions
+                join enrollment in dbContext.Enrollments on submission.EnrollmentId equals enrollment.Id
                 join activity in dbContext.Activities on submission.ActivityId equals activity.Id
-                where review.Id == peerReviewId && review.ReviewerStudentId == reviewerStudentId
+                join theme in dbContext.Themes on activity.ThemeId equals theme.Id
+                join unit in dbContext.Units on theme.UnitId equals unit.Id
+                where submission.Id == submissionId
+                    && submission.Status == Domain.Enums.SubmissionStatus.Pending
+                    && activity.ApprovalStrategy == Domain.Enums.ApprovalStrategy.PeerReview
+                    && enrollment.StudentId != reviewerStudentId
+                    && dbContext.Enrollments.Any(reviewerEnrollment =>
+                        reviewerEnrollment.StudentId == reviewerStudentId &&
+                        reviewerEnrollment.CourseId == unit.CourseId &&
+                        reviewerEnrollment.Status == Domain.Enums.EnrollmentStatus.Active &&
+                        reviewerEnrollment.ExpiresAt >= DateTime.UtcNow)
+                    && dbContext.Submissions.Any(own => own.ActivityId == submission.ActivityId && own.Enrollment.StudentId == reviewerStudentId)
+                    && !dbContext.PeerReviews.Any(review => review.SubmissionId == submission.Id && review.ReviewerStudentId == reviewerStudentId)
                 select new AnonymousSubmissionData(submission.Id, activity.Id, activity.Title, submission.EvidenceUrl, submission.SubmittedAt))
             .FirstOrDefaultAsync(cancellationToken);
     }
