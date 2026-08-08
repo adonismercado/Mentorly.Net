@@ -4,6 +4,7 @@ using Mentorly.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Mentorly.Infrastructure.Migrations
 {
     [DbContext(typeof(MentorlyDbContext))]
-    partial class MentorlyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260808030733_RemoveCourseImages")]
+    partial class RemoveCourseImages
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -161,11 +164,6 @@ namespace Mentorly.Infrastructure.Migrations
                         .HasColumnType("nvarchar(2000)")
                         .HasColumnName("description");
 
-                    b.Property<string>("ImageUrl")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)")
-                        .HasColumnName("image_url");
-
                     b.Property<bool>("IsPublished")
                         .HasColumnType("bit")
                         .HasColumnName("is_published");
@@ -191,7 +189,6 @@ namespace Mentorly.Infrastructure.Migrations
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedByAdminId = new Guid("80bbec34-8a28-4e38-ab64-92662f0b5b5b"),
                             Description = "Seed course for clean architecture demo.",
-                            ImageUrl = "https://images.example.com/blazor-fundamentals.png",
                             IsPublished = true,
                             RequiredPeerReviews = 1,
                             Title = "Blazor Fundamentals"

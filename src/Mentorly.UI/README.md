@@ -136,18 +136,10 @@ erDiagram
         string CourseId PK
         string Title
         string Description
+        string ImageUrl "Nullable"
         string CreatedByAdminId FK
         boolean IsPublished
         int RequiredPeerReviews "Valor N específico para este curso"
-    }
-
-    CourseImage {
-        string CourseImageId PK
-        string CourseId FK
-        string ImageUrl
-        string AltText
-        boolean IsCover "Imagen principal del curso"
-        int OrderIndex
     }
 
     Unit {
@@ -209,7 +201,6 @@ erDiagram
     User ||--o{ PeerReview : "evalúa como par (Ciego)"
     
     %% Relaciones de Jerarquía de Contenido
-    Course ||--o{ CourseImage : "tiene"
     Course ||--o{ Unit : "contiene"
     Unit ||--o{ Theme : "contiene"
     Theme ||--o{ Activity : "contiene"
