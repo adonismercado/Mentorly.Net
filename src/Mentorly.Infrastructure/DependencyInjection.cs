@@ -1,6 +1,4 @@
 using Mentorly.Application.Abstractions.Persistence;
-using Mentorly.Application.Abstractions.Identity;
-using Mentorly.Infrastructure.Identity;
 using Mentorly.Infrastructure.Persistence;
 using Mentorly.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -33,8 +31,6 @@ public static class DependencyInjection
         services.AddScoped<IQuizRepository, QuizRepository>();
         services.AddScoped<IBadgeRepository, BadgeRepository>();
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<MentorlyDbContext>());
-        services.AddScoped<IStudentIdentityMapper, StudentIdentityMapper>();
-
         return services;
     }
 }
