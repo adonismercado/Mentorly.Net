@@ -9,8 +9,26 @@ public sealed record EnrollmentProgressDto(
     DateTime ExpiresAtUtc,
     int TotalThemes,
     int CompletedThemes,
-    int TotalMandatoryExercises,
-    int ApprovedMandatoryExercises,
+    int TotalMandatoryActivities,
+    int ApprovedMandatoryActivities,
     int Percentage,
     bool IsCompleted,
-    string? CertificateUrl);
+    string? CertificateUrl,
+    bool CanSubmitNextUnit,
+    string? BlockedReason,
+    EnrollmentUnitProgressDto[] Units);
+
+public sealed record EnrollmentUnitProgressDto(
+    Guid UnitId,
+    string Title,
+    int CompletedThemes,
+    int TotalThemes,
+    int ApprovedMandatoryActivities,
+    int TotalMandatoryActivities,
+    EnrollmentActivityProgressDto[] Activities);
+
+public sealed record EnrollmentActivityProgressDto(
+    Guid ActivityId,
+    string Title,
+    bool IsMandatory,
+    bool IsApproved);
