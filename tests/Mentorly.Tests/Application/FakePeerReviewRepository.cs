@@ -7,25 +7,19 @@ public sealed class FakePeerReviewRepository(int existingApprovalCount, bool alr
 {
     public PeerReview? LastAdded { get; private set; }
 
-    public Task<IReadOnlyList<PeerReview>> GetAllAsync(CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
+    public Task<PeerReview[]> GetAllAsync(CancellationToken cancellationToken = default)
+        => Task.FromResult(Array.Empty<PeerReview>());
 
     public Task<PeerReview?> GetByIdAsync(Guid peerReviewId, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }
 
-    public Task<IReadOnlyList<PeerReview>> GetBySubmissionIdAsync(Guid submissionId, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
+    public Task<PeerReview[]> GetBySubmissionIdAsync(Guid submissionId, CancellationToken cancellationToken = default)
+        => Task.FromResult(Array.Empty<PeerReview>());
 
-    public Task<IReadOnlyList<PeerReview>> GetByReviewerStudentIdAsync(Guid reviewerStudentId, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
+    public Task<PeerReview[]> GetByReviewerStudentIdAsync(Guid reviewerStudentId, CancellationToken cancellationToken = default)
+        => Task.FromResult(Array.Empty<PeerReview>());
 
     public Task<bool> HasReviewerAlreadyReviewedAsync(Guid submissionId, Guid reviewerStudentId, CancellationToken cancellationToken = default)
         => Task.FromResult(alreadyReviewed);
@@ -49,13 +43,4 @@ public sealed class FakePeerReviewRepository(int existingApprovalCount, bool alr
         throw new NotImplementedException();
     }
 
-    public Task<IReadOnlyList<PeerReview>> GetBySubmissionIdAsync(Guid submissionId, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<IReadOnlyList<PeerReview>> GetByReviewerStudentIdAsync(Guid reviewerStudentId, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
 }
