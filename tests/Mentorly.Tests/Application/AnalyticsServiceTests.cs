@@ -1,5 +1,6 @@
 using Mentorly.Application.Abstractions.Persistence;
 using Mentorly.Application.Services;
+using Mentorly.Domain.Entities;
 using Mentorly.Domain.Enums;
 
 namespace Mentorly.Tests.Application;
@@ -10,9 +11,10 @@ public sealed class AnalyticsServiceTests
     public async Task GetDropOffAsync_CalculatesCompletionRate()
     {
         var courseId = Guid.NewGuid();
-        var service = new AnalyticsService(new FakeAnalyticsRepository(courseId));
+        var admin = CreateAdmin();
+        var service = new AnalyticsService(new FakeAnalyticsRepository(courseId), new FakeStudentRepository(admin));
 
-        var report = await service.GetDropOffAsync(courseId);
+        var report = await service.GetDropOffAsync(admin.Id, courseId);
 
         var item = Assert.Single(report!);
         Assert.Equal(50m, item.CompletionRate);
@@ -22,9 +24,10 @@ public sealed class AnalyticsServiceTests
     public async Task GetCompletionTimesAsync_ReturnsControlledValues()
     {
         var courseId = Guid.NewGuid();
-        var service = new AnalyticsService(new FakeAnalyticsRepository(courseId));
+        var admin = CreateAdmin();
+        var service = new AnalyticsService(new FakeAnalyticsRepository(courseId), new FakeStudentRepository(admin));
 
-        var report = await service.GetCompletionTimesAsync(courseId);
+        var report = await service.GetCompletionTimesAsync(admin.Id, courseId);
 
         Assert.Equal(12.5d, report!.CourseAverageDays);
         Assert.Equal(4d, Assert.Single(report.Units).AverageDays);
@@ -39,5 +42,23 @@ public sealed class AnalyticsServiceTests
         public Task<IReadOnlyList<CompletionTimeData>> GetUnitCompletionTimesAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<CompletionTimeData>>([new CompletionTimeData(Guid.NewGuid(), "Unit", 4d)]);
         public Task<IReadOnlyList<PeerReviewBottleneckData>> GetPeerReviewBottlenecksAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<PeerReviewBottleneckData>>([]);
         public Task<IReadOnlyList<EnrollmentHistoryData>> GetEnrollmentHistoryAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<EnrollmentHistoryData>>([]);
+    }
+
+    private static Student CreateAdmin()
+    {
+        var admin = new Student(Guid.NewGuid(), "admin", "admin@mentorly.dev", "Admin");
+        admin.PromoteToAdmin();
+        return admin;
+    }
+
+    private sealed class FakeStudentRepository(Student admin) : IStudentRepository
+    {
+        public Task<Student?> GetByIdWithBadgesAsync(Guid studentId, CancellationToken cancellationToken = default) => Task.FromResult<Student?>(studentId == admin.Id ? admin : null);
+        public Task<bool> ExistsAsync(Guid studentId, CancellationToken cancellationToken = default) => Task.FromResult(studentId == admin.Id);
+        public Task<Student?> GetByIdAsync(Guid studentId, CancellationToken cancellationToken = default) => Task.FromResult<Student?>(studentId == admin.Id ? admin : null);
+        public Task<Student[]> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult<Student[]>([admin]);
+        public void Add(Student student) { }
+        public void Update(Student student) { }
+        public void Delete(Student student) { }
     }
 }
