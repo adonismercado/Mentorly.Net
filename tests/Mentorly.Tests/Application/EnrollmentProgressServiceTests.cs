@@ -17,7 +17,7 @@ public sealed class EnrollmentProgressServiceTests
         var enrollment = Enrollment.CreateNew(studentId, courseId, 1, DateTime.UtcNow);
         var service = CreateService(enrollment, [themeId], [activityId], new HashSet<Guid> { activityId });
 
-        var progress = await service.CompleteThemeAsync(enrollment.Id, studentId, themeId);
+        var progress = await service.CompleteThemeAsync(enrollment.Id, themeId);
 
         Assert.NotNull(progress);
         Assert.True(progress.IsCompleted);
@@ -51,7 +51,7 @@ public sealed class EnrollmentProgressServiceTests
         var enrollment = Enrollment.CreateNew(studentId, courseId, 1, DateTime.UtcNow);
         var service = CreateService(enrollment, [themeId], [Guid.NewGuid()], new HashSet<Guid>());
 
-        var progress = await service.CompleteThemeAsync(enrollment.Id, studentId, themeId);
+        var progress = await service.CompleteThemeAsync(enrollment.Id, themeId);
 
         Assert.NotNull(progress);
         Assert.False(progress.IsCompleted);
@@ -68,6 +68,9 @@ public sealed class EnrollmentProgressServiceTests
             new FakeProgressRepository(enrollment.CourseId, themes, activities),
             new FakeSubmissionRepository(approved),
             new FakeQuizRepository(),
+            new FakeUnitRepository(),
+            new FakeThemeRepository(),
+            new FakeActivityRepository(),
             new CertificateService(),
             new FakeGamificationService(),
             new FakeUnitOfWork());
@@ -129,6 +132,35 @@ public sealed class EnrollmentProgressServiceTests
         public Task<QuizAttempt?> GetLatestAttemptAsync(Guid enrollmentId, Guid activityId, CancellationToken cancellationToken = default) => Task.FromResult<QuizAttempt?>(null);
         public Task<IReadOnlySet<Guid>> GetPassedActivityIdsAsync(Guid enrollmentId, IReadOnlyCollection<Guid> activityIds, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlySet<Guid>>(new HashSet<Guid>());
         public void AddQuestion(QuizQuestion question) { } public void AddAttempt(QuizAttempt attempt) { }
+    }
+
+    private sealed class FakeUnitRepository : IUnitRepository
+    {
+        public Task<IReadOnlyList<Unit>> GetByCourseIdAsync(Guid courseId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Unit>>([]);
+        public Task<Unit?> GetByIdAsync(Guid unitId, CancellationToken cancellationToken = default) => Task.FromResult<Unit?>(null);
+        public Task<bool> HasThemesAsync(Guid unitId, CancellationToken cancellationToken = default) => Task.FromResult(false);
+        public void Add(Unit unit) { }
+        public void Update(Unit unit) { }
+        public void Delete(Unit unit) { }
+    }
+
+    private sealed class FakeThemeRepository : IThemeRepository
+    {
+        public Task<IReadOnlyList<Theme>> GetByUnitIdAsync(Guid unitId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Theme>>([]);
+        public Task<Theme?> GetByIdAsync(Guid themeId, CancellationToken cancellationToken = default) => Task.FromResult<Theme?>(null);
+        public Task<bool> HasActivitiesAsync(Guid themeId, CancellationToken cancellationToken = default) => Task.FromResult(false);
+        public void Add(Theme theme) { }
+        public void Update(Theme theme) { }
+        public void Delete(Theme theme) { }
+    }
+
+    private sealed class FakeActivityRepository : IActivityRepository
+    {
+        public Task<IReadOnlyList<Activity>> GetByThemeIdAsync(Guid themeId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Activity>>([]);
+        public Task<Activity?> GetByIdAsync(Guid activityId, CancellationToken cancellationToken = default) => Task.FromResult<Activity?>(null);
+        public void Add(Activity activity) { }
+        public void Update(Activity activity) { }
+        public void Delete(Activity activity) { }
     }
 
     private sealed class FakeUnitOfWork : IUnitOfWork { public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) => Task.FromResult(1); }
