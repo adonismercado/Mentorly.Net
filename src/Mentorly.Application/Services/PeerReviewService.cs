@@ -6,6 +6,7 @@ namespace Mentorly.Application.Services;
 
 public sealed class PeerReviewService(
     IStudentRepository studentRepository,
+    IEnrollmentRepository enrollmentRepository,
     ISubmissionRepository submissionRepository,
     IPeerReviewRepository peerReviewRepository,
     IPeerReviewWorkflowRepository peerReviewWorkflowRepository,
@@ -13,8 +14,9 @@ public sealed class PeerReviewService(
     IGamificationService gamificationService,
     IUnitOfWork unitOfWork) : IPeerReviewService
 {
-    public async Task<PeerReviewDto[]> GetAllPeerReviewsAsync(CancellationToken cancellationToken = default)
+    public async Task<PeerReviewDto[]> GetAllPeerReviewsAsync(Guid adminId, CancellationToken cancellationToken = default)
     {
+        await EnsureAdminAsync(adminId, cancellationToken);
         var peerReviews = await peerReviewRepository.GetAllAsync(cancellationToken);
 
         return peerReviews.Select(pr => new PeerReviewDto(
@@ -27,27 +29,9 @@ public sealed class PeerReviewService(
             .ToArray();
     }
 
-    public async Task<PeerReviewDto?> GetPeerReviewByIdAsync(Guid peerReviewId, CancellationToken cancellationToken = default)
+    public async Task<PeerReviewResultDto> SubmitReviewAsync(Guid reviewerStudentId, CreatePeerReviewRequestDto request, CancellationToken cancellationToken = default)
     {
-        var peerReview = await peerReviewRepository.GetByIdAsync(peerReviewId, cancellationToken);
-
-        if (peerReview is null)
-        {
-            return null;
-        }
-
-        return new PeerReviewDto(
-            peerReview.Id,
-            peerReview.SubmissionId,
-            peerReview.ReviewerStudentId,
-            peerReview.IsApproved,
-            peerReview.FeedbackComment,
-            peerReview.CreatedAt);
-    }
-
-    public async Task<PeerReviewResultDto> SubmitReviewAsync(CreatePeerReviewRequestDto request, CancellationToken cancellationToken = default)
-    {
-        if (!await studentRepository.ExistsAsync(request.ReviewerStudentId, cancellationToken))
+        if (!await studentRepository.ExistsAsync(reviewerStudentId, cancellationToken))
         {
             throw new InvalidOperationException("Reviewer student not found.");
         }
@@ -55,13 +39,20 @@ public sealed class PeerReviewService(
         var submission = await submissionRepository.GetByIdWithContextAsync(request.SubmissionId, cancellationToken)
             ?? throw new InvalidOperationException("Submission not found.");
 
-        if (submission.Enrollment.StudentId == request.ReviewerStudentId)
+        var activity = await peerReviewWorkflowRepository.GetActivityAsync(submission.ActivityId, cancellationToken)
+            ?? throw new InvalidOperationException("Activity not found.");
+        if (activity.ApprovalStrategy != Domain.Enums.ApprovalStrategy.PeerReview || submission.Status != Domain.Enums.SubmissionStatus.Pending)
+        {
+            throw new InvalidOperationException("Only pending peer-review submissions can be reviewed.");
+        }
+
+        if (submission.Enrollment.StudentId == reviewerStudentId)
         {
             throw new InvalidOperationException("Self-review is not allowed.");
         }
 
         var reviewerHasOwnSubmission = await submissionRepository.HasStudentSubmittedActivityAsync(
-            request.ReviewerStudentId,
+            reviewerStudentId,
             submission.ActivityId,
             cancellationToken);
 
@@ -72,7 +63,7 @@ public sealed class PeerReviewService(
 
         var alreadyReviewed = await peerReviewRepository.HasReviewerAlreadyReviewedAsync(
             submission.Id,
-            request.ReviewerStudentId,
+            reviewerStudentId,
             cancellationToken);
 
         if (alreadyReviewed)
@@ -80,12 +71,15 @@ public sealed class PeerReviewService(
             throw new InvalidOperationException("The reviewer already reviewed this submission.");
         }
 
+        await EnsureReviewerHasActiveEnrollmentAsync(reviewerStudentId, submission.Enrollment.CourseId, cancellationToken);
+
+        var reviewedAtUtc = DateTime.UtcNow;
         var review = PeerReview.Create(
             request.SubmissionId,
-            request.ReviewerStudentId,
+            reviewerStudentId,
             request.IsApproved,
             request.FeedbackComment,
-            request.CreatedAtUtc);
+            reviewedAtUtc);
 
         await peerReviewRepository.AddAsync(review, cancellationToken);
 
@@ -100,7 +94,7 @@ public sealed class PeerReviewService(
         var wasApproved = submission.Status == Domain.Enums.SubmissionStatus.Approved;
         if (positiveReviews >= requiredReviews)
         {
-            submission.Approve(request.CreatedAtUtc);
+            submission.Approve(reviewedAtUtc);
         }
         // A negative peer review is feedback, not a final rejection. Only an administrator can reject definitively.
 
@@ -111,7 +105,7 @@ public sealed class PeerReviewService(
         }
         if (request.FeedbackComment.Trim().Length >= 20)
         {
-            await gamificationService.AwardAsync(request.ReviewerStudentId, Domain.Enums.GamificationEventType.ConstructivePeerReview, review.Id, cancellationToken);
+            await gamificationService.AwardAsync(reviewerStudentId, Domain.Enums.GamificationEventType.ConstructivePeerReview, review.Id, cancellationToken);
         }
         await courseCompletionService.EvaluateAsync(submission.EnrollmentId, cancellationToken);
 
@@ -138,8 +132,9 @@ public sealed class PeerReviewService(
         return queue.Select(x => new ReviewQueueItemDto(x.SubmissionId, x.ActivityId, x.ActivityTitle, x.EvidenceUrl, x.SubmittedAtUtc)).ToArray();
     }
 
-    public async Task<PeerReviewAuditDto?> GetAuditAsync(Guid peerReviewId, CancellationToken cancellationToken = default)
+    public async Task<PeerReviewAuditDto?> GetAuditAsync(Guid adminId, Guid peerReviewId, CancellationToken cancellationToken = default)
     {
+        await EnsureAdminAsync(adminId, cancellationToken);
         var audit = await peerReviewWorkflowRepository.GetAuditAsync(peerReviewId, cancellationToken);
         return audit is null ? null : new PeerReviewAuditDto(audit.PeerReviewId, audit.SubmissionId, audit.AuthorStudentId, audit.ReviewerStudentId, audit.IsApproved, audit.FeedbackComment, audit.CreatedAtUtc, audit.EvidenceUrl);
     }
@@ -149,9 +144,9 @@ public sealed class PeerReviewService(
         return (await peerReviewRepository.GetByReviewerStudentIdAsync(reviewerStudentId, cancellationToken)).Select(pr => new PeerReviewDto(pr.Id, pr.SubmissionId, pr.ReviewerStudentId, pr.IsApproved, pr.FeedbackComment, pr.CreatedAt)).ToArray();
     }
 
-    public async Task<AnonymousSubmissionDto?> GetAnonymousSubmissionAsync(Guid peerReviewId, Guid reviewerStudentId, CancellationToken cancellationToken = default)
+    public async Task<AnonymousSubmissionDto?> GetAnonymousSubmissionAsync(Guid submissionId, Guid reviewerStudentId, CancellationToken cancellationToken = default)
     {
-        var submission = await peerReviewWorkflowRepository.GetAnonymousSubmissionAsync(peerReviewId, reviewerStudentId, cancellationToken);
+        var submission = await peerReviewWorkflowRepository.GetAnonymousSubmissionAsync(submissionId, reviewerStudentId, cancellationToken);
         return submission is null ? null : new AnonymousSubmissionDto(submission.SubmissionId, submission.ActivityId, submission.ActivityTitle, submission.EvidenceUrl, submission.SubmittedAtUtc);
     }
 
@@ -185,5 +180,23 @@ public sealed class PeerReviewService(
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return true;
+    }
+
+    private async Task EnsureAdminAsync(Guid adminId, CancellationToken cancellationToken)
+    {
+        var admin = await studentRepository.GetByIdAsync(adminId, cancellationToken);
+        if (admin?.Role != Domain.Enums.StudentRole.Admin)
+        {
+            throw new InvalidOperationException("Only an administrator can access peer-review administration.");
+        }
+    }
+
+    private async Task EnsureReviewerHasActiveEnrollmentAsync(Guid reviewerStudentId, Guid courseId, CancellationToken cancellationToken)
+    {
+        var enrollments = await enrollmentRepository.GetByStudentIdAsync(reviewerStudentId, cancellationToken);
+        if (!enrollments.Any(enrollment => enrollment.CourseId == courseId && enrollment.CanSubmit(DateTime.UtcNow)))
+        {
+            throw new InvalidOperationException("Reviewer must have an active enrollment in this course.");
+        }
     }
 }

@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace Mentorly.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api")]
 public class PeerReviewsController(IPeerReviewService peerReviewService) : ControllerBase
 {
-    [HttpGet("students/{studentId:guid}/queue")]
+    [HttpGet("students/{studentId:guid}/peer-review-queue")]
     public async Task<ActionResult<IEnumerable<ReviewQueueItemDto>>> GetQueueAsync(Guid studentId, CancellationToken cancellationToken = default)
     {
         try
@@ -21,76 +21,61 @@ public class PeerReviewsController(IPeerReviewService peerReviewService) : Contr
         }
     }
 
-    [HttpGet("students/{studentId:guid}")]
+    [HttpGet("students/{studentId:guid}/peer-reviews")]
     public async Task<ActionResult<IEnumerable<PeerReviewDto>>> GetMyReviewsAsync(Guid studentId, CancellationToken cancellationToken = default)
     {
         return Ok(await peerReviewService.GetMyPeerReviewsAsync(studentId, cancellationToken));
     }
 
-    [HttpGet("students/{studentId:guid}/{id:guid}/anonymous-submission")]
-    public async Task<ActionResult<AnonymousSubmissionDto>> GetAnonymousSubmissionAsync(Guid studentId, Guid id, CancellationToken cancellationToken = default)
+    [HttpGet("students/{studentId:guid}/peer-review-queue/{submissionId:guid}")]
+    public async Task<ActionResult<AnonymousSubmissionDto>> GetAnonymousSubmissionAsync(Guid studentId, Guid submissionId, CancellationToken cancellationToken = default)
     {
-        var submission = await peerReviewService.GetAnonymousSubmissionAsync(id, studentId, cancellationToken);
+        var submission = await peerReviewService.GetAnonymousSubmissionAsync(submissionId, studentId, cancellationToken);
         return submission is null ? NotFound() : Ok(submission);
     }
 
-    [HttpGet("/api/admin/peer-reviews/{id:guid}/audit")]
-    public async Task<ActionResult<PeerReviewAuditDto>> GetAuditAsync(Guid id, CancellationToken cancellationToken = default)
+    [HttpGet("admins/{adminId:guid}/peer-reviews/{peerReviewId:guid}/audit")]
+    public async Task<ActionResult<PeerReviewAuditDto>> GetAuditAsync(Guid adminId, Guid peerReviewId, CancellationToken cancellationToken = default)
     {
-        var audit = await peerReviewService.GetAuditAsync(id, cancellationToken);
-        return audit is null ? NotFound() : Ok(audit);
-    }
-
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<PeerReviewDto>>> GetPeerReviewsAsync(CancellationToken cancellationToken = default)
-    {
-        var peerReviews = await peerReviewService.GetAllPeerReviewsAsync(cancellationToken);
-        return Ok(peerReviews);
-    }
-
-    [HttpGet("{id:guid}", Name = "GetPeerReview")]
-    public async Task<ActionResult<PeerReviewDto>> GetPeerReviewAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        var peerReview = await peerReviewService.GetPeerReviewByIdAsync(id, cancellationToken);
-
-        if (peerReview is null)
+        try
         {
-            return NotFound();
+            var audit = await peerReviewService.GetAuditAsync(adminId, peerReviewId, cancellationToken);
+            return audit is null ? NotFound() : Ok(audit);
         }
-
-        return Ok(peerReview);
-    }
-
-    [HttpPost]
-    public async Task<ActionResult<PeerReviewResultDto>> SubmitReviewAsync(CreatePeerReviewRequestDto dto, CancellationToken cancellationToken = default)
-    {
-        var result = await peerReviewService.SubmitReviewAsync(dto, cancellationToken);
-        return CreatedAtRoute("GetPeerReview", new { id = result.PeerReviewId }, result);
-    }
-
-    [HttpPut("{id:guid}")]
-    public async Task<IActionResult> UpdatePeerReviewAsync(Guid id, UpdatePeerReviewDto dto, CancellationToken cancellationToken = default)
-    {
-        var updated = await peerReviewService.UpdatePeerReviewAsync(id, dto, cancellationToken);
-
-        if (!updated)
+        catch (InvalidOperationException exception)
         {
-            return NotFound();
+            return Conflict(new { message = exception.Message });
         }
-
-        return NoContent();
     }
 
-    [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> DeletePeerReviewAsync(Guid id, CancellationToken cancellationToken = default)
+    [HttpGet("admins/{adminId:guid}/peer-reviews")]
+    public async Task<ActionResult<IEnumerable<PeerReviewDto>>> GetPeerReviewsAsync(Guid adminId, CancellationToken cancellationToken = default)
     {
-        var deleted = await peerReviewService.DeletePeerReviewAsync(id, cancellationToken);
-
-        if (!deleted)
+        try
         {
-            return NotFound();
+            return Ok(await peerReviewService.GetAllPeerReviewsAsync(adminId, cancellationToken));
         }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new { message = exception.Message });
+        }
+    }
 
-        return NoContent();
+    [HttpPost("students/{studentId:guid}/peer-reviews")]
+    public async Task<ActionResult<PeerReviewResultDto>> SubmitReviewAsync(Guid studentId, CreatePeerReviewRequestDto dto, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var result = await peerReviewService.SubmitReviewAsync(studentId, dto, cancellationToken);
+            return Created($"/api/students/{studentId}/peer-reviews", result);
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(new { message = exception.Message });
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new { message = exception.Message });
+        }
     }
 }

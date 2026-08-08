@@ -13,5 +13,5 @@ public interface IPeerReviewWorkflowRepository
     Task<bool> CanSubmitMandatoryActivityAsync(Guid enrollmentId, Guid activityId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<ReviewQueueItemData>> GetEligibleQueueAsync(Guid reviewerStudentId, CancellationToken cancellationToken = default);
     Task<ReviewAuditData?> GetAuditAsync(Guid peerReviewId, CancellationToken cancellationToken = default);
-    Task<AnonymousSubmissionData?> GetAnonymousSubmissionAsync(Guid peerReviewId, Guid reviewerStudentId, CancellationToken cancellationToken = default);
+    Task<AnonymousSubmissionData?> GetAnonymousSubmissionAsync(Guid submissionId, Guid reviewerStudentId, CancellationToken cancellationToken = default);
 }
