@@ -36,7 +36,7 @@ public sealed class UnitServiceTests
     private sealed class FakeCourseRepository(Guid courseId) : ICourseRepository
     {
         private readonly Course _course = new(courseId, "Course", "Description", Guid.NewGuid(), 1);
-        public Task<IReadOnlyList<Course>> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Course>>([_course]);
+        public Task<Course[]> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult<Course[]>([_course]);
         public Task<Course?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<Course?>(id == courseId ? _course : null);
         public void Add(Course course) { }
         public void Update(Course course) { }
