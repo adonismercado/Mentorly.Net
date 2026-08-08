@@ -4,7 +4,6 @@ public sealed record CourseDto(
     Guid Id,
     string Title,
     string Description,
-    Guid CreatedByAdminId,
+    string? ImageUrl,
     bool IsPublished,
-    int RequiredPeerReviews,
-    DateTime CreatedAt);
+    int RequiredPeerReviews);
