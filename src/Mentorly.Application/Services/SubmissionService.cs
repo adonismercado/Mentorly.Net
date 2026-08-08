@@ -1,12 +1,17 @@
 using Mentorly.Application.Abstractions.Persistence;
 using Mentorly.Application.DTOs;
 using Mentorly.Domain.Entities;
+using Mentorly.Domain.Enums;
 
 namespace Mentorly.Application.Services;
 
 public sealed class SubmissionService(
     ISubmissionRepository submissionRepository,
     IPeerReviewRepository peerReviewRepository,
+    IEnrollmentRepository enrollmentRepository,
+    IStudentRepository studentRepository,
+    IPeerReviewWorkflowRepository peerReviewWorkflowRepository,
+    ICourseCompletionService courseCompletionService,
     IGamificationService gamificationService,
     IUnitOfWork unitOfWork) : ISubmissionService
 {
@@ -44,40 +49,54 @@ public sealed class SubmissionService(
             submission.ReviewedAt);
     }
 
-    public async Task<SubmissionDto> CreateSubmissionAsync(CreateSubmissionDto dto, CancellationToken cancellationToken = default)
+    public async Task<SubmissionDto> CreateSubmissionAsync(Guid enrollmentId, Guid activityId, CreateSubmissionDto dto, CancellationToken cancellationToken = default)
     {
+        var enrollment = await GetActiveEnrollmentAsync(enrollmentId, cancellationToken);
+        var activity = await ValidateActivityCanBeSubmittedAsync(enrollment, activityId, cancellationToken);
+        var existingSubmission = await submissionRepository.GetByEnrollmentAndActivityAsync(enrollmentId, activityId, cancellationToken);
+        if (existingSubmission is not null)
+        {
+            existingSubmission.ReplaceEvidence(dto.EvidenceUrl);
+            ApplyApprovalStrategy(existingSubmission, activity.ApprovalStrategy);
+            await submissionRepository.UpdateAsync(existingSubmission, cancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+            await EvaluateIfApprovedAsync(existingSubmission, cancellationToken);
+            return Map(existingSubmission);
+        }
+
         var submission = Submission.Create(
-            dto.EnrollmentId,
-            dto.ActivityId,
+            enrollmentId,
+            activityId,
             dto.EvidenceUrl,
             DateTime.UtcNow);
-       
+
+        ApplyApprovalStrategy(submission, activity.ApprovalStrategy);
         await submissionRepository.AddAsync(submission, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
+        await gamificationService.AwardAsync(enrollment.StudentId, GamificationEventType.ExerciseSubmitted, submission.Id, cancellationToken);
+        await EvaluateIfApprovedAsync(submission, cancellationToken);
 
-        return new SubmissionDto(
-            submission.Id,
-            submission.EnrollmentId,
-            submission.ActivityId,
-            submission.EvidenceUrl,
-            submission.Status,
-            submission.SubmittedAt,
-            submission.ReviewedAt);
+        return Map(submission);
     }
 
     public async Task<bool> UpdateSubmissionAsync(Guid submissionId, UpdateSubmissionDto dto, CancellationToken cancellationToken = default)
     {
-        var submission = await submissionRepository.GetByIdAsync(submissionId, cancellationToken);
+        var submission = await submissionRepository.GetByIdWithContextAsync(submissionId, cancellationToken);
 
         if (submission is null)
         {
             return false;
         }
 
+        var enrollment = await GetActiveEnrollmentAsync(submission.EnrollmentId, cancellationToken);
+        var activity = await ValidateActivityCanBeSubmittedAsync(enrollment, submission.ActivityId, cancellationToken);
+
         submission.ReplaceEvidence(dto.EvidenceUrl);
+        ApplyApprovalStrategy(submission, activity.ApprovalStrategy);
 
         await submissionRepository.UpdateAsync(submission, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
+        await EvaluateIfApprovedAsync(submission, cancellationToken);
 
         return true;
     }
@@ -105,18 +124,38 @@ public sealed class SubmissionService(
             return false;
         }
 
+        var activity = await peerReviewWorkflowRepository.GetActivityAsync(submission.ActivityId, cancellationToken)
+            ?? throw new InvalidOperationException("Activity not found.");
+        if (activity.ApprovalStrategy != ApprovalStrategy.PeerReview || submission.Status != SubmissionStatus.Pending)
+        {
+            throw new InvalidOperationException("Only pending peer-review submissions can be escalated.");
+        }
+
         submission.Escalate(DateTime.UtcNow);
         await submissionRepository.UpdateAsync(submission, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return true;
     }
 
-    public async Task<bool> DecideAsAdminAsync(Guid submissionId, bool isApproved, CancellationToken cancellationToken = default)
+    public async Task<bool> DecideAsAdminAsync(Guid adminId, Guid submissionId, bool isApproved, CancellationToken cancellationToken = default)
     {
+        var admin = await studentRepository.GetByIdAsync(adminId, cancellationToken);
+        if (admin?.Role != StudentRole.Admin)
+        {
+            throw new InvalidOperationException("Only an administrator can decide a submission.");
+        }
+
         var submission = await submissionRepository.GetByIdWithContextAsync(submissionId, cancellationToken);
         if (submission is null)
         {
             return false;
+        }
+
+        var activity = await peerReviewWorkflowRepository.GetActivityAsync(submission.ActivityId, cancellationToken)
+            ?? throw new InvalidOperationException("Activity not found.");
+        if (activity.ApprovalStrategy != ApprovalStrategy.Admin)
+        {
+            throw new InvalidOperationException("Only admin-approved activities can receive an administrative decision.");
         }
 
         if (isApproved)
@@ -134,6 +173,7 @@ public sealed class SubmissionService(
         {
             await gamificationService.AwardAsync(submission.Enrollment.StudentId, Domain.Enums.GamificationEventType.ExerciseApproved, submission.Id, cancellationToken);
         }
+        await courseCompletionService.EvaluateAsync(submission.EnrollmentId, cancellationToken);
         return true;
     }
 
@@ -150,4 +190,58 @@ public sealed class SubmissionService(
     }
 
     private static SubmissionDto Map(Submission submission) => new(submission.Id, submission.EnrollmentId, submission.ActivityId, submission.EvidenceUrl, submission.Status, submission.SubmittedAt, submission.ReviewedAt);
+
+    private async Task<Enrollment> GetActiveEnrollmentAsync(Guid enrollmentId, CancellationToken cancellationToken)
+    {
+        var enrollment = await enrollmentRepository.GetByIdAsync(enrollmentId, cancellationToken)
+            ?? throw new InvalidOperationException("Enrollment not found.");
+
+        if (!enrollment.CanSubmit(DateTime.UtcNow))
+        {
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+            throw new InvalidOperationException("Enrollment is expired or inactive. Submission is not allowed.");
+        }
+
+        return enrollment;
+    }
+
+    private async Task<ActivityWorkflowData> ValidateActivityCanBeSubmittedAsync(Enrollment enrollment, Guid activityId, CancellationToken cancellationToken)
+    {
+        var activity = await peerReviewWorkflowRepository.GetActivityAsync(activityId, cancellationToken)
+            ?? throw new InvalidOperationException("Activity not found.");
+
+        if (activity.CourseId != enrollment.CourseId)
+        {
+            throw new InvalidOperationException("The activity does not belong to the enrollment course.");
+        }
+
+        if (!await peerReviewWorkflowRepository.CanSubmitMandatoryActivityAsync(enrollment.Id, activityId, cancellationToken))
+        {
+            throw new InvalidOperationException("Previous mandatory exercises must be approved and the peer-review quota completed before submitting this unit.");
+        }
+
+        return activity;
+    }
+
+    private static void ApplyApprovalStrategy(Submission submission, ApprovalStrategy approvalStrategy)
+    {
+        if (approvalStrategy == ApprovalStrategy.Auto)
+        {
+            submission.Approve(DateTime.UtcNow);
+        }
+    }
+
+    private async Task EvaluateIfApprovedAsync(Submission submission, CancellationToken cancellationToken)
+    {
+        if (submission.Status != SubmissionStatus.Approved)
+        {
+            return;
+        }
+
+        var enrollment = await enrollmentRepository.GetByIdAsync(submission.EnrollmentId, cancellationToken)
+            ?? throw new InvalidOperationException("Enrollment not found.");
+
+        await gamificationService.AwardAsync(enrollment.StudentId, GamificationEventType.ExerciseApproved, submission.Id, cancellationToken);
+        await courseCompletionService.EvaluateAsync(submission.EnrollmentId, cancellationToken);
+    }
 }
