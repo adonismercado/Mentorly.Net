@@ -33,26 +33,17 @@ public sealed class FakeSubmissionRepository(Submission submission, bool reviewe
         throw new NotImplementedException();
     }
 
-    public Task<IReadOnlyList<Submission>> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default)
+    public Task<Submission[]> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return Task.FromResult(Array.Empty<Submission>());
     }
 
     public Task AddAsync(Submission submission, CancellationToken cancellationToken = default)
         => Task.CompletedTask;
 
-    public void Add(Submission submission)
-    {
-        throw new NotImplementedException();
-    }
+    public Task UpdateAsync(Submission submission, CancellationToken cancellationToken = default)
+        => Task.CompletedTask;
 
-    public void Update(Submission submission)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Delete(Submission submission)
-    {
-        throw new NotImplementedException();
-    }
+    public Task DeleteAsync(Submission submission, CancellationToken cancellationToken = default)
+        => Task.CompletedTask;
 }
