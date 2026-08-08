@@ -6,8 +6,8 @@ public interface IEnrollmentProgressService
 {
     Task<IReadOnlyList<EnrollmentDto>> GetStudentEnrollmentsAsync(Guid studentId, CancellationToken cancellationToken = default);
     Task<EnrollmentDto?> RestartAsync(Guid studentId, Guid courseId, CancellationToken cancellationToken = default);
-    Task<EnrollmentProgressDto?> GetProgressAsync(Guid enrollmentId, Guid studentId, CancellationToken cancellationToken = default);
-    Task<EnrollmentProgressDto?> CompleteThemeAsync(Guid enrollmentId, Guid studentId, Guid themeId, CancellationToken cancellationToken = default);
+    Task<EnrollmentProgressDto?> GetProgressAsync(Guid enrollmentId, CancellationToken cancellationToken = default);
+    Task<EnrollmentProgressDto?> CompleteThemeAsync(Guid enrollmentId, Guid themeId, CancellationToken cancellationToken = default);
     Task<EnrollmentStatusDto?> GetStatusAsync(Guid enrollmentId, Guid studentId, CancellationToken cancellationToken = default);
     Task<CertificateDto?> GetCertificateAsync(Guid enrollmentId, Guid studentId, CancellationToken cancellationToken = default);
 }
