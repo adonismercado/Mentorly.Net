@@ -2,11 +2,9 @@
 @rendermode InteractiveServer
 @using Mentorly.Application.DTOs
 @using Mentorly.Application.Services
-@using Mentorly.Infrastructure.Identity
 @using Mentorly.Infrastructure.Persistence.Seed
 @inject IStudentEnrollmentService StudentEnrollmentService
 @inject IPeerReviewService PeerReviewService
-@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Exercise Submission</PageTitle>
 
@@ -48,25 +46,15 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var studentIdClaim = authState.User.FindFirst(MentorlyClaimTypes.StudentId)?.Value;
-
-        if (Guid.TryParse(studentIdClaim, out var studentId))
-        {
-            _studentId = studentId;
-            _message = "Authenticated student mapped from Google claims.";
-        }
-        else
-        {
-            _message = "Sign in with Google to map your student identity.";
-        }
+        _studentId = SeedData.StudentId;
+        _message = "Demo student loaded from seed data.";
     }
 
     private async Task EnsureEnrollmentAsync()
     {
         if (_studentId is null)
         {
-            _message = "Sign in first. Student claim not available.";
+            _message = "A student id is required.";
             return;
         }
 
