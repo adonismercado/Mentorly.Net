@@ -48,9 +48,9 @@ public sealed class EnrollmentProgressService(
         return MapEnrollment(enrollment);
     }
 
-    public async Task<EnrollmentProgressDto?> GetProgressAsync(Guid enrollmentId, Guid studentId, CancellationToken cancellationToken = default)
+    public async Task<EnrollmentProgressDto?> GetProgressAsync(Guid enrollmentId, CancellationToken cancellationToken = default)
     {
-        var enrollment = await GetOwnedEnrollmentAsync(enrollmentId, studentId, cancellationToken);
+        var enrollment = await enrollmentRepository.GetByIdAsync(enrollmentId, cancellationToken);
         return enrollment is null ? null : await BuildProgressAsync(enrollment, cancellationToken);
     }
 
@@ -84,9 +84,9 @@ public sealed class EnrollmentProgressService(
         return await EvaluateEnrollmentAsync(enrollment, cancellationToken);
     }
 
-    public async Task<EnrollmentStatusDto?> GetStatusAsync(Guid enrollmentId, Guid studentId, CancellationToken cancellationToken = default)
+    public async Task<EnrollmentStatusDto?> GetStatusAsync(Guid enrollmentId, CancellationToken cancellationToken = default)
     {
-        var enrollment = await GetOwnedEnrollmentAsync(enrollmentId, studentId, cancellationToken);
+        var enrollment = await enrollmentRepository.GetByIdAsync(enrollmentId, cancellationToken);
         if (enrollment is null)
         {
             return null;
@@ -97,9 +97,9 @@ public sealed class EnrollmentProgressService(
         return new EnrollmentStatusDto(enrollment.Id, enrollment.Status, enrollment.StartedAt, enrollment.ExpiresAt, enrollment.Status == EnrollmentStatus.Active);
     }
 
-    public async Task<CertificateDto?> GetCertificateAsync(Guid enrollmentId, Guid studentId, CancellationToken cancellationToken = default)
+    public async Task<CertificateDto?> GetCertificateAsync(Guid enrollmentId, CancellationToken cancellationToken = default)
     {
-        var enrollment = await GetOwnedEnrollmentAsync(enrollmentId, studentId, cancellationToken);
+        var enrollment = await enrollmentRepository.GetByIdAsync(enrollmentId, cancellationToken);
         if (enrollment is null)
         {
             return null;
