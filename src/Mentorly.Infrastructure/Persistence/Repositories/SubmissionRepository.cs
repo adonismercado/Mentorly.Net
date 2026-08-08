@@ -10,6 +10,8 @@ public sealed class SubmissionRepository(MentorlyDbContext dbContext) : ISubmiss
     public Task<Submission[]> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return dbContext.Submissions
+            .AsNoTracking()
+            .OrderByDescending(submission => submission.SubmittedAt)
             .ToArrayAsync(cancellationToken);
     }
 
@@ -39,6 +41,35 @@ public sealed class SubmissionRepository(MentorlyDbContext dbContext) : ISubmiss
             .AnyAsync(x => x.ActivityId == activityId && x.Enrollment.StudentId == studentId, cancellationToken);
     }
 
+    public Task<bool> HasSubmissionsForActivityAsync(Guid activityId, CancellationToken cancellationToken = default)
+    {
+        return dbContext.Submissions
+            .AnyAsync(submission => submission.ActivityId == activityId, cancellationToken);
+    }
+
+    public async Task<IReadOnlySet<Guid>> GetApprovedActivityIdsAsync(
+        Guid enrollmentId,
+        IReadOnlyCollection<Guid> activityIds,
+        CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Submissions
+            .Where(submission =>
+                submission.EnrollmentId == enrollmentId &&
+                activityIds.Contains(submission.ActivityId) &&
+                submission.Status == SubmissionStatus.Approved)
+            .Select(submission => submission.ActivityId)
+            .ToHashSetAsync(cancellationToken);
+    }
+
+    public Task<Submission[]> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default)
+    {
+        return dbContext.Submissions
+            .AsNoTracking()
+            .Where(submission => submission.Enrollment.StudentId == studentId)
+            .OrderByDescending(submission => submission.SubmittedAt)
+            .ToArrayAsync(cancellationToken);
+    }
+
     public Task AddAsync(Submission submission, CancellationToken cancellationToken = default)
     {
         return dbContext.Submissions.AddAsync(submission, cancellationToken).AsTask();
@@ -46,16 +77,9 @@ public sealed class SubmissionRepository(MentorlyDbContext dbContext) : ISubmiss
 
     public Task UpdateAsync(Submission submission, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         dbContext.Submissions.Update(submission);
         return Task.CompletedTask;
-    }
-
-    public Task<Submission[]> GetAllAsync(CancellationToken cancellationToken = default)
-    {
-        return dbContext.Submissions
-            .AsNoTracking()
-            .OrderByDescending(submission => submission.SubmittedAt)
-            .ToArrayAsync(cancellationToken);
     }
 
     public Task DeleteAsync(Submission submission, CancellationToken cancellationToken = default)

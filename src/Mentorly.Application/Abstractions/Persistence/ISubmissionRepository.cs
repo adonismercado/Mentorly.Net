@@ -17,7 +17,6 @@ public interface ISubmissionRepository
     Task<Submission[]> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default);
 
     Task AddAsync(Submission submission, CancellationToken cancellationToken = default);
-    void Add(Submission submission);
-    void Update(Submission submission);
-    void Delete(Submission submission);
+    Task UpdateAsync(Submission submission, CancellationToken cancellationToken = default);
+    Task DeleteAsync(Submission submission, CancellationToken cancellationToken = default);
 }

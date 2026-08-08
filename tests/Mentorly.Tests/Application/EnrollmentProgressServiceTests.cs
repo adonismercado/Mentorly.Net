@@ -117,9 +117,10 @@ public sealed class EnrollmentProgressServiceTests
         public Task<bool> HasStudentSubmittedActivityAsync(Guid studentId, Guid activityId, CancellationToken cancellationToken = default) => Task.FromResult(false);
         public Task<bool> HasSubmissionsForActivityAsync(Guid activityId, CancellationToken cancellationToken = default) => Task.FromResult(false);
         public Task<IReadOnlySet<Guid>> GetApprovedActivityIdsAsync(Guid enrollmentId, IReadOnlyCollection<Guid> activityIds, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlySet<Guid>>(approved);
-        public Task<IReadOnlyList<Submission>> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Submission>>([]);
+        public Task<Submission[]> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default) => Task.FromResult<Submission[]>([]);
         public Task AddAsync(Submission submission, CancellationToken cancellationToken = default) => Task.CompletedTask;
-        public void Add(Submission submission) { } public void Update(Submission submission) { } public void Delete(Submission submission) { }
+        public Task UpdateAsync(Submission submission, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task DeleteAsync(Submission submission, CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 
     private sealed class FakeQuizRepository : IQuizRepository
