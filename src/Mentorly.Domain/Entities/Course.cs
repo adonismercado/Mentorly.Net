@@ -6,7 +6,7 @@ public class Course
     {
     }
 
-    public Course(Guid id, string title, string description, Guid createdByAdminId, int requiredPeerReviews)
+    public Course(Guid id, string title, string description, Guid createdByAdminId, int requiredPeerReviews, string? imageUrl = null)
     {
         if (id == Guid.Empty)
         {
@@ -30,6 +30,7 @@ public class Course
         CreatedAt = DateTime.UtcNow;
 
         UpdateRequiredPeerReviews(requiredPeerReviews);
+        UpdateImageUrl(imageUrl);
     }
 
     public Guid Id { get; private set; }
@@ -37,6 +38,8 @@ public class Course
     public string Title { get; private set; } = string.Empty;
 
     public string Description { get; private set; } = string.Empty;
+
+    public string? ImageUrl { get; private set; }
 
     public Guid CreatedByAdminId { get; private set; }
 
@@ -73,6 +76,11 @@ public class Course
     public void UpdateDescription(string description)
     {
         Description = description.Trim();
+    }
+
+    public void UpdateImageUrl(string? imageUrl)
+    {
+        ImageUrl = string.IsNullOrWhiteSpace(imageUrl) ? null : imageUrl.Trim();
     }
 
     public void Publish()

@@ -136,6 +136,7 @@ erDiagram
         string CourseId PK
         string Title
         string Description
+        string ImageUrl "Nullable"
         string CreatedByAdminId FK
         boolean IsPublished
         int RequiredPeerReviews "Valor N específico para este curso"
