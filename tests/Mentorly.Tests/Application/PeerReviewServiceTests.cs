@@ -1,4 +1,5 @@
 using System.Reflection;
+using Mentorly.Application.Abstractions.Persistence;
 using Mentorly.Application.DTOs;
 using Mentorly.Application.Services;
 using Mentorly.Domain.Entities;
@@ -89,6 +90,21 @@ public sealed class PeerReviewServiceTests
     private sealed class FakeStudentRepository(bool exists) : IStudentRepository
     {
         public Task<bool> ExistsAsync(Guid studentId, CancellationToken cancellationToken = default) => Task.FromResult(exists);
+
+        public Task<Student?> GetByIdAsync(Guid studentId, CancellationToken cancellationToken = default)
+            => Task.FromResult<Student?>(null);
+
+        public Task<Student?> GetByIdWithBadgesAsync(Guid studentId, CancellationToken cancellationToken = default)
+            => Task.FromResult<Student?>(null);
+
+        public Task<Student[]> GetAllAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(Array.Empty<Student>());
+
+        public void Add(Student student) { }
+
+        public void Update(Student student) { }
+
+        public void Delete(Student student) { }
     }
 
     private sealed class FakeSubmissionRepository(Submission submission, bool reviewerHasOwnSubmission) : ISubmissionRepository
@@ -142,6 +158,22 @@ public sealed class PeerReviewServiceTests
             LastAdded = review;
             return Task.CompletedTask;
         }
+
+        public Task<PeerReview[]> GetAllAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(Array.Empty<PeerReview>());
+
+        public Task<PeerReview?> GetByIdAsync(Guid peerReviewId, CancellationToken cancellationToken = default)
+            => Task.FromResult<PeerReview?>(null);
+
+        public Task<PeerReview[]> GetBySubmissionIdAsync(Guid submissionId, CancellationToken cancellationToken = default)
+            => Task.FromResult(Array.Empty<PeerReview>());
+
+        public Task<PeerReview[]> GetByReviewerStudentIdAsync(Guid reviewerStudentId, CancellationToken cancellationToken = default)
+            => Task.FromResult(Array.Empty<PeerReview>());
+
+        public void Update(PeerReview review) { }
+
+        public void Delete(PeerReview review) { }
     }
 
     private sealed class FakeUnitOfWork : IUnitOfWork
