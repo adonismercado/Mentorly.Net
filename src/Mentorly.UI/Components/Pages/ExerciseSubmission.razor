@@ -110,12 +110,12 @@
 
         try
         {
-            var result = await PeerReviewService.SubmitReviewAsync(new CreatePeerReviewRequestDto(
-                _submissionId.Value,
+            var result = await PeerReviewService.SubmitReviewAsync(
                 SeedData.ReviewerStudentId,
-                true,
-                "Code structure is clear and requirements are satisfied.",
-                DateTime.UtcNow));
+                new CreatePeerReviewRequestDto(
+                    _submissionId.Value,
+                    true,
+                    "Code structure is clear and requirements are satisfied."));
 
             _positiveReviews = result.PositiveReviews;
             _submissionStatus = result.SubmissionStatus.ToString();

@@ -53,13 +53,6 @@ public class EnrollmentsController(
         }
     }
 
-    [HttpGet("enrollments/{enrollmentId:guid}/progress")]
-    public async Task<ActionResult<EnrollmentProgressDto>> GetProgressAsync(Guid enrollmentId, CancellationToken cancellationToken = default)
-    {
-        var progress = await enrollmentProgressService.GetProgressAsync(enrollmentId, cancellationToken);
-        return progress is null ? NotFound() : Ok(progress);
-    }
-
     [HttpGet("enrollments/{enrollmentId:guid}/status")]
     public async Task<ActionResult<EnrollmentStatusDto>> GetStatusAsync(Guid enrollmentId, CancellationToken cancellationToken = default)
     {
