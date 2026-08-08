@@ -143,15 +143,8 @@ DELETE {{Mentorly.Api_HostAddress}}/api/peerreviews/{id}
 
 ###
 
-# Auth and current profile (Google OAuth opens a redirect flow)
-### Start Google OAuth
-POST {{Mentorly.Api_HostAddress}}/api/auth/google
-
-### Current profile
-GET {{Mentorly.Api_HostAddress}}/api/auth/me
-
 ### Update leaderboard privacy
-PATCH {{Mentorly.Api_HostAddress}}/api/students/me/privacy
+PATCH {{Mentorly.Api_HostAddress}}/api/students/{{studentId}}/privacy
 Content-Type: application/json
 
 { "isLeaderboardPublic": false }
@@ -176,8 +169,8 @@ Content-Type: application/json
 { "title": "Practice", "type": "Exercise", "isMandatory": true, "approvalStrategy": "PeerReview", "orderIndex": 1 }
 
 # Enrollment, progress and peer review
-### My enrollments
-GET {{Mentorly.Api_HostAddress}}/api/students/me/enrollments
+### Student enrollments
+GET {{Mentorly.Api_HostAddress}}/api/students/{{studentId}}/enrollments
 
 ### Complete a theme
 POST {{Mentorly.Api_HostAddress}}/api/enrollments/{{enrollmentId}}/themes/{{themeId}}/complete
@@ -186,7 +179,7 @@ POST {{Mentorly.Api_HostAddress}}/api/enrollments/{{enrollmentId}}/themes/{{them
 GET {{Mentorly.Api_HostAddress}}/api/activities/{{activityId}}/quiz
 
 ### Submit a quiz attempt
-POST {{Mentorly.Api_HostAddress}}/api/enrollments/{{enrollmentId}}/activities/{{activityId}}/quiz-attempts
+POST {{Mentorly.Api_HostAddress}}/api/students/{{studentId}}/enrollments/{{enrollmentId}}/activities/{{activityId}}/quiz-attempts
 Content-Type: application/json
 
 {
@@ -196,10 +189,10 @@ Content-Type: application/json
 }
 
 ### Peer review queue
-GET {{Mentorly.Api_HostAddress}}/api/peerreviews/queue
+GET {{Mentorly.Api_HostAddress}}/api/peerreviews/students/{{studentId}}/queue
 
 ### Escalate a submission
-POST {{Mentorly.Api_HostAddress}}/api/submissions/{{submissionId}}/escalate
+POST {{Mentorly.Api_HostAddress}}/api/submissions/students/{{studentId}}/{{submissionId}}/escalate
 
 # Community and analytics
 ### Course leaderboard

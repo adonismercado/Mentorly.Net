@@ -3,7 +3,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Mentorly.Domain\Mentorly.Domain.csproj" />
     <ProjectReference Include="..\Mentorly.Application\Mentorly.Application.csproj" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10">
       <PrivateAssets>all</PrivateAssets>

@@ -1,7 +1,5 @@
 using Mentorly.Application.DTOs;
 using Mentorly.Application.Services;
-using Mentorly.Infrastructure.Identity;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mentorly.Api.Controllers;

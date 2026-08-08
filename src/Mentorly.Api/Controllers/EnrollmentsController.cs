@@ -1,9 +1,6 @@
 using Mentorly.Application.DTOs;
 using Mentorly.Application.Services;
-using Mentorly.Infrastructure.Identity;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace Mentorly.Api.Controllers;
 
@@ -14,7 +11,6 @@ public class EnrollmentsController(
     IStudentEnrollmentService studentEnrollmentService) : ControllerBase
 {
     [HttpGet]
-    [Authorize(Policy = MentorlyPolicies.Admin)]
     public async Task<ActionResult<IEnumerable<EnrollmentDto>>> GetEnrollmentsAsync(CancellationToken cancellationToken = default)
     {
         var enrollments = await enrollmentService.GetAllEnrollmentsAsync(cancellationToken);
@@ -22,7 +18,6 @@ public class EnrollmentsController(
     }
 
     [HttpGet("{id}")]
-    [Authorize(Policy = MentorlyPolicies.Admin)]
     public async Task<ActionResult<EnrollmentDto>> GetEnrollmentAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var enrollment = await enrollmentService.GetEnrollmentByIdAsync(id, cancellationToken);
@@ -35,15 +30,9 @@ public class EnrollmentsController(
         return Ok(enrollment);
     }
 
-    [HttpPost]
-    [Authorize(Policy = MentorlyPolicies.Student)]
-    public async Task<ActionResult<EnrollmentResultDto>> CreateEnrollmentAsync(CreateEnrollmentDto dto, CancellationToken cancellationToken = default)
+    [HttpPost("students/{studentId:guid}")]
+    public async Task<ActionResult<EnrollmentResultDto>> CreateEnrollmentAsync(Guid studentId, CreateEnrollmentDto dto, CancellationToken cancellationToken = default)
     {
-        if (!Guid.TryParse(User.FindFirstValue(MentorlyClaimTypes.StudentId), out var studentId))
-        {
-            return Unauthorized();
-        }
-
         try
         {
             var enrollment = await studentEnrollmentService.EnrollAsync(new CreateEnrollmentRequestDto(studentId, dto.CourseId, DateTime.UtcNow), cancellationToken);

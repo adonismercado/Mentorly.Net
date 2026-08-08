@@ -1,4 +1,4 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">Mentorly</a>
     </div>
@@ -13,100 +13,26 @@
                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
             </NavLink>
         </div>
-
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="exercise-submission">
-                <span class="bi bi-journal-check" aria-hidden="true"></span> Exercise Submission
-            </NavLink>
+            <NavLink class="nav-link" href="exercise-submission">Exercise Submission</NavLink>
         </div>
-
-        <AuthorizeView Roles="Student">
-            <Authorized>
-                <details class="nav-section" open>
-                    <summary class="nav-section-title">
-                        <span class="nav-section-heading">
-                            <span class="nav-section-icon" aria-hidden="true"><span class="bi bi-mortarboard-fill"></span></span>
-                            <span>Student Area</span>
-                        </span>
-                        <span class="nav-section-badge">Student only</span>
-                    </summary>
-                    <div class="nav-section-content">
-                        <div class="nav-item px-3">
-                            <NavLink class="nav-link" href="student-dashboard">
-                                <span class="bi bi-speedometer2" aria-hidden="true"></span> Dashboard
-                            </NavLink>
-                        </div>
-                        <div class="nav-item px-3">
-                            <NavLink class="nav-link" href="my-courses">
-                                <span class="bi bi-journal-bookmark" aria-hidden="true"></span> My Courses
-                            </NavLink>
-                        </div>
-                        <div class="nav-item px-3">
-                            <NavLink class="nav-link" href="peer-review-center">
-                                <span class="bi bi-people-fill" aria-hidden="true"></span> Peer Reviews
-                            </NavLink>
-                        </div>
-                    </div>
-                </details>
-            </Authorized>
-        </AuthorizeView>
-
-        <AuthorizeView Roles="Admin">
-            <Authorized>
-                <details class="nav-section" open>
-                    <summary class="nav-section-title">
-                        <span class="nav-section-heading">
-                            <span class="nav-section-icon" aria-hidden="true"><span class="bi bi-shield-lock-fill"></span></span>
-                            <span>Admin Area</span>
-                        </span>
-                        <span class="nav-section-badge admin">Admin only</span>
-                    </summary>
-                    <div class="nav-section-content">
-                        <div class="nav-item px-3">
-                            <NavLink class="nav-link" href="admin-dashboard">
-                                <span class="bi bi-columns-gap" aria-hidden="true"></span> Dashboard
-                            </NavLink>
-                        </div>
-                        <div class="nav-item px-3">
-                            <NavLink class="nav-link" href="admin-courses">
-                                <span class="bi bi-journal-richtext" aria-hidden="true"></span> Course Management
-                            </NavLink>
-                        </div>
-                        <div class="nav-item px-3">
-                            <NavLink class="nav-link" href="admin-reports">
-                                <span class="bi bi-bar-chart-line" aria-hidden="true"></span> Reports
-                            </NavLink>
-                        </div>
-                    </div>
-                </details>
-            </Authorized>
-        </AuthorizeView>
-
-        <AuthorizeView>
-            <Authorized>
-                <div class="nav-session-card">
-                    <div class="nav-session-name">@context.User.Identity?.Name</div>
-                    <div class="nav-session-role">
-                        @if (context.User.IsInRole("Admin"))
-                        {
-                            <span class="nav-role-pill admin">Admin</span>
-                        }
-                        else
-                        {
-                            <span class="nav-role-pill student">Student</span>
-                        }
-                    </div>
-                </div>
-                <div class="nav-item px-3">
-                    <a class="btn btn-sm btn-outline-light" href="/auth/logout?returnUrl=%2F">Sign out</a>
-                </div>
-            </Authorized>
-            <NotAuthorized>
-                <div class="nav-item px-3 mt-3">
-                    <a class="btn btn-sm btn-outline-light" href="/auth/login?returnUrl=%2F">Sign in with Google</a>
-                </div>
-            </NotAuthorized>
-        </AuthorizeView>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="student-dashboard">Student Dashboard</NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="my-courses">My Courses</NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="peer-review-center">Peer Reviews</NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="admin-dashboard">Admin Dashboard</NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="admin-courses">Course Management</NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="admin-reports">Reports</NavLink>
+        </div>
     </nav>
 </div>
-
