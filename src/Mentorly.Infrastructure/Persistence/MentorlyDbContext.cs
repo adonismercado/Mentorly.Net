@@ -1,16 +1,13 @@
 using Mentorly.Application.Abstractions.Persistence;
 using Mentorly.Domain.Entities;
-using Mentorly.Infrastructure.Identity;
 using Mentorly.Infrastructure.Persistence.Configurations;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Mentorly.Infrastructure.Persistence;
 
 public sealed class MentorlyDbContext(
     DbContextOptions<MentorlyDbContext> options
-) : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>(options), IUnitOfWork
+) : DbContext(options), IUnitOfWork
 {
     public DbSet<Student> Students => Set<Student>();
 
@@ -59,6 +56,5 @@ public sealed class MentorlyDbContext(
         modelBuilder.ApplyConfiguration(new QuizAttemptConfiguration());
 
         base.OnModelCreating(modelBuilder);
-        modelBuilder.ApplyConfiguration(new ApplicationUserConfiguration());
     }
 }
