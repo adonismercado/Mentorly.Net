@@ -15,10 +15,10 @@ public class StudentsController(IStudentService studentService) : ControllerBase
         return Ok(students);
     }
 
-    [HttpGet("{id}")]
-    public async Task<ActionResult<StudentDto>> GetStudentAsync(Guid id, CancellationToken cancellationToken = default)
+    [HttpGet("{studentId:guid}")]
+    public async Task<ActionResult<StudentProfileDto>> GetStudentAsync(Guid studentId, CancellationToken cancellationToken = default)
     {
-        var student = await studentService.GetStudentByIdAsync(id, cancellationToken);
+        var student = await studentService.GetStudentByIdAsync(studentId, cancellationToken);
 
         if (student is null)
         {
@@ -28,17 +28,17 @@ public class StudentsController(IStudentService studentService) : ControllerBase
         return Ok(student);
     }
 
-    [HttpPost]
-    public async Task<ActionResult<StudentDto>> CreateStudentAsync(CreateStudentDto dto, CancellationToken cancellationToken = default)
+    [HttpPost("provision")]
+    public async Task<ActionResult<StudentProfileDto>> ProvisionStudentAsync(ProvisionStudentDto dto, CancellationToken cancellationToken = default)
     {
-        var student = await studentService.CreateStudentAsync(dto, cancellationToken);
-        return CreatedAtAction("GetStudent", new { id = student.Id }, student);
+        var student = await studentService.ProvisionStudentAsync(dto, cancellationToken);
+        return Ok(student);
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateStudentAsync(Guid id, UpdateStudentDto dto, CancellationToken cancellationToken = default)
+    [HttpPut("{studentId:guid}")]
+    public async Task<IActionResult> UpdateStudentAsync(Guid studentId, UpdateStudentDto dto, CancellationToken cancellationToken = default)
     {
-        var updated = await studentService.UpdateStudentAsync(id, dto, cancellationToken);
+        var updated = await studentService.UpdateStudentAsync(studentId, dto, cancellationToken);
 
         if (!updated)
         {
@@ -48,37 +48,24 @@ public class StudentsController(IStudentService studentService) : ControllerBase
         return NoContent();
     }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteStudentAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        var deleted = await studentService.DeleteStudentAsync(id, cancellationToken);
-
-        if (!deleted)
-        {
-            return NotFound();
-        }
-
-        return NoContent();
-    }
-
     [HttpPatch("{studentId:guid}/privacy")]
-    public async Task<IActionResult> UpdateMyPrivacyAsync(Guid studentId, UpdateLeaderboardPrivacyDto dto, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> UpdatePrivacyAsync(Guid studentId, UpdateLeaderboardPrivacyDto dto, CancellationToken cancellationToken = default)
     {
         var updated = await studentService.UpdateLeaderboardPrivacyAsync(studentId, dto.IsLeaderboardPublic, cancellationToken);
         return updated ? NoContent() : NotFound();
     }
 
     [HttpGet("{studentId:guid}/statistics")]
-    public async Task<ActionResult<StudentStatisticsDto>> GetMyStatisticsAsync(Guid studentId, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<StudentStatisticsDto>> GetStatisticsAsync(Guid studentId, CancellationToken cancellationToken = default)
     {
         var statistics = await studentService.GetStudentStatisticsAsync(studentId, cancellationToken);
         return statistics is null ? NotFound() : Ok(statistics);
     }
 
-    [HttpPost("{studentId}/promote-admin")]
-    public async Task<IActionResult> PromoteToAdminAsync(Guid studentId, CancellationToken cancellationToken = default)
+    [HttpPost("/api/admins/{adminId:guid}/students/{studentId:guid}/promote")]
+    public async Task<IActionResult> PromoteToAdminAsync(Guid adminId, Guid studentId, CancellationToken cancellationToken = default)
     {
-        var promoted = await studentService.PromoteToAdminAsync(studentId, cancellationToken);
+        var promoted = await studentService.PromoteToAdminAsync(adminId, studentId, cancellationToken);
         if (!promoted)
         {
             return NotFound();
