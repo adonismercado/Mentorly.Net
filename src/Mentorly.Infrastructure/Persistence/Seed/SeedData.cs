@@ -11,7 +11,6 @@ public static class SeedData
     public static readonly Guid UnitId = Guid.Parse("be480fd4-6392-4a0d-91fd-5a3e773e9c10");
     public static readonly Guid ThemeId = Guid.Parse("a8466ce6-95c6-4d7d-a998-38925240cd70");
     public static readonly Guid QuizActivityId = Guid.Parse("6a6538ef-9454-4a5d-80ac-344d8a4068de");
-    public static readonly Guid CourseImageId = Guid.Parse("f74e10ed-86b4-47e5-8caf-d07af6cd2b25");
     public static readonly Guid SeedEnrollmentId = Guid.Parse("d9f7ebf1-6f9f-4b61-9870-86ae9be79cb1");
     public static readonly Guid SeedSubmissionId = Guid.Parse("9980b9e0-d0cc-42f5-bf54-e5f3fd56bc56");
     public static readonly Guid AuthorEnrollmentId = Guid.Parse("b82acd0a-9bd4-4e5e-b2d9-01e3283285f1");
