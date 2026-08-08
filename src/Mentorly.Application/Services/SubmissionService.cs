@@ -106,7 +106,7 @@ public sealed class SubmissionService(
         }
 
         submission.Escalate(DateTime.UtcNow);
-        submissionRepository.Update(submission);
+        await submissionRepository.UpdateAsync(submission, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return true;
     }
@@ -128,7 +128,7 @@ public sealed class SubmissionService(
             submission.Reject(DateTime.UtcNow);
         }
 
-        submissionRepository.Update(submission);
+        await submissionRepository.UpdateAsync(submission, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
         if (isApproved)
         {
