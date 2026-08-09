@@ -8,7 +8,7 @@ namespace Mentorly.Api.Controllers;
 [Route("api")]
 public class ThemesController(IThemeService themeService) : ControllerBase
 {
-    [HttpGet("units/{unitId:guid}/themes")]
+    [HttpGet("units/{unitId:guid}/themes", Name = "GetUnitThemes")]
     public async Task<ActionResult<IEnumerable<ThemeDto>>> GetAsync(Guid unitId, CancellationToken cancellationToken = default)
         => Ok(await themeService.GetByUnitAsync(unitId, cancellationToken));
 
@@ -16,7 +16,7 @@ public class ThemesController(IThemeService themeService) : ControllerBase
     public async Task<ActionResult<ThemeDto>> CreateAsync(Guid adminId, Guid unitId, CreateThemeDto dto, CancellationToken cancellationToken = default)
     {
         var theme = await themeService.CreateAsync(adminId, unitId, dto, cancellationToken);
-        return theme is null ? NotFound() : CreatedAtAction(nameof(GetAsync), new { unitId }, theme);
+        return theme is null ? NotFound() : CreatedAtRoute("GetUnitThemes", new { unitId }, theme);
     }
 
     [HttpPut("admins/{adminId:guid}/themes/{themeId:guid}")]
