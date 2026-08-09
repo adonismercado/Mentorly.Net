@@ -20,7 +20,7 @@ public class EnrollmentsController(
                 new CreateEnrollmentRequestDto(studentId, dto.CourseId, DateTime.UtcNow),
                 cancellationToken);
 
-            return CreatedAtRoute("GetEnrollment", new { enrollmentId = enrollment.EnrollmentId }, enrollment);
+            return CreatedAtAction(nameof(GetEnrollmentAsync), new { enrollmentId = enrollment.EnrollmentId }, enrollment);
         }
         catch (InvalidOperationException exception)
         {
@@ -32,7 +32,7 @@ public class EnrollmentsController(
     public async Task<ActionResult<IEnumerable<EnrollmentDto>>> GetStudentEnrollmentsAsync(Guid studentId, CancellationToken cancellationToken = default)
         => Ok(await enrollmentProgressService.GetStudentEnrollmentsAsync(studentId, cancellationToken));
 
-    [HttpGet("enrollments/{enrollmentId:guid}", Name = "GetEnrollment")]
+    [HttpGet("enrollments/{enrollmentId:guid}")]
     public async Task<ActionResult<EnrollmentDto>> GetEnrollmentAsync(Guid enrollmentId, CancellationToken cancellationToken = default)
     {
         var enrollment = await enrollmentService.GetEnrollmentByIdAsync(enrollmentId, cancellationToken);
@@ -45,7 +45,7 @@ public class EnrollmentsController(
         try
         {
             var enrollment = await enrollmentProgressService.RestartAsync(studentId, courseId, cancellationToken);
-            return enrollment is null ? NotFound() : CreatedAtRoute("GetEnrollment", new { enrollmentId = enrollment.Id }, enrollment);
+            return enrollment is null ? NotFound() : CreatedAtAction(nameof(GetEnrollmentAsync), new { enrollmentId = enrollment.Id }, enrollment);
         }
         catch (InvalidOperationException exception)
         {

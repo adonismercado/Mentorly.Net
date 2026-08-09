@@ -15,7 +15,7 @@ public class CoursesController(ICourseService courseService) : ControllerBase
         return Ok(courses);
     }
 
-    [HttpGet("{courseId:guid}", Name = "GetCourse")]
+    [HttpGet("{courseId:guid}")]
     public async Task<ActionResult<CourseDetailDto>> GetCourseAsync(Guid courseId, CancellationToken cancellationToken = default)
     {
         var course = await courseService.GetCourseByIdAsync(courseId, cancellationToken);
@@ -35,7 +35,7 @@ public class CoursesController(ICourseService courseService) : ControllerBase
         var course = await courseService.CreateCourseAsync(adminId, dto, cancellationToken);
         return course is null
             ? NotFound()
-            : CreatedAtRoute("GetCourse", new { courseId = course.Id }, course);
+            : CreatedAtAction(nameof(GetCourseAsync), new { courseId = course.Id }, course);
     }
 
     [HttpPut("/api/admins/{adminId:guid}/courses/{courseId:guid}")]

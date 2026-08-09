@@ -47,7 +47,7 @@ public class SubmissionsController(ISubmissionService submissionService) : Contr
         }
     }
 
-    [HttpGet("submissions/{id:guid}", Name = "GetSubmission")]
+    [HttpGet("submissions/{id:guid}")]
     public async Task<ActionResult<SubmissionDto>> GetSubmissionAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var submission = await submissionService.GetSubmissionByIdAsync(id, cancellationToken);
@@ -66,7 +66,7 @@ public class SubmissionsController(ISubmissionService submissionService) : Contr
         try
         {
             var submission = await submissionService.CreateSubmissionAsync(enrollmentId, activityId, dto, cancellationToken);
-            return CreatedAtRoute("GetSubmission", new { id = submission.Id }, submission);
+            return CreatedAtAction(nameof(GetSubmissionAsync), new { id = submission.Id }, submission);
         }
         catch (ArgumentException exception)
         {

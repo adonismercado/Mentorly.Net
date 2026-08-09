@@ -8,7 +8,7 @@ namespace Mentorly.Api.Controllers;
 [Route("api")]
 public class QuizzesController(IQuizService quizService) : ControllerBase
 {
-    [HttpGet("activities/{activityId:guid}/quiz", Name = "GetQuizQuestions")]
+    [HttpGet("activities/{activityId:guid}/quiz")]
     public async Task<ActionResult<QuizQuestionDto[]>> GetQuestionsAsync(Guid activityId, CancellationToken cancellationToken = default)
     {
         return Ok(await quizService.GetQuestionsAsync(activityId, cancellationToken));
@@ -22,7 +22,7 @@ public class QuizzesController(IQuizService quizService) : ControllerBase
             var question = await quizService.CreateQuestionAsync(adminId, activityId, dto, cancellationToken);
             return question is null
                 ? NotFound()
-                : CreatedAtRoute("GetQuizQuestions", new { activityId }, question);
+                : CreatedAtAction(nameof(GetQuestionsAsync), new { activityId }, question);
         }
         catch (ArgumentException exception)
         {

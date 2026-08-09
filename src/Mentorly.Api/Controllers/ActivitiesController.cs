@@ -8,7 +8,7 @@ namespace Mentorly.Api.Controllers;
 [Route("api")]
 public class ActivitiesController(IActivityService activityService) : ControllerBase
 {
-    [HttpGet("themes/{themeId:guid}/activities", Name = "GetThemeActivities")]
+    [HttpGet("themes/{themeId:guid}/activities")]
     public async Task<ActionResult<IEnumerable<ActivityDto>>> GetAsync(Guid themeId, CancellationToken cancellationToken = default)
         => Ok(await activityService.GetByThemeAsync(themeId, cancellationToken));
 
@@ -18,7 +18,7 @@ public class ActivitiesController(IActivityService activityService) : Controller
         try
         {
             var activity = await activityService.CreateAsync(adminId, themeId, dto, cancellationToken);
-            return activity is null ? NotFound() : CreatedAtRoute("GetThemeActivities", new { themeId }, activity);
+            return activity is null ? NotFound() : CreatedAtAction(nameof(GetAsync), new { themeId }, activity);
         }
         catch (ArgumentException exception) { return BadRequest(new { message = exception.Message }); }
     }
