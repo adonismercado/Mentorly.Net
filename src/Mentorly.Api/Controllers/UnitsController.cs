@@ -8,7 +8,7 @@ namespace Mentorly.Api.Controllers;
 [Route("api")]
 public class UnitsController(IUnitService unitService) : ControllerBase
 {
-    [HttpGet("courses/{courseId:guid}/units")]
+    [HttpGet("courses/{courseId:guid}/units", Name = "GetCourseUnits")]
     public async Task<ActionResult<IEnumerable<UnitDto>>> GetAsync(Guid courseId, CancellationToken cancellationToken = default)
         => Ok(await unitService.GetByCourseAsync(courseId, cancellationToken));
 
@@ -16,7 +16,7 @@ public class UnitsController(IUnitService unitService) : ControllerBase
     public async Task<ActionResult<UnitDto>> CreateAsync(Guid adminId, Guid courseId, CreateUnitDto dto, CancellationToken cancellationToken = default)
     {
         var unit = await unitService.CreateAsync(adminId, courseId, dto, cancellationToken);
-        return unit is null ? NotFound() : CreatedAtAction(nameof(GetAsync), new { courseId }, unit);
+        return unit is null ? NotFound() : CreatedAtRoute("GetCourseUnits", new { courseId }, unit);
     }
 
     [HttpPut("admins/{adminId:guid}/units/{unitId:guid}")]
