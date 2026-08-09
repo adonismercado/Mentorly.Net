@@ -1,5 +1,4 @@
 using Mentorly.Domain.Entities;
-using Mentorly.Infrastructure.Persistence.Seed;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -45,14 +44,5 @@ public sealed class PeerReviewConfiguration : IEntityTypeConfiguration<PeerRevie
             .HasForeignKey(x => x.ReviewerStudentId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasData(new
-        {
-            Id = SeedData.SeedPeerReviewId,
-            SubmissionId = SeedData.AuthorSubmissionId,
-            ReviewerStudentId = SeedData.ReviewerStudentId,
-            IsApproved = true,
-            FeedbackComment = "The component structure is clear and the state handling is correct.",
-            CreatedAt = SeedData.SeedSubmittedAtUtc
-        });
     }
 }

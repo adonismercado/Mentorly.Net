@@ -1,6 +1,5 @@
 using Mentorly.Domain.Entities;
 using Mentorly.Domain.Enums;
-using Mentorly.Infrastructure.Persistence.Seed;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -52,25 +51,5 @@ public sealed class SubmissionConfiguration : IEntityTypeConfiguration<Submissio
             .HasForeignKey(x => x.SubmissionId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasData(new
-        {
-            Id = SeedData.SeedSubmissionId,
-            EnrollmentId = SeedData.SeedEnrollmentId,
-            ActivityId = SeedData.ActivityId,
-            EvidenceUrl = "https://github.com/example/reviewer-seed",
-            Status = SubmissionStatus.Approved,
-            SubmittedAt = SeedData.SeedSubmittedAtUtc,
-            ReviewedAt = (DateTime?)SeedData.SeedSubmittedAtUtc
-        },
-        new
-        {
-            Id = SeedData.AuthorSubmissionId,
-            EnrollmentId = SeedData.AuthorEnrollmentId,
-            ActivityId = SeedData.ActivityId,
-            EvidenceUrl = "https://github.com/example/author-seed",
-            Status = SubmissionStatus.Approved,
-            SubmittedAt = SeedData.SeedSubmittedAtUtc,
-            ReviewedAt = (DateTime?)SeedData.SeedSubmittedAtUtc
-        });
     }
 }

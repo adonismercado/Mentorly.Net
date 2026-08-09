@@ -1,6 +1,5 @@
 using Mentorly.Domain.Entities;
 using Mentorly.Domain.Enums;
-using Mentorly.Infrastructure.Persistence.Seed;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -69,29 +68,5 @@ public sealed class EnrollmentConfiguration : IEntityTypeConfiguration<Enrollmen
             .HasForeignKey(x => x.EnrollmentId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasData(new
-        {
-            Id = SeedData.SeedEnrollmentId,
-            StudentId = SeedData.ReviewerStudentId,
-            CourseId = SeedData.CourseId,
-            AttemptNumber = 1,
-            StartedAt = SeedData.SeedStartedAtUtc,
-            ExpiresAt = SeedData.SeedStartedAtUtc.AddMonths(3),
-            Status = EnrollmentStatus.Active,
-            CertificateUrl = (string?)null,
-            CompletedAt = (DateTime?)null
-        },
-        new
-        {
-            Id = SeedData.AuthorEnrollmentId,
-            StudentId = SeedData.StudentId,
-            CourseId = SeedData.CourseId,
-            AttemptNumber = 1,
-            StartedAt = SeedData.SeedStartedAtUtc,
-            ExpiresAt = SeedData.SeedStartedAtUtc.AddMonths(3),
-            Status = EnrollmentStatus.Active,
-            CertificateUrl = (string?)null,
-            CompletedAt = (DateTime?)null
-        });
     }
 }

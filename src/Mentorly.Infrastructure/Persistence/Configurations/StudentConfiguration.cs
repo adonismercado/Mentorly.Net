@@ -1,6 +1,5 @@
 using Mentorly.Domain.Entities;
 using Mentorly.Domain.Enums;
-using Mentorly.Infrastructure.Persistence.Seed;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -60,26 +59,5 @@ public sealed class StudentConfiguration : IEntityTypeConfiguration<Student>
             .HasForeignKey(x => x.StudentId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasData(
-            new
-            {
-                Id = SeedData.StudentId,
-                GoogleUserId = "google-student-001",
-                Email = "student1@mentorly.local",
-                DisplayName = "Student One",
-                Role = StudentRole.Student,
-                IsLeaderboardPublic = true,
-                TotalPoints = 0
-            },
-            new
-            {
-                Id = SeedData.ReviewerStudentId,
-                GoogleUserId = "google-student-002",
-                Email = "student2@mentorly.local",
-                DisplayName = "Student Two",
-                Role = StudentRole.Student,
-                IsLeaderboardPublic = true,
-                TotalPoints = 0
-            });
     }
 }

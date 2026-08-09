@@ -1,5 +1,4 @@
 using Mentorly.Domain.Entities;
-using Mentorly.Infrastructure.Persistence.Seed;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -56,16 +55,5 @@ public sealed class CourseConfiguration : IEntityTypeConfiguration<Course>
             .HasForeignKey(x => x.CourseId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasData(new
-        {
-            Id = SeedData.CourseId,
-            Title = "Blazor Fundamentals",
-            Description = "Seed course for clean architecture demo.",
-            ImageUrl = "https://images.example.com/blazor-fundamentals.png",
-            CreatedByAdminId = SeedData.AdminId,
-            IsPublished = true,
-            RequiredPeerReviews = 1,
-            CreatedAt = SeedData.CourseCreatedAtUtc
-        });
     }
 }
