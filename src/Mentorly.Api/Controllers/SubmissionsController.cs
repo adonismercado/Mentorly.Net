@@ -8,6 +8,21 @@ namespace Mentorly.Api.Controllers;
 [Route("api")]
 public class SubmissionsController(ISubmissionService submissionService) : ControllerBase
 {
+    [HttpGet("admins/{adminId:guid}/submissions/pending-decision")]
+    public async Task<ActionResult<SubmissionDto[]>> GetEscalatedSubmissionsAsync(
+        Guid adminId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return Ok(await submissionService.GetEscalatedSubmissionsAsync(adminId, cancellationToken));
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new { message = exception.Message });
+        }
+    }
+
     [HttpGet("students/{studentId:guid}/submissions")]
     public async Task<ActionResult<IEnumerable<SubmissionDto>>> GetMySubmissionsAsync(Guid studentId, CancellationToken cancellationToken = default)
     {

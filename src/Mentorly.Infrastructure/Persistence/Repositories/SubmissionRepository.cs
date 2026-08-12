@@ -15,6 +15,15 @@ public sealed class SubmissionRepository(MentorlyDbContext dbContext) : ISubmiss
             .ToArrayAsync(cancellationToken);
     }
 
+    public Task<Submission[]> GetEscalatedAsync(CancellationToken cancellationToken = default)
+    {
+        return dbContext.Submissions
+            .AsNoTracking()
+            .Where(submission => submission.Status == SubmissionStatus.Escalated)
+            .OrderBy(submission => submission.ReviewedAt ?? submission.SubmittedAt)
+            .ToArrayAsync(cancellationToken);
+    }
+
     public Task<Submission?> GetByIdAsync(Guid submissionId, CancellationToken cancellationToken = default)
     {
         return dbContext.Submissions
