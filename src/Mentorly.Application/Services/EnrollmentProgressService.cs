@@ -163,26 +163,34 @@ public sealed class EnrollmentProgressService(
         foreach (var unit in units)
         {
             var themes = await themeRepository.GetByUnitIdAsync(unit.Id, cancellationToken);
-            var activities = new List<Activity>();
+            var themeProgress = new List<EnrollmentThemeProgressDto>();
             foreach (var theme in themes)
             {
-                activities.AddRange(await activityRepository.GetByThemeIdAsync(theme.Id, cancellationToken));
+                var themeActivities = await activityRepository.GetByThemeIdAsync(theme.Id, cancellationToken);
+                themeProgress.Add(new EnrollmentThemeProgressDto(
+                    theme.Id,
+                    theme.Title,
+                    theme.ContentText,
+                    theme.OrderIndex,
+                    completedThemeIds.Contains(theme.Id),
+                    themeActivities.Select(activity => new EnrollmentActivityProgressDto(
+                        activity.Id,
+                        activity.Title,
+                        activity.Type,
+                        activity.IsMandatory,
+                        !activity.IsMandatory || approvedActivityIds.Contains(activity.Id))).ToArray()));
             }
 
-            var mandatoryActivities = activities.Where(activity => activity.IsMandatory).ToArray();
+            var unitActivities = themeProgress.SelectMany(theme => theme.Activities).ToArray();
+            var mandatoryActivities = unitActivities.Where(activity => activity.IsMandatory).ToArray();
             unitProgress.Add(new EnrollmentUnitProgressDto(
                 unit.Id,
                 unit.Title,
                 themes.Count(theme => completedThemeIds.Contains(theme.Id)),
                 themes.Count,
-                mandatoryActivities.Count(activity => approvedActivityIds.Contains(activity.Id)),
+                mandatoryActivities.Count(activity => approvedActivityIds.Contains(activity.ActivityId)),
                 mandatoryActivities.Length,
-                activities.Select(activity => new EnrollmentActivityProgressDto(
-                    activity.Id,
-                    activity.Title,
-                    activity.Type,
-                    activity.IsMandatory,
-                    !activity.IsMandatory || approvedActivityIds.Contains(activity.Id))).ToArray()));
+                themeProgress.ToArray()));
         }
 
         var blockedUnit = unitProgress.FirstOrDefault(unit =>
