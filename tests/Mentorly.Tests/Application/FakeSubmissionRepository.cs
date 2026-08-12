@@ -10,6 +10,14 @@ public sealed class FakeSubmissionRepository(Submission submission, bool reviewe
         throw new NotImplementedException();
     }
 
+    public Task<Submission[]> GetEscalatedAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(
+            submission.Status == Mentorly.Domain.Enums.SubmissionStatus.Escalated
+                ? new[] { submission }
+                : Array.Empty<Submission>());
+    }
+
     public Task<Submission?> GetByIdAsync(Guid submissionId, CancellationToken cancellationToken = default)
         => Task.FromResult(submissionId == submission.Id ? submission : null);
 

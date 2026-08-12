@@ -114,6 +114,7 @@ public sealed class EnrollmentProgressServiceTests
     private sealed class FakeSubmissionRepository(IReadOnlySet<Guid> approved) : ISubmissionRepository
     {
         public Task<Submission[]> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult<Submission[]>([]);
+        public Task<Submission[]> GetEscalatedAsync(CancellationToken cancellationToken = default) => Task.FromResult<Submission[]>([]);
         public Task<Submission?> GetByIdAsync(Guid submissionId, CancellationToken cancellationToken = default) => Task.FromResult<Submission?>(null);
         public Task<Submission?> GetByIdWithContextAsync(Guid submissionId, CancellationToken cancellationToken = default) => Task.FromResult<Submission?>(null);
         public Task<Submission?> GetByEnrollmentAndActivityAsync(Guid enrollmentId, Guid activityId, CancellationToken cancellationToken = default) => Task.FromResult<Submission?>(null);
