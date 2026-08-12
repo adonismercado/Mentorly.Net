@@ -2,10 +2,25 @@ using Mentorly.Domain.Entities;
 
 namespace Mentorly.Application.Abstractions.Persistence;
 
+public sealed record AdminEscalatedSubmissionData(
+    Guid SubmissionId,
+    Guid EnrollmentId,
+    Guid AuthorStudentId,
+    string AuthorDisplayName,
+    Guid CourseId,
+    string CourseTitle,
+    Guid ActivityId,
+    string ActivityTitle,
+    string EvidenceUrl,
+    DateTime SubmittedAtUtc,
+    DateTime EscalatedAtUtc,
+    int PositiveReviews,
+    int RejectedReviews);
+
 public interface ISubmissionRepository
 {
     Task<Submission[]> GetAllAsync(CancellationToken cancellationToken = default);
-    Task<Submission[]> GetEscalatedAsync(CancellationToken cancellationToken = default);
+    Task<AdminEscalatedSubmissionData[]> GetEscalatedForAdminAsync(CancellationToken cancellationToken = default);
     Task<Submission?> GetByIdAsync(Guid submissionId, CancellationToken cancellationToken = default);
 
     Task<Submission?> GetByIdWithContextAsync(Guid submissionId, CancellationToken cancellationToken = default);
