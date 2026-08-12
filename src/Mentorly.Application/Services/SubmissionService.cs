@@ -140,9 +140,10 @@ public sealed class SubmissionService(
 
         var activity = await peerReviewWorkflowRepository.GetActivityAsync(submission.ActivityId, cancellationToken)
             ?? throw new InvalidOperationException("Activity not found.");
-        if (activity.ApprovalStrategy != ApprovalStrategy.PeerReview || submission.Status != SubmissionStatus.Pending)
+        var canBeEscalated = submission.Status is SubmissionStatus.Pending or SubmissionStatus.Rejected;
+        if (activity.ApprovalStrategy != ApprovalStrategy.PeerReview || !canBeEscalated)
         {
-            throw new InvalidOperationException("Only pending peer-review submissions can be escalated.");
+            throw new InvalidOperationException("Only pending or rejected peer-review submissions can be escalated.");
         }
 
         submission.Escalate(DateTime.UtcNow);
