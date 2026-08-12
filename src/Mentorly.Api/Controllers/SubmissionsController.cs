@@ -23,6 +23,27 @@ public class SubmissionsController(ISubmissionService submissionService) : Contr
         }
     }
 
+    [HttpGet("admins/{adminId:guid}/submissions/{submissionId:guid}/audit")]
+    public async Task<ActionResult<AdminSubmissionAuditDto>> GetEscalatedSubmissionAuditAsync(
+        Guid adminId,
+        Guid submissionId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var audit = await submissionService.GetEscalatedSubmissionAuditAsync(
+                adminId,
+                submissionId,
+                cancellationToken);
+
+            return audit is null ? NotFound() : Ok(audit);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new { message = exception.Message });
+        }
+    }
+
     [HttpGet("students/{studentId:guid}/submissions")]
     public async Task<ActionResult<IEnumerable<SubmissionDto>>> GetMySubmissionsAsync(Guid studentId, CancellationToken cancellationToken = default)
     {
