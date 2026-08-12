@@ -57,6 +57,47 @@ public sealed class SubmissionService(
             submission.RejectedReviews)).ToArray();
     }
 
+    public async Task<AdminSubmissionAuditDto?> GetEscalatedSubmissionAuditAsync(
+        Guid adminId,
+        Guid submissionId,
+        CancellationToken cancellationToken = default)
+    {
+        var admin = await studentRepository.GetByIdAsync(adminId, cancellationToken);
+        if (admin?.Role != StudentRole.Admin)
+        {
+            throw new InvalidOperationException("Only an administrator can audit escalated submissions.");
+        }
+
+        var audit = await submissionRepository.GetEscalatedAuditAsync(submissionId, cancellationToken);
+        if (audit is null)
+        {
+            return null;
+        }
+
+        return new AdminSubmissionAuditDto(
+            audit.SubmissionId,
+            audit.EnrollmentId,
+            audit.AuthorStudentId,
+            audit.AuthorDisplayName,
+            audit.AuthorEmail,
+            audit.CourseId,
+            audit.CourseTitle,
+            audit.ActivityId,
+            audit.ActivityTitle,
+            audit.EvidenceUrl,
+            audit.Status,
+            audit.SubmittedAtUtc,
+            audit.ReviewedAtUtc,
+            audit.PeerReviews.Select(review => new AdminPeerReviewAuditItemDto(
+                review.PeerReviewId,
+                review.ReviewerStudentId,
+                review.ReviewerDisplayName,
+                review.ReviewerEmail,
+                review.IsApproved,
+                review.FeedbackComment,
+                review.CreatedAtUtc)).ToArray());
+    }
+
     public async Task<SubmissionDto?> GetSubmissionByIdAsync(Guid submissionId, CancellationToken cancellationToken = default)
     {
         var submission = await submissionRepository.GetByIdAsync(submissionId, cancellationToken);
