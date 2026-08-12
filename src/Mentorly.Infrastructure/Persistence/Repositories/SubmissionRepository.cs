@@ -42,6 +42,66 @@ public sealed class SubmissionRepository(MentorlyDbContext dbContext) : ISubmiss
             .ToArrayAsync(cancellationToken);
     }
 
+    public async Task<AdminSubmissionAuditData?> GetEscalatedAuditAsync(
+        Guid submissionId,
+        CancellationToken cancellationToken = default)
+    {
+        var submission = await dbContext.Submissions
+            .AsNoTracking()
+            .Include(item => item.Enrollment)
+            .ThenInclude(enrollment => enrollment.Student)
+            .Include(item => item.Enrollment)
+            .ThenInclude(enrollment => enrollment.Course)
+            .FirstOrDefaultAsync(
+                item => item.Id == submissionId && item.Status == SubmissionStatus.Escalated,
+                cancellationToken);
+
+        if (submission is null)
+        {
+            return null;
+        }
+
+        var activity = await dbContext.Activities
+            .AsNoTracking()
+            .FirstOrDefaultAsync(item => item.Id == submission.ActivityId, cancellationToken);
+
+        if (activity is null)
+        {
+            return null;
+        }
+
+        var reviews = await (
+            from review in dbContext.PeerReviews.AsNoTracking()
+            join reviewer in dbContext.Students on review.ReviewerStudentId equals reviewer.Id
+            where review.SubmissionId == submission.Id
+            orderby review.CreatedAt
+            select new AdminPeerReviewAuditItemData(
+                review.Id,
+                reviewer.Id,
+                reviewer.DisplayName,
+                reviewer.Email,
+                review.IsApproved,
+                review.FeedbackComment,
+                review.CreatedAt))
+            .ToArrayAsync(cancellationToken);
+
+        return new AdminSubmissionAuditData(
+            submission.Id,
+            submission.Enrollment.Id,
+            submission.Enrollment.Student.Id,
+            submission.Enrollment.Student.DisplayName,
+            submission.Enrollment.Student.Email,
+            submission.Enrollment.Course.Id,
+            submission.Enrollment.Course.Title,
+            activity.Id,
+            activity.Title,
+            submission.EvidenceUrl,
+            submission.Status,
+            submission.SubmittedAt,
+            submission.ReviewedAt,
+            reviews);
+    }
+
     public Task<Submission?> GetByIdAsync(Guid submissionId, CancellationToken cancellationToken = default)
     {
         return dbContext.Submissions
