@@ -11,6 +11,7 @@ public sealed class SubmissionRepository(MentorlyDbContext dbContext) : ISubmiss
     {
         return dbContext.Submissions
             .AsNoTracking()
+            .Include(submission => submission.Activity)
             .OrderByDescending(submission => submission.SubmittedAt)
             .ToArrayAsync(cancellationToken);
     }
@@ -105,6 +106,7 @@ public sealed class SubmissionRepository(MentorlyDbContext dbContext) : ISubmiss
     public Task<Submission?> GetByIdAsync(Guid submissionId, CancellationToken cancellationToken = default)
     {
         return dbContext.Submissions
+            .Include(submission => submission.Activity)
             .FirstOrDefaultAsync(x => x.Id == submissionId, cancellationToken);
     }
 
@@ -113,12 +115,14 @@ public sealed class SubmissionRepository(MentorlyDbContext dbContext) : ISubmiss
         return dbContext.Submissions
             .Include(x => x.Enrollment)
             .ThenInclude(x => x.Course)
+            .Include(x => x.Activity)
             .FirstOrDefaultAsync(x => x.Id == submissionId, cancellationToken);
     }
 
     public Task<Submission?> GetByEnrollmentAndActivityAsync(Guid enrollmentId, Guid activityId, CancellationToken cancellationToken = default)
     {
         return dbContext.Submissions
+            .Include(submission => submission.Activity)
             .FirstOrDefaultAsync(x => x.EnrollmentId == enrollmentId && x.ActivityId == activityId, cancellationToken);
     }
 
@@ -152,6 +156,7 @@ public sealed class SubmissionRepository(MentorlyDbContext dbContext) : ISubmiss
     {
         return dbContext.Submissions
             .AsNoTracking()
+            .Include(submission => submission.Activity)
             .Where(submission => submission.Enrollment.StudentId == studentId)
             .OrderByDescending(submission => submission.SubmittedAt)
             .ToArrayAsync(cancellationToken);

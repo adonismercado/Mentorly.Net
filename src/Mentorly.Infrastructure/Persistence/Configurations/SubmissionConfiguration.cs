@@ -46,6 +46,11 @@ public sealed class SubmissionConfiguration : IEntityTypeConfiguration<Submissio
         builder.HasIndex(x => new { x.EnrollmentId, x.ActivityId })
             .IsUnique();
 
+        builder.HasOne(x => x.Activity)
+            .WithMany()
+            .HasForeignKey(x => x.ActivityId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasMany(x => x.PeerReviews)
             .WithOne(x => x.Submission)
             .HasForeignKey(x => x.SubmissionId)

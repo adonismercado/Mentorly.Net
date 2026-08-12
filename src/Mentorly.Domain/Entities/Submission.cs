@@ -49,6 +49,8 @@ public class Submission
 
     public Enrollment Enrollment { get; private set; } = null!;
 
+    public Activity Activity { get; private set; } = null!;
+
     public ICollection<PeerReview> PeerReviews { get; private set; } = [];
 
     public static Submission Create(Guid enrollmentId, Guid activityId, string evidenceUrl, DateTime submittedAtUtc)

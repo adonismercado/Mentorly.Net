@@ -23,6 +23,7 @@ public sealed class SubmissionService(
             s.Id,
             s.EnrollmentId,
             s.ActivityId,
+            s.Activity.Title,
             s.EvidenceUrl,
             s.Status,
             s.SubmittedAt,
@@ -111,6 +112,7 @@ public sealed class SubmissionService(
             submission.Id,
             submission.EnrollmentId,
             submission.ActivityId,
+            submission.Activity.Title,
             submission.EvidenceUrl,
             submission.Status,
             submission.SubmittedAt,
@@ -144,7 +146,9 @@ public sealed class SubmissionService(
         await gamificationService.AwardAsync(enrollment.StudentId, GamificationEventType.ExerciseSubmitted, submission.Id, cancellationToken);
         await EvaluateIfApprovedAsync(submission, cancellationToken);
 
-        return Map(submission);
+        var createdSubmission = await submissionRepository.GetByIdAsync(submission.Id, cancellationToken)
+            ?? submission;
+        return Map(createdSubmission);
     }
 
     public async Task<bool> UpdateSubmissionAsync(Guid submissionId, UpdateSubmissionDto dto, CancellationToken cancellationToken = default)
@@ -252,7 +256,9 @@ public sealed class SubmissionService(
 
     public async Task<SubmissionDto[]> GetMySubmissionsAsync(Guid studentId, CancellationToken cancellationToken = default)
     {
-        return (await submissionRepository.GetByStudentIdAsync(studentId, cancellationToken)).Select(Map).ToArray();
+        return (await submissionRepository.GetByStudentIdAsync(studentId, cancellationToken))
+            .Select(submission => Map(submission))
+            .ToArray();
     }
 
     public async Task<PeerReviewFeedbackDto[]?> GetMySubmissionReviewsAsync(Guid submissionId, Guid studentId, CancellationToken cancellationToken = default)
@@ -262,7 +268,15 @@ public sealed class SubmissionService(
         return (await peerReviewRepository.GetBySubmissionIdAsync(submissionId, cancellationToken)).Select(x => new PeerReviewFeedbackDto(x.Id, x.IsApproved, x.FeedbackComment, x.CreatedAt)).ToArray();
     }
 
-    private static SubmissionDto Map(Submission submission) => new(submission.Id, submission.EnrollmentId, submission.ActivityId, submission.EvidenceUrl, submission.Status, submission.SubmittedAt, submission.ReviewedAt);
+    private static SubmissionDto Map(Submission submission) => new(
+        submission.Id,
+        submission.EnrollmentId,
+        submission.ActivityId,
+        submission.Activity?.Title ?? string.Empty,
+        submission.EvidenceUrl,
+        submission.Status,
+        submission.SubmittedAt,
+        submission.ReviewedAt);
 
     private async Task<Enrollment> GetActiveEnrollmentAsync(Guid enrollmentId, CancellationToken cancellationToken)
     {

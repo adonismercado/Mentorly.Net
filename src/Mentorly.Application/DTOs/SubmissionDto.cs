@@ -6,6 +6,7 @@ public sealed record SubmissionDto(
     Guid Id,
     Guid EnrollmentId,
     Guid ActivityId,
+    string ActivityTitle,
     string EvidenceUrl,
     SubmissionStatus Status,
     DateTime SubmittedAt,
