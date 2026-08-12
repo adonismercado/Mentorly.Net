@@ -222,16 +222,13 @@ public sealed class SubmissionService(
 
         var activity = await peerReviewWorkflowRepository.GetActivityAsync(submission.ActivityId, cancellationToken)
             ?? throw new InvalidOperationException("Activity not found.");
-        var isPendingAdminSubmission =
-            activity.ApprovalStrategy == ApprovalStrategy.Admin &&
-            submission.Status == SubmissionStatus.Pending;
         var isEscalatedPeerReviewSubmission =
             activity.ApprovalStrategy == ApprovalStrategy.PeerReview &&
             submission.Status == SubmissionStatus.Escalated;
 
-        if (!isPendingAdminSubmission && !isEscalatedPeerReviewSubmission)
+        if (!isEscalatedPeerReviewSubmission)
         {
-            throw new InvalidOperationException("Only pending admin submissions or escalated peer-review submissions can receive an administrative decision.");
+            throw new InvalidOperationException("Only escalated peer-review submissions can receive an administrative decision.");
         }
 
         if (isApproved)

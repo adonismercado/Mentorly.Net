@@ -125,6 +125,32 @@ public sealed class SubmissionServiceTests
         Assert.Equal(review.FeedbackComment, auditReview.FeedbackComment);
     }
 
+    [Fact]
+    public async Task DecideAsAdminAsync_ApprovesEscalatedPeerReviewSubmission()
+    {
+        var admin = new Student(Guid.NewGuid(), "admin-google-id", "admin@mentorly.com", "Admin Mentorly");
+        admin.PromoteToAdmin();
+        var enrollment = Enrollment.CreateNew(Guid.NewGuid(), Guid.NewGuid(), 1, DateTime.UtcNow);
+        var submission = Submission.Create(enrollment.Id, Guid.NewGuid(), "https://github.com/student/repository", DateTime.UtcNow);
+        submission.Escalate(DateTime.UtcNow);
+        SetPrivateProperty(submission, nameof(Submission.Enrollment), enrollment);
+
+        var service = new SubmissionService(
+            new FakeSubmissionRepository(submission),
+            new FakePeerReviewRepository(),
+            new FakeEnrollmentRepository(),
+            new FakeStudentRepository(admin),
+            new FakePeerReviewWorkflowRepository(submission.ActivityId),
+            new FakeCourseCompletionService(),
+            new FakeGamificationService(),
+            new FakeUnitOfWork());
+
+        var result = await service.DecideAsAdminAsync(admin.Id, submission.Id, isApproved: true);
+
+        Assert.True(result);
+        Assert.Equal(SubmissionStatus.Approved, submission.Status);
+    }
+
     private static void SetPrivateProperty<TTarget, TValue>(TTarget target, string propertyName, TValue value)
         where TTarget : class
     {
