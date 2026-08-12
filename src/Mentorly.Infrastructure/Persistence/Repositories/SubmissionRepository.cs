@@ -15,12 +15,30 @@ public sealed class SubmissionRepository(MentorlyDbContext dbContext) : ISubmiss
             .ToArrayAsync(cancellationToken);
     }
 
-    public Task<Submission[]> GetEscalatedAsync(CancellationToken cancellationToken = default)
+    public Task<AdminEscalatedSubmissionData[]> GetEscalatedForAdminAsync(CancellationToken cancellationToken = default)
     {
-        return dbContext.Submissions
-            .AsNoTracking()
-            .Where(submission => submission.Status == SubmissionStatus.Escalated)
-            .OrderBy(submission => submission.ReviewedAt ?? submission.SubmittedAt)
+        return (
+            from submission in dbContext.Submissions.AsNoTracking()
+            join enrollment in dbContext.Enrollments on submission.EnrollmentId equals enrollment.Id
+            join author in dbContext.Students on enrollment.StudentId equals author.Id
+            join course in dbContext.Courses on enrollment.CourseId equals course.Id
+            join activity in dbContext.Activities on submission.ActivityId equals activity.Id
+            where submission.Status == SubmissionStatus.Escalated
+            orderby submission.ReviewedAt ?? submission.SubmittedAt
+            select new AdminEscalatedSubmissionData(
+                submission.Id,
+                enrollment.Id,
+                author.Id,
+                author.DisplayName,
+                course.Id,
+                course.Title,
+                activity.Id,
+                activity.Title,
+                submission.EvidenceUrl,
+                submission.SubmittedAt,
+                submission.ReviewedAt ?? submission.SubmittedAt,
+                dbContext.PeerReviews.Count(review => review.SubmissionId == submission.Id && review.IsApproved),
+                dbContext.PeerReviews.Count(review => review.SubmissionId == submission.Id && !review.IsApproved)))
             .ToArrayAsync(cancellationToken);
     }
 

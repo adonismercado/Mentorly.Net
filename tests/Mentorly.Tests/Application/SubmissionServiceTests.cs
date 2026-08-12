@@ -34,6 +34,47 @@ public sealed class SubmissionServiceTests
         Assert.Equal(SubmissionStatus.Escalated, submission.Status);
     }
 
+    [Fact]
+    public async Task GetEscalatedSubmissionsAsync_ReturnsAdministrativeContextForAdmin()
+    {
+        var admin = new Student(Guid.NewGuid(), "admin-google-id", "admin@mentorly.com", "Admin Mentorly");
+        admin.PromoteToAdmin();
+        var queueItem = new AdminEscalatedSubmissionData(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "Estudiante Mentorly",
+            Guid.NewGuid(),
+            "Curso de Android",
+            Guid.NewGuid(),
+            "Ejercicio Compose",
+            "https://github.com/student/compose",
+            DateTime.UtcNow.AddDays(-2),
+            DateTime.UtcNow.AddDays(-1),
+            2,
+            1);
+        var submission = Submission.Create(Guid.NewGuid(), queueItem.ActivityId, queueItem.EvidenceUrl, queueItem.SubmittedAtUtc);
+
+        var service = new SubmissionService(
+            new FakeSubmissionRepository(submission, [queueItem]),
+            new FakePeerReviewRepository(),
+            new FakeEnrollmentRepository(),
+            new FakeStudentRepository(admin),
+            new FakePeerReviewWorkflowRepository(submission.ActivityId),
+            new FakeCourseCompletionService(),
+            new FakeGamificationService(),
+            new FakeUnitOfWork());
+
+        var result = await service.GetEscalatedSubmissionsAsync(admin.Id);
+
+        var item = Assert.Single(result);
+        Assert.Equal(queueItem.SubmissionId, item.SubmissionId);
+        Assert.Equal(queueItem.AuthorDisplayName, item.AuthorDisplayName);
+        Assert.Equal(queueItem.CourseTitle, item.CourseTitle);
+        Assert.Equal(queueItem.PositiveReviews, item.PositiveReviews);
+        Assert.Equal(queueItem.RejectedReviews, item.RejectedReviews);
+    }
+
     private static void SetPrivateProperty<TTarget, TValue>(TTarget target, string propertyName, TValue value)
         where TTarget : class
     {
@@ -43,10 +84,12 @@ public sealed class SubmissionServiceTests
         property.SetValue(target, value);
     }
 
-    private sealed class FakeSubmissionRepository(Submission submission) : ISubmissionRepository
+    private sealed class FakeSubmissionRepository(
+        Submission submission,
+        AdminEscalatedSubmissionData[]? escalatedSubmissions = null) : ISubmissionRepository
     {
         public Task<Submission[]> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult<Submission[]>([]);
-        public Task<Submission[]> GetEscalatedAsync(CancellationToken cancellationToken = default) => Task.FromResult<Submission[]>([]);
+        public Task<AdminEscalatedSubmissionData[]> GetEscalatedForAdminAsync(CancellationToken cancellationToken = default) => Task.FromResult(escalatedSubmissions ?? []);
         public Task<Submission?> GetByIdAsync(Guid submissionId, CancellationToken cancellationToken = default) => Task.FromResult<Submission?>(submissionId == submission.Id ? submission : null);
         public Task<Submission?> GetByIdWithContextAsync(Guid submissionId, CancellationToken cancellationToken = default) => Task.FromResult<Submission?>(submissionId == submission.Id ? submission : null);
         public Task<Submission?> GetByEnrollmentAndActivityAsync(Guid enrollmentId, Guid activityId, CancellationToken cancellationToken = default) => Task.FromResult<Submission?>(null);
@@ -84,11 +127,11 @@ public sealed class SubmissionServiceTests
         public void Add(Enrollment enrollment) { }
     }
 
-    private sealed class FakeStudentRepository : IStudentRepository
+    private sealed class FakeStudentRepository(Student? student = null) : IStudentRepository
     {
         public Task<Student?> GetByIdWithBadgesAsync(Guid studentId, CancellationToken cancellationToken = default) => Task.FromResult<Student?>(null);
         public Task<bool> ExistsAsync(Guid studentId, CancellationToken cancellationToken = default) => Task.FromResult(false);
-        public Task<Student?> GetByIdAsync(Guid studentId, CancellationToken cancellationToken = default) => Task.FromResult<Student?>(null);
+        public Task<Student?> GetByIdAsync(Guid studentId, CancellationToken cancellationToken = default) => Task.FromResult(student?.Id == studentId ? student : null);
         public Task<Student[]> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult<Student[]>([]);
         public void Add(Student student) { }
         public void Update(Student student) { }

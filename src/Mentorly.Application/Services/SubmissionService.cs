@@ -30,7 +30,7 @@ public sealed class SubmissionService(
             .ToArray();
     }
 
-    public async Task<SubmissionDto[]> GetEscalatedSubmissionsAsync(
+    public async Task<AdminEscalatedSubmissionDto[]> GetEscalatedSubmissionsAsync(
         Guid adminId,
         CancellationToken cancellationToken = default)
     {
@@ -40,8 +40,21 @@ public sealed class SubmissionService(
             throw new InvalidOperationException("Only an administrator can view escalated submissions.");
         }
 
-        var submissions = await submissionRepository.GetEscalatedAsync(cancellationToken);
-        return submissions.Select(Map).ToArray();
+        var submissions = await submissionRepository.GetEscalatedForAdminAsync(cancellationToken);
+        return submissions.Select(submission => new AdminEscalatedSubmissionDto(
+            submission.SubmissionId,
+            submission.EnrollmentId,
+            submission.AuthorStudentId,
+            submission.AuthorDisplayName,
+            submission.CourseId,
+            submission.CourseTitle,
+            submission.ActivityId,
+            submission.ActivityTitle,
+            submission.EvidenceUrl,
+            submission.SubmittedAtUtc,
+            submission.EscalatedAtUtc,
+            submission.PositiveReviews,
+            submission.RejectedReviews)).ToArray();
     }
 
     public async Task<SubmissionDto?> GetSubmissionByIdAsync(Guid submissionId, CancellationToken cancellationToken = default)
