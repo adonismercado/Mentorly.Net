@@ -30,6 +30,20 @@ public sealed class SubmissionService(
             .ToArray();
     }
 
+    public async Task<SubmissionDto[]> GetEscalatedSubmissionsAsync(
+        Guid adminId,
+        CancellationToken cancellationToken = default)
+    {
+        var admin = await studentRepository.GetByIdAsync(adminId, cancellationToken);
+        if (admin?.Role != StudentRole.Admin)
+        {
+            throw new InvalidOperationException("Only an administrator can view escalated submissions.");
+        }
+
+        var submissions = await submissionRepository.GetEscalatedAsync(cancellationToken);
+        return submissions.Select(Map).ToArray();
+    }
+
     public async Task<SubmissionDto?> GetSubmissionByIdAsync(Guid submissionId, CancellationToken cancellationToken = default)
     {
         var submission = await submissionRepository.GetByIdAsync(submissionId, cancellationToken);
@@ -153,9 +167,16 @@ public sealed class SubmissionService(
 
         var activity = await peerReviewWorkflowRepository.GetActivityAsync(submission.ActivityId, cancellationToken)
             ?? throw new InvalidOperationException("Activity not found.");
-        if (activity.ApprovalStrategy != ApprovalStrategy.Admin)
+        var isPendingAdminSubmission =
+            activity.ApprovalStrategy == ApprovalStrategy.Admin &&
+            submission.Status == SubmissionStatus.Pending;
+        var isEscalatedPeerReviewSubmission =
+            activity.ApprovalStrategy == ApprovalStrategy.PeerReview &&
+            submission.Status == SubmissionStatus.Escalated;
+
+        if (!isPendingAdminSubmission && !isEscalatedPeerReviewSubmission)
         {
-            throw new InvalidOperationException("Only admin-approved activities can receive an administrative decision.");
+            throw new InvalidOperationException("Only pending admin submissions or escalated peer-review submissions can receive an administrative decision.");
         }
 
         if (isApproved)
