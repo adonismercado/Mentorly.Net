@@ -142,8 +142,8 @@ public sealed class PeerReviewServiceTests
         public Task<Submission[]> GetAllAsync(CancellationToken cancellationToken = default)
             => Task.FromResult(Array.Empty<Submission>());
 
-        public Task<Submission[]> GetEscalatedAsync(CancellationToken cancellationToken = default)
-            => Task.FromResult(Array.Empty<Submission>());
+        public Task<AdminEscalatedSubmissionData[]> GetEscalatedForAdminAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<AdminEscalatedSubmissionData[]>([]);
     }
 
     private sealed class FakePeerReviewRepository(int existingApprovalCount, bool alreadyReviewed) : IPeerReviewRepository
