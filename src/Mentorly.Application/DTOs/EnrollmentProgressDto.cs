@@ -25,6 +25,14 @@ public sealed record EnrollmentUnitProgressDto(
     int TotalThemes,
     int ApprovedMandatoryActivities,
     int TotalMandatoryActivities,
+    EnrollmentThemeProgressDto[] Themes);
+
+public sealed record EnrollmentThemeProgressDto(
+    Guid ThemeId,
+    string Title,
+    string ContentText,
+    int OrderIndex,
+    bool IsCompleted,
     EnrollmentActivityProgressDto[] Activities);
 
 public sealed record EnrollmentActivityProgressDto(
