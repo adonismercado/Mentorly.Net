@@ -17,10 +17,36 @@ public sealed record AdminEscalatedSubmissionData(
     int PositiveReviews,
     int RejectedReviews);
 
+public sealed record AdminPeerReviewAuditItemData(
+    Guid PeerReviewId,
+    Guid ReviewerStudentId,
+    string ReviewerDisplayName,
+    string ReviewerEmail,
+    bool IsApproved,
+    string FeedbackComment,
+    DateTime CreatedAtUtc);
+
+public sealed record AdminSubmissionAuditData(
+    Guid SubmissionId,
+    Guid EnrollmentId,
+    Guid AuthorStudentId,
+    string AuthorDisplayName,
+    string AuthorEmail,
+    Guid CourseId,
+    string CourseTitle,
+    Guid ActivityId,
+    string ActivityTitle,
+    string EvidenceUrl,
+    Mentorly.Domain.Enums.SubmissionStatus Status,
+    DateTime SubmittedAtUtc,
+    DateTime? ReviewedAtUtc,
+    AdminPeerReviewAuditItemData[] PeerReviews);
+
 public interface ISubmissionRepository
 {
     Task<Submission[]> GetAllAsync(CancellationToken cancellationToken = default);
     Task<AdminEscalatedSubmissionData[]> GetEscalatedForAdminAsync(CancellationToken cancellationToken = default);
+    Task<AdminSubmissionAuditData?> GetEscalatedAuditAsync(Guid submissionId, CancellationToken cancellationToken = default);
     Task<Submission?> GetByIdAsync(Guid submissionId, CancellationToken cancellationToken = default);
 
     Task<Submission?> GetByIdWithContextAsync(Guid submissionId, CancellationToken cancellationToken = default);
