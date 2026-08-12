@@ -15,6 +15,9 @@ public sealed class FakeSubmissionRepository(Submission submission, bool reviewe
         return Task.FromResult<AdminEscalatedSubmissionData[]>([]);
     }
 
+    public Task<AdminSubmissionAuditData?> GetEscalatedAuditAsync(Guid submissionId, CancellationToken cancellationToken = default)
+        => Task.FromResult<AdminSubmissionAuditData?>(null);
+
     public Task<Submission?> GetByIdAsync(Guid submissionId, CancellationToken cancellationToken = default)
         => Task.FromResult(submissionId == submission.Id ? submission : null);
 

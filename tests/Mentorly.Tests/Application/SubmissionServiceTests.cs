@@ -75,6 +75,56 @@ public sealed class SubmissionServiceTests
         Assert.Equal(queueItem.RejectedReviews, item.RejectedReviews);
     }
 
+    [Fact]
+    public async Task GetEscalatedSubmissionAuditAsync_ReturnsAuthorAndReviewerIdentitiesForAdmin()
+    {
+        var admin = new Student(Guid.NewGuid(), "admin-google-id", "admin@mentorly.com", "Admin Mentorly");
+        admin.PromoteToAdmin();
+        var review = new AdminPeerReviewAuditItemData(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "Revisor Mentorly",
+            "reviewer@mentorly.com",
+            true,
+            "La evidencia cumple con los requisitos.",
+            DateTime.UtcNow.AddHours(-4));
+        var audit = new AdminSubmissionAuditData(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "Autora Mentorly",
+            "author@mentorly.com",
+            Guid.NewGuid(),
+            "Curso de Android",
+            Guid.NewGuid(),
+            "Ejercicio Compose",
+            "https://github.com/author/compose",
+            SubmissionStatus.Escalated,
+            DateTime.UtcNow.AddDays(-2),
+            DateTime.UtcNow.AddDays(-1),
+            [review]);
+        var submission = Submission.Create(audit.EnrollmentId, audit.ActivityId, audit.EvidenceUrl, audit.SubmittedAtUtc);
+
+        var service = new SubmissionService(
+            new FakeSubmissionRepository(submission, audit: audit),
+            new FakePeerReviewRepository(),
+            new FakeEnrollmentRepository(),
+            new FakeStudentRepository(admin),
+            new FakePeerReviewWorkflowRepository(submission.ActivityId),
+            new FakeCourseCompletionService(),
+            new FakeGamificationService(),
+            new FakeUnitOfWork());
+
+        var result = await service.GetEscalatedSubmissionAuditAsync(admin.Id, audit.SubmissionId);
+
+        Assert.NotNull(result);
+        Assert.Equal(audit.AuthorEmail, result.AuthorEmail);
+        Assert.Equal(audit.CourseTitle, result.CourseTitle);
+        var auditReview = Assert.Single(result.PeerReviews);
+        Assert.Equal(review.ReviewerEmail, auditReview.ReviewerEmail);
+        Assert.Equal(review.FeedbackComment, auditReview.FeedbackComment);
+    }
+
     private static void SetPrivateProperty<TTarget, TValue>(TTarget target, string propertyName, TValue value)
         where TTarget : class
     {
@@ -86,10 +136,12 @@ public sealed class SubmissionServiceTests
 
     private sealed class FakeSubmissionRepository(
         Submission submission,
-        AdminEscalatedSubmissionData[]? escalatedSubmissions = null) : ISubmissionRepository
+        AdminEscalatedSubmissionData[]? escalatedSubmissions = null,
+        AdminSubmissionAuditData? audit = null) : ISubmissionRepository
     {
         public Task<Submission[]> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult<Submission[]>([]);
         public Task<AdminEscalatedSubmissionData[]> GetEscalatedForAdminAsync(CancellationToken cancellationToken = default) => Task.FromResult(escalatedSubmissions ?? []);
+        public Task<AdminSubmissionAuditData?> GetEscalatedAuditAsync(Guid submissionId, CancellationToken cancellationToken = default) => Task.FromResult(audit?.SubmissionId == submissionId ? audit : null);
         public Task<Submission?> GetByIdAsync(Guid submissionId, CancellationToken cancellationToken = default) => Task.FromResult<Submission?>(submissionId == submission.Id ? submission : null);
         public Task<Submission?> GetByIdWithContextAsync(Guid submissionId, CancellationToken cancellationToken = default) => Task.FromResult<Submission?>(submissionId == submission.Id ? submission : null);
         public Task<Submission?> GetByEnrollmentAndActivityAsync(Guid enrollmentId, Guid activityId, CancellationToken cancellationToken = default) => Task.FromResult<Submission?>(null);
