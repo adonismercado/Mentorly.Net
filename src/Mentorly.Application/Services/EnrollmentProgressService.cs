@@ -180,6 +180,7 @@ public sealed class EnrollmentProgressService(
                 activities.Select(activity => new EnrollmentActivityProgressDto(
                     activity.Id,
                     activity.Title,
+                    activity.Type,
                     activity.IsMandatory,
                     !activity.IsMandatory || approvedActivityIds.Contains(activity.Id))).ToArray()));
         }
