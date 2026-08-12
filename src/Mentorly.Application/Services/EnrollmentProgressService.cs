@@ -22,12 +22,13 @@ public sealed class EnrollmentProgressService(
     public async Task<IReadOnlyList<EnrollmentDto>> GetStudentEnrollmentsAsync(Guid studentId, CancellationToken cancellationToken = default)
     {
         var enrollments = await enrollmentRepository.GetByStudentIdAsync(studentId, cancellationToken);
-        return enrollments.Select(MapEnrollment).ToList();
+        return enrollments.Select(enrollment => MapEnrollment(enrollment)).ToList();
     }
 
     public async Task<EnrollmentDto?> RestartAsync(Guid studentId, Guid courseId, CancellationToken cancellationToken = default)
     {
-        if (await courseRepository.GetByIdAsync(courseId, cancellationToken) is null)
+        var course = await courseRepository.GetByIdAsync(courseId, cancellationToken);
+        if (course is null)
         {
             return null;
         }
@@ -48,7 +49,7 @@ public sealed class EnrollmentProgressService(
         var enrollment = Enrollment.CreateNew(studentId, courseId, attempt, DateTime.UtcNow);
         enrollmentRepository.Add(enrollment);
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        return MapEnrollment(enrollment);
+        return MapEnrollment(enrollment, course.Title);
     }
 
     public async Task<EnrollmentProgressDto?> GetProgressAsync(Guid enrollmentId, CancellationToken cancellationToken = default)
@@ -222,5 +223,14 @@ public sealed class EnrollmentProgressService(
             unitProgress.ToArray());
     }
 
-    private static EnrollmentDto MapEnrollment(Enrollment enrollment) => new(enrollment.Id, enrollment.StudentId, enrollment.CourseId, enrollment.AttemptNumber, enrollment.StartedAt, enrollment.ExpiresAt, enrollment.Status, enrollment.CertificateUrl);
+    private static EnrollmentDto MapEnrollment(Enrollment enrollment, string? courseTitle = null) => new(
+        enrollment.Id,
+        enrollment.StudentId,
+        enrollment.CourseId,
+        courseTitle ?? enrollment.Course?.Title ?? string.Empty,
+        enrollment.AttemptNumber,
+        enrollment.StartedAt,
+        enrollment.ExpiresAt,
+        enrollment.Status,
+        enrollment.CertificateUrl);
 }

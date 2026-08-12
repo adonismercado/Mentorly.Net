@@ -19,6 +19,7 @@ public sealed class EnrollmentService(
             enrollment.Id,
             enrollment.StudentId,
             enrollment.CourseId,
+            enrollment.Course?.Title ?? string.Empty,
             enrollment.AttemptNumber,
             enrollment.StartedAt,
             enrollment.ExpiresAt,

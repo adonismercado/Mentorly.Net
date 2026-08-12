@@ -48,7 +48,11 @@ public sealed class EnrollmentRepository(MentorlyDbContext dbContext) : IEnrollm
 
     public async Task<Enrollment[]> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default)
     {
-        return await dbContext.Enrollments.Where(x => x.StudentId == studentId).OrderByDescending(x => x.StartedAt).ToArrayAsync(cancellationToken);
+        return await dbContext.Enrollments
+            .Include(x => x.Course)
+            .Where(x => x.StudentId == studentId)
+            .OrderByDescending(x => x.StartedAt)
+            .ToArrayAsync(cancellationToken);
     }
 
     public Task<Enrollment?> GetLatestByStudentAndCourseAsync(Guid studentId, Guid courseId, CancellationToken cancellationToken = default)

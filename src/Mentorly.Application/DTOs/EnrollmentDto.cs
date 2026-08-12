@@ -6,6 +6,7 @@ public sealed record EnrollmentDto(
     Guid Id,
     Guid StudentId,
     Guid CourseId,
+    string CourseTitle,
     int AttemptNumber,
     DateTime StartedAt,
     DateTime ExpiresAt,
