@@ -8,7 +8,7 @@ public class Submission
     {
     }
 
-    private Submission(Guid id, Guid enrollmentId, Guid activityId, string evidenceUrl, DateTime submittedAtUtc)
+    private Submission(Guid id, Guid enrollmentId, Guid activityId, EvidenceType evidenceType, string evidenceContent, DateTime submittedAtUtc)
     {
         if (id == Guid.Empty)
         {
@@ -28,7 +28,8 @@ public class Submission
         Id = id;
         EnrollmentId = enrollmentId;
         ActivityId = activityId;
-        EvidenceUrl = NormalizeEvidenceUrl(evidenceUrl);
+        EvidenceType = evidenceType;
+        EvidenceContent = NormalizeEvidenceContent(evidenceType, evidenceContent);
         SubmittedAt = EnsureUtc(submittedAtUtc);
         Status = SubmissionStatus.Pending;
     }
@@ -39,7 +40,9 @@ public class Submission
 
     public Guid ActivityId { get; private set; }
 
-    public string EvidenceUrl { get; private set; } = string.Empty;
+    public EvidenceType EvidenceType { get; private set; }
+
+    public string EvidenceContent { get; private set; } = string.Empty;
 
     public SubmissionStatus Status { get; private set; }
 
@@ -53,14 +56,15 @@ public class Submission
 
     public ICollection<PeerReview> PeerReviews { get; private set; } = [];
 
-    public static Submission Create(Guid enrollmentId, Guid activityId, string evidenceUrl, DateTime submittedAtUtc)
+    public static Submission Create(Guid enrollmentId, Guid activityId, EvidenceType evidenceType, string evidenceContent, DateTime submittedAtUtc)
     {
-        return new Submission(Guid.NewGuid(), enrollmentId, activityId, evidenceUrl, submittedAtUtc);
+        return new Submission(Guid.NewGuid(), enrollmentId, activityId, evidenceType, evidenceContent, submittedAtUtc);
     }
 
-    public void ReplaceEvidence(string evidenceUrl)
+    public void ReplaceEvidence(EvidenceType evidenceType, string evidenceContent)
     {
-        EvidenceUrl = NormalizeEvidenceUrl(evidenceUrl);
+        EvidenceType = evidenceType;
+        EvidenceContent = NormalizeEvidenceContent(evidenceType, evidenceContent);
         Status = SubmissionStatus.Pending;
         ReviewedAt = null;
     }
@@ -83,21 +87,32 @@ public class Submission
         ReviewedAt = EnsureUtc(reviewedAtUtc);
     }
 
-    private static string NormalizeEvidenceUrl(string evidenceUrl)
+    private static string NormalizeEvidenceContent(EvidenceType evidenceType, string evidenceContent)
     {
-        if (string.IsNullOrWhiteSpace(evidenceUrl))
+        if (string.IsNullOrWhiteSpace(evidenceContent))
         {
-            throw new ArgumentException("Evidence url is required.", nameof(evidenceUrl));
+            throw new ArgumentException("Evidence content is required.", nameof(evidenceContent));
         }
 
-        if (!Uri.TryCreate(evidenceUrl.Trim(), UriKind.Absolute, out var uri))
+        var normalizedContent = evidenceContent.Trim();
+        if (evidenceType == EvidenceType.Text)
         {
-            throw new ArgumentException("Evidence url must be an absolute url.", nameof(evidenceUrl));
+            return normalizedContent;
+        }
+
+        if (evidenceType != EvidenceType.Url)
+        {
+            throw new ArgumentOutOfRangeException(nameof(evidenceType), "Evidence type is not supported.");
+        }
+
+        if (!Uri.TryCreate(normalizedContent, UriKind.Absolute, out var uri))
+        {
+            throw new ArgumentException("Evidence url must be an absolute url.", nameof(evidenceContent));
         }
 
         if (uri.Scheme is not ("http" or "https"))
         {
-            throw new ArgumentException("Evidence url must be http or https.", nameof(evidenceUrl));
+            throw new ArgumentException("Evidence url must be http or https.", nameof(evidenceContent));
         }
 
         return uri.ToString();
