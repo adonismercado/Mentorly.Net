@@ -24,9 +24,16 @@ public sealed class SubmissionConfiguration : IEntityTypeConfiguration<Submissio
             .HasColumnName("activity_id")
             .IsRequired();
 
-        builder.Property(x => x.EvidenceUrl)
-            .HasColumnName("evidence_url")
-            .HasMaxLength(1000)
+        builder.Property(x => x.EvidenceType)
+            .HasColumnName("evidence_type")
+            .HasConversion<string>()
+            .HasMaxLength(16)
+            .HasDefaultValue(EvidenceType.Url)
+            .IsRequired();
+
+        builder.Property(x => x.EvidenceContent)
+            .HasColumnName("evidence_content")
+            .HasColumnType("nvarchar(max)")
             .IsRequired();
 
         builder.Property(x => x.Status)
