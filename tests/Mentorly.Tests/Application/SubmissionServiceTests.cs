@@ -14,7 +14,7 @@ public sealed class SubmissionServiceTests
     {
         var studentId = Guid.NewGuid();
         var enrollment = Enrollment.CreateNew(studentId, Guid.NewGuid(), 1, DateTime.UtcNow);
-        var submission = Submission.Create(enrollment.Id, Guid.NewGuid(), "https://github.com/example/repository", DateTime.UtcNow);
+        var submission = Submission.Create(enrollment.Id, Guid.NewGuid(), EvidenceType.Url, "https://github.com/example/repository", DateTime.UtcNow);
         submission.Reject(DateTime.UtcNow);
         SetPrivateProperty(submission, nameof(Submission.Enrollment), enrollment);
 
@@ -27,6 +27,44 @@ public sealed class SubmissionServiceTests
             new FakeCourseCompletionService(),
             new FakeGamificationService(),
             new FakeUnitOfWork());
+
+        var result = await service.EscalateAsync(submission.Id, studentId);
+
+        Assert.True(result);
+        Assert.Equal(SubmissionStatus.Escalated, submission.Status);
+    }
+
+    [Fact]
+    public async Task EscalateAsync_RejectsPendingSubmissionBeforeSeventyTwoHours()
+    {
+        var studentId = Guid.NewGuid();
+        var enrollment = Enrollment.CreateNew(studentId, Guid.NewGuid(), 1, DateTime.UtcNow);
+        var submission = Submission.Create(enrollment.Id, Guid.NewGuid(), EvidenceType.Url, "https://github.com/example/repository", DateTime.UtcNow.AddHours(-71));
+        SetPrivateProperty(submission, nameof(Submission.Enrollment), enrollment);
+
+        var service = new SubmissionService(
+            new FakeSubmissionRepository(submission), new FakePeerReviewRepository(), new FakeEnrollmentRepository(),
+            new FakeStudentRepository(), new FakePeerReviewWorkflowRepository(submission.ActivityId),
+            new FakeCourseCompletionService(), new FakeGamificationService(), new FakeUnitOfWork());
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => service.EscalateAsync(submission.Id, studentId));
+
+        Assert.Contains("72 hours", exception.Message);
+        Assert.Equal(SubmissionStatus.Pending, submission.Status);
+    }
+
+    [Fact]
+    public async Task EscalateAsync_EscalatesPendingSubmissionAfterSeventyTwoHours()
+    {
+        var studentId = Guid.NewGuid();
+        var enrollment = Enrollment.CreateNew(studentId, Guid.NewGuid(), 1, DateTime.UtcNow);
+        var submission = Submission.Create(enrollment.Id, Guid.NewGuid(), EvidenceType.Url, "https://github.com/example/repository", DateTime.UtcNow.AddHours(-73));
+        SetPrivateProperty(submission, nameof(Submission.Enrollment), enrollment);
+
+        var service = new SubmissionService(
+            new FakeSubmissionRepository(submission), new FakePeerReviewRepository(), new FakeEnrollmentRepository(),
+            new FakeStudentRepository(), new FakePeerReviewWorkflowRepository(submission.ActivityId),
+            new FakeCourseCompletionService(), new FakeGamificationService(), new FakeUnitOfWork());
 
         var result = await service.EscalateAsync(submission.Id, studentId);
 
@@ -48,12 +86,13 @@ public sealed class SubmissionServiceTests
             "Curso de Android",
             Guid.NewGuid(),
             "Ejercicio Compose",
+            EvidenceType.Url,
             "https://github.com/student/compose",
             DateTime.UtcNow.AddDays(-2),
             DateTime.UtcNow.AddDays(-1),
             2,
             1);
-        var submission = Submission.Create(Guid.NewGuid(), queueItem.ActivityId, queueItem.EvidenceUrl, queueItem.SubmittedAtUtc);
+        var submission = Submission.Create(Guid.NewGuid(), queueItem.ActivityId, queueItem.EvidenceType, queueItem.EvidenceContent, queueItem.SubmittedAtUtc);
 
         var service = new SubmissionService(
             new FakeSubmissionRepository(submission, [queueItem]),
@@ -98,12 +137,13 @@ public sealed class SubmissionServiceTests
             "Curso de Android",
             Guid.NewGuid(),
             "Ejercicio Compose",
+            EvidenceType.Url,
             "https://github.com/author/compose",
             SubmissionStatus.Escalated,
             DateTime.UtcNow.AddDays(-2),
             DateTime.UtcNow.AddDays(-1),
             [review]);
-        var submission = Submission.Create(audit.EnrollmentId, audit.ActivityId, audit.EvidenceUrl, audit.SubmittedAtUtc);
+        var submission = Submission.Create(audit.EnrollmentId, audit.ActivityId, audit.EvidenceType, audit.EvidenceContent, audit.SubmittedAtUtc);
 
         var service = new SubmissionService(
             new FakeSubmissionRepository(submission, audit: audit),
@@ -131,7 +171,7 @@ public sealed class SubmissionServiceTests
         var admin = new Student(Guid.NewGuid(), "admin-google-id", "admin@mentorly.com", "Admin Mentorly");
         admin.PromoteToAdmin();
         var enrollment = Enrollment.CreateNew(Guid.NewGuid(), Guid.NewGuid(), 1, DateTime.UtcNow);
-        var submission = Submission.Create(enrollment.Id, Guid.NewGuid(), "https://github.com/student/repository", DateTime.UtcNow);
+        var submission = Submission.Create(enrollment.Id, Guid.NewGuid(), EvidenceType.Url, "https://github.com/student/repository", DateTime.UtcNow);
         submission.Escalate(DateTime.UtcNow);
         SetPrivateProperty(submission, nameof(Submission.Enrollment), enrollment);
 
