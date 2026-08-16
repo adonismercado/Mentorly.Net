@@ -12,7 +12,8 @@ public sealed class PeerReviewService(
     IPeerReviewWorkflowRepository peerReviewWorkflowRepository,
     ICourseCompletionService courseCompletionService,
     IGamificationService gamificationService,
-    IUnitOfWork unitOfWork) : IPeerReviewService
+    IUnitOfWork unitOfWork,
+    IPeerReviewRubricRepository rubricRepository) : IPeerReviewService
 {
     public async Task<PeerReviewDto[]> GetAllPeerReviewsAsync(Guid adminId, CancellationToken cancellationToken = default)
     {
@@ -25,6 +26,7 @@ public sealed class PeerReviewService(
             pr.ReviewerStudentId,
             pr.IsApproved,
             pr.FeedbackComment,
+            pr.CriterionScores.Select(score => new PeerReviewCriterionScoreDto(score.RubricCriterionId, score.Score)).ToArray(),
             pr.CreatedAt))
             .ToArray();
     }
@@ -81,6 +83,11 @@ public sealed class PeerReviewService(
             request.FeedbackComment,
             reviewedAtUtc);
 
+        var scores = request.CriterionScores ?? [];
+        var criteria = await rubricRepository.GetByActivityIdAsync(submission.ActivityId, cancellationToken);
+        ValidateScores(criteria, scores);
+        foreach (var score in scores) review.AddCriterionScore(score.RubricCriterionId, score.Score);
+
         await peerReviewRepository.AddAsync(review, cancellationToken);
 
         var positiveReviews = await peerReviewRepository.CountApprovalsForSubmissionAsync(submission.Id, cancellationToken);
@@ -115,6 +122,7 @@ public sealed class PeerReviewService(
             review.ReviewerStudentId,
             review.IsApproved,
             review.FeedbackComment,
+            scores,
             review.CreatedAt,
             positiveReviews,
             requiredReviews,
@@ -136,12 +144,14 @@ public sealed class PeerReviewService(
     {
         await EnsureAdminAsync(adminId, cancellationToken);
         var audit = await peerReviewWorkflowRepository.GetAuditAsync(peerReviewId, cancellationToken);
-        return audit is null ? null : new PeerReviewAuditDto(audit.PeerReviewId, audit.SubmissionId, audit.AuthorStudentId, audit.ReviewerStudentId, audit.IsApproved, audit.FeedbackComment, audit.CreatedAtUtc, audit.EvidenceType, audit.EvidenceContent);
+        if (audit is null) return null;
+        var review = await peerReviewRepository.GetByIdAsync(peerReviewId, cancellationToken);
+        return new PeerReviewAuditDto(audit.PeerReviewId, audit.SubmissionId, audit.AuthorStudentId, audit.ReviewerStudentId, audit.IsApproved, audit.FeedbackComment, review?.CriterionScores.Select(score => new PeerReviewCriterionScoreDto(score.RubricCriterionId, score.Score)).ToArray() ?? [], audit.CreatedAtUtc, audit.EvidenceType, audit.EvidenceContent);
     }
 
     public async Task<PeerReviewDto[]> GetMyPeerReviewsAsync(Guid reviewerStudentId, CancellationToken cancellationToken = default)
     {
-        return (await peerReviewRepository.GetByReviewerStudentIdAsync(reviewerStudentId, cancellationToken)).Select(pr => new PeerReviewDto(pr.Id, pr.SubmissionId, pr.ReviewerStudentId, pr.IsApproved, pr.FeedbackComment, pr.CreatedAt)).ToArray();
+        return (await peerReviewRepository.GetByReviewerStudentIdAsync(reviewerStudentId, cancellationToken)).Select(pr => new PeerReviewDto(pr.Id, pr.SubmissionId, pr.ReviewerStudentId, pr.IsApproved, pr.FeedbackComment, pr.CriterionScores.Select(score => new PeerReviewCriterionScoreDto(score.RubricCriterionId, score.Score)).ToArray(), pr.CreatedAt)).ToArray();
     }
 
     public async Task<AnonymousSubmissionDto?> GetAnonymousSubmissionAsync(Guid submissionId, Guid reviewerStudentId, CancellationToken cancellationToken = default)
@@ -180,6 +190,55 @@ public sealed class PeerReviewService(
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return true;
+    }
+
+    public async Task<PeerReviewRubricCriterionDto[]> GetRubricAsync(Guid activityId, CancellationToken cancellationToken = default) =>
+        (await rubricRepository.GetByActivityIdAsync(activityId, cancellationToken)).Select(MapCriterion).ToArray();
+
+    public async Task<PeerReviewRubricCriterionDto?> CreateRubricCriterionAsync(Guid adminId, Guid activityId, CreatePeerReviewRubricCriterionDto dto, CancellationToken cancellationToken = default)
+    {
+        await EnsureAdminAsync(adminId, cancellationToken);
+        var activity = await peerReviewWorkflowRepository.GetActivityAsync(activityId, cancellationToken) ?? throw new InvalidOperationException("Activity not found.");
+        if (activity.ApprovalStrategy != Domain.Enums.ApprovalStrategy.PeerReview) throw new InvalidOperationException("Only peer-review activities can have a rubric.");
+        var criterion = new PeerReviewRubricCriterion(Guid.NewGuid(), activityId, dto.Title, dto.Description, dto.MaxScore, dto.OrderIndex);
+        await rubricRepository.AddAsync(criterion, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        return MapCriterion(criterion);
+    }
+
+    public async Task<bool> UpdateRubricCriterionAsync(Guid adminId, Guid criterionId, UpdatePeerReviewRubricCriterionDto dto, CancellationToken cancellationToken = default)
+    {
+        await EnsureAdminAsync(adminId, cancellationToken);
+        var criterion = await rubricRepository.GetByIdAsync(criterionId, cancellationToken);
+        if (criterion is null) return false;
+        criterion.Update(dto.Title, dto.Description, dto.MaxScore, dto.OrderIndex);
+        rubricRepository.Update(criterion);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
+    public async Task<bool> DeleteRubricCriterionAsync(Guid adminId, Guid criterionId, CancellationToken cancellationToken = default)
+    {
+        await EnsureAdminAsync(adminId, cancellationToken);
+        var criterion = await rubricRepository.GetByIdAsync(criterionId, cancellationToken);
+        if (criterion is null) return false;
+        rubricRepository.Delete(criterion);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
+    private static PeerReviewRubricCriterionDto MapCriterion(PeerReviewRubricCriterion criterion) => new(criterion.Id, criterion.ActivityId, criterion.Title, criterion.Description, criterion.MaxScore, criterion.OrderIndex);
+
+    private static void ValidateScores(PeerReviewRubricCriterion[] criteria, PeerReviewCriterionScoreDto[] scores)
+    {
+        if (criteria.Length == 0 && scores.Length == 0) return;
+        if (criteria.Length != scores.Length || scores.Select(score => score.RubricCriterionId).Distinct().Count() != scores.Length)
+            throw new ArgumentException("Every rubric criterion must receive exactly one score.", nameof(scores));
+        foreach (var score in scores)
+        {
+            var criterion = criteria.SingleOrDefault(item => item.Id == score.RubricCriterionId) ?? throw new ArgumentException("A score does not belong to this activity rubric.", nameof(scores));
+            if (score.Score < 0 || score.Score > criterion.MaxScore) throw new ArgumentOutOfRangeException(nameof(scores), "Score is outside its criterion range.");
+        }
     }
 
     private async Task EnsureAdminAsync(Guid adminId, CancellationToken cancellationToken)
