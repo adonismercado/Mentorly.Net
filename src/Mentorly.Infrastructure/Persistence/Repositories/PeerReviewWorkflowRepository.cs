@@ -69,7 +69,7 @@ public sealed class PeerReviewWorkflowRepository(MentorlyDbContext dbContext) : 
                           && dbContext.Submissions.Any(own => own.ActivityId == submission.ActivityId && own.Enrollment.StudentId == reviewerStudentId)
                           && !dbContext.PeerReviews.Any(review => review.SubmissionId == submission.Id && review.ReviewerStudentId == reviewerStudentId)
                       orderby submission.SubmittedAt
-                      select new ReviewQueueItemData(submission.Id, submission.ActivityId, activity.Title, submission.EvidenceUrl, submission.SubmittedAt))
+                      select new ReviewQueueItemData(submission.Id, submission.ActivityId, activity.Title, submission.EvidenceType, submission.EvidenceContent, submission.SubmittedAt))
             .ToListAsync(cancellationToken);
     }
 
@@ -79,7 +79,7 @@ public sealed class PeerReviewWorkflowRepository(MentorlyDbContext dbContext) : 
                 join submission in dbContext.Submissions on review.SubmissionId equals submission.Id
                 join enrollment in dbContext.Enrollments on submission.EnrollmentId equals enrollment.Id
                 where review.Id == peerReviewId
-                select new ReviewAuditData(review.Id, submission.Id, enrollment.StudentId, review.ReviewerStudentId, review.IsApproved, review.FeedbackComment, review.CreatedAt, submission.EvidenceUrl))
+                select new ReviewAuditData(review.Id, submission.Id, enrollment.StudentId, review.ReviewerStudentId, review.IsApproved, review.FeedbackComment, review.CreatedAt, submission.EvidenceType, submission.EvidenceContent))
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -101,7 +101,7 @@ public sealed class PeerReviewWorkflowRepository(MentorlyDbContext dbContext) : 
                         reviewerEnrollment.ExpiresAt >= DateTime.UtcNow)
                     && dbContext.Submissions.Any(own => own.ActivityId == submission.ActivityId && own.Enrollment.StudentId == reviewerStudentId)
                     && !dbContext.PeerReviews.Any(review => review.SubmissionId == submission.Id && review.ReviewerStudentId == reviewerStudentId)
-                select new AnonymousSubmissionData(submission.Id, activity.Id, activity.Title, submission.EvidenceUrl, submission.SubmittedAt))
+                select new AnonymousSubmissionData(submission.Id, activity.Id, activity.Title, submission.EvidenceType, submission.EvidenceContent, submission.SubmittedAt))
             .FirstOrDefaultAsync(cancellationToken);
     }
 }

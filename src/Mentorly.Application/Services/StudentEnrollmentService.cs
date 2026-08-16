@@ -108,7 +108,8 @@ public sealed class StudentEnrollmentService(
             var newSubmission = Submission.Create(
                 request.EnrollmentId,
                 request.ActivityId,
-                request.EvidenceUrl,
+                request.EvidenceType,
+                request.EvidenceContent,
                 request.SubmittedAtUtc);
 
             if (activity.ApprovalStrategy == Domain.Enums.ApprovalStrategy.Auto)
@@ -129,12 +130,13 @@ public sealed class StudentEnrollmentService(
                 newSubmission.Id,
                 newSubmission.EnrollmentId,
                 newSubmission.ActivityId,
-                newSubmission.EvidenceUrl,
+                newSubmission.EvidenceType,
+                newSubmission.EvidenceContent,
                 newSubmission.SubmittedAt,
                 newSubmission.Status);
         }
 
-        existingSubmission.ReplaceEvidence(request.EvidenceUrl);
+        existingSubmission.ReplaceEvidence(request.EvidenceType, request.EvidenceContent);
         if (activity.ApprovalStrategy == Domain.Enums.ApprovalStrategy.Auto)
         {
             existingSubmission.Approve(request.SubmittedAtUtc);
@@ -149,7 +151,8 @@ public sealed class StudentEnrollmentService(
             existingSubmission.Id,
             existingSubmission.EnrollmentId,
             existingSubmission.ActivityId,
-            existingSubmission.EvidenceUrl,
+            existingSubmission.EvidenceType,
+            existingSubmission.EvidenceContent,
             existingSubmission.SubmittedAt,
             existingSubmission.Status);
     }

@@ -1,4 +1,5 @@
 namespace Mentorly.Application.DTOs;
 
 public sealed record UpdateSubmissionDto(
-    string EvidenceUrl);
+    Mentorly.Domain.Enums.EvidenceType EvidenceType,
+    string EvidenceContent);

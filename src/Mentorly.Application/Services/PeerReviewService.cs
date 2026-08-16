@@ -129,14 +129,14 @@ public sealed class PeerReviewService(
         }
 
         var queue = await peerReviewWorkflowRepository.GetEligibleQueueAsync(reviewerStudentId, cancellationToken);
-        return queue.Select(x => new ReviewQueueItemDto(x.SubmissionId, x.ActivityId, x.ActivityTitle, x.EvidenceUrl, x.SubmittedAtUtc)).ToArray();
+        return queue.Select(x => new ReviewQueueItemDto(x.SubmissionId, x.ActivityId, x.ActivityTitle, x.EvidenceType, x.EvidenceContent, x.SubmittedAtUtc)).ToArray();
     }
 
     public async Task<PeerReviewAuditDto?> GetAuditAsync(Guid adminId, Guid peerReviewId, CancellationToken cancellationToken = default)
     {
         await EnsureAdminAsync(adminId, cancellationToken);
         var audit = await peerReviewWorkflowRepository.GetAuditAsync(peerReviewId, cancellationToken);
-        return audit is null ? null : new PeerReviewAuditDto(audit.PeerReviewId, audit.SubmissionId, audit.AuthorStudentId, audit.ReviewerStudentId, audit.IsApproved, audit.FeedbackComment, audit.CreatedAtUtc, audit.EvidenceUrl);
+        return audit is null ? null : new PeerReviewAuditDto(audit.PeerReviewId, audit.SubmissionId, audit.AuthorStudentId, audit.ReviewerStudentId, audit.IsApproved, audit.FeedbackComment, audit.CreatedAtUtc, audit.EvidenceType, audit.EvidenceContent);
     }
 
     public async Task<PeerReviewDto[]> GetMyPeerReviewsAsync(Guid reviewerStudentId, CancellationToken cancellationToken = default)
@@ -147,7 +147,7 @@ public sealed class PeerReviewService(
     public async Task<AnonymousSubmissionDto?> GetAnonymousSubmissionAsync(Guid submissionId, Guid reviewerStudentId, CancellationToken cancellationToken = default)
     {
         var submission = await peerReviewWorkflowRepository.GetAnonymousSubmissionAsync(submissionId, reviewerStudentId, cancellationToken);
-        return submission is null ? null : new AnonymousSubmissionDto(submission.SubmissionId, submission.ActivityId, submission.ActivityTitle, submission.EvidenceUrl, submission.SubmittedAtUtc);
+        return submission is null ? null : new AnonymousSubmissionDto(submission.SubmissionId, submission.ActivityId, submission.ActivityTitle, submission.EvidenceType, submission.EvidenceContent, submission.SubmittedAtUtc);
     }
 
     public async Task<bool> UpdatePeerReviewAsync(Guid peerReviewId, UpdatePeerReviewDto dto, CancellationToken cancellationToken = default)
