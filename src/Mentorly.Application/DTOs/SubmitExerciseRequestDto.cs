@@ -1,8 +1,11 @@
+using Mentorly.Domain.Enums;
+
 namespace Mentorly.Application.DTOs;
 
 public sealed record SubmitExerciseRequestDto(
     Guid EnrollmentId,
     Guid ActivityId,
-    string EvidenceUrl,
+    EvidenceType EvidenceType,
+    string EvidenceContent,
     DateTime SubmittedAtUtc
 );

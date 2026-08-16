@@ -7,7 +7,8 @@ public sealed record SubmissionDto(
     Guid EnrollmentId,
     Guid ActivityId,
     string ActivityTitle,
-    string EvidenceUrl,
+    EvidenceType EvidenceType,
+    string EvidenceContent,
     SubmissionStatus Status,
     DateTime SubmittedAt,
     DateTime? ReviewedAt);
