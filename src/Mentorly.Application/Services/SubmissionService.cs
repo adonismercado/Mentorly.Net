@@ -127,6 +127,7 @@ public sealed class SubmissionService(
     {
         var enrollment = await GetActiveEnrollmentAsync(enrollmentId, cancellationToken);
         var activity = await ValidateActivityCanBeSubmittedAsync(enrollment, activityId, cancellationToken);
+        EnsureEvidenceMatchesActivity(activity, dto.EvidenceType);
         var existingSubmission = await submissionRepository.GetByEnrollmentAndActivityAsync(enrollmentId, activityId, cancellationToken);
         if (existingSubmission is not null)
         {
@@ -167,6 +168,7 @@ public sealed class SubmissionService(
 
         var enrollment = await GetActiveEnrollmentAsync(submission.EnrollmentId, cancellationToken);
         var activity = await ValidateActivityCanBeSubmittedAsync(enrollment, submission.ActivityId, cancellationToken);
+        EnsureEvidenceMatchesActivity(activity, dto.EvidenceType);
 
         submission.ReplaceEvidence(dto.EvidenceType, dto.EvidenceContent);
         ApplyApprovalStrategy(submission, activity.ApprovalStrategy);
@@ -321,6 +323,14 @@ public sealed class SubmissionService(
         if (approvalStrategy == ApprovalStrategy.Auto)
         {
             submission.Approve(DateTime.UtcNow);
+        }
+    }
+
+    private static void EnsureEvidenceMatchesActivity(ActivityWorkflowData activity, EvidenceType evidenceType)
+    {
+        if (activity.IsMandatory && evidenceType != EvidenceType.Url)
+        {
+            throw new ArgumentException("Mandatory activities require an HTTP or HTTPS evidence URL.", nameof(evidenceType));
         }
     }
 
