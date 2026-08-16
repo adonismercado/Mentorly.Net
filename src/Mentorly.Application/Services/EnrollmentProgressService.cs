@@ -17,12 +17,19 @@ public sealed class EnrollmentProgressService(
     IActivityRepository activityRepository,
     ICertificateService certificateService,
     IGamificationService gamificationService,
-    IUnitOfWork unitOfWork) : IEnrollmentProgressService, ICourseCompletionService
+    IUnitOfWork unitOfWork,
+    IStudentRepository? studentRepository = null) : IEnrollmentProgressService, ICourseCompletionService
 {
     public async Task<IReadOnlyList<EnrollmentDto>> GetStudentEnrollmentsAsync(Guid studentId, CancellationToken cancellationToken = default)
     {
         var enrollments = await enrollmentRepository.GetByStudentIdAsync(studentId, cancellationToken);
         return enrollments.Select(enrollment => MapEnrollment(enrollment)).ToList();
+    }
+
+    public async Task<IReadOnlyList<EnrollmentDto>> GetStudentEnrollmentsAsAdminAsync(Guid adminId, Guid studentId, CancellationToken cancellationToken = default)
+    {
+        await EnsureAdminAsync(adminId, cancellationToken);
+        return await GetStudentEnrollmentsAsync(studentId, cancellationToken);
     }
 
     public async Task<EnrollmentDto?> RestartAsync(Guid studentId, Guid courseId, CancellationToken cancellationToken = default)
@@ -56,6 +63,12 @@ public sealed class EnrollmentProgressService(
     {
         var enrollment = await enrollmentRepository.GetByIdAsync(enrollmentId, cancellationToken);
         return enrollment is null ? null : await BuildProgressAsync(enrollment, cancellationToken);
+    }
+
+    public async Task<EnrollmentProgressDto?> GetProgressAsAdminAsync(Guid adminId, Guid enrollmentId, CancellationToken cancellationToken = default)
+    {
+        await EnsureAdminAsync(adminId, cancellationToken);
+        return await GetProgressAsync(enrollmentId, cancellationToken);
     }
 
     public async Task<EnrollmentProgressDto?> CompleteThemeAsync(Guid enrollmentId, Guid themeId, CancellationToken cancellationToken = default)
@@ -125,6 +138,15 @@ public sealed class EnrollmentProgressService(
     {
         var enrollment = await enrollmentRepository.GetByIdAsync(enrollmentId, cancellationToken);
         return enrollment is not null && enrollment.StudentId == studentId ? enrollment : null;
+    }
+
+    private async Task EnsureAdminAsync(Guid adminId, CancellationToken cancellationToken)
+    {
+        var admin = studentRepository is null ? null : await studentRepository.GetByIdAsync(adminId, cancellationToken);
+        if (admin?.Role != StudentRole.Admin)
+        {
+            throw new InvalidOperationException("Only an administrator can view student progress.");
+        }
     }
 
     private async Task<EnrollmentProgressDto> EvaluateEnrollmentAsync(Enrollment enrollment, CancellationToken cancellationToken)
