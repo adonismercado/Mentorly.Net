@@ -24,7 +24,8 @@ public sealed class SubmissionService(
             s.EnrollmentId,
             s.ActivityId,
             s.Activity.Title,
-            s.EvidenceUrl,
+            s.EvidenceType,
+            s.EvidenceContent,
             s.Status,
             s.SubmittedAt,
             s.ReviewedAt))
@@ -51,7 +52,8 @@ public sealed class SubmissionService(
             submission.CourseTitle,
             submission.ActivityId,
             submission.ActivityTitle,
-            submission.EvidenceUrl,
+            submission.EvidenceType,
+            submission.EvidenceContent,
             submission.SubmittedAtUtc,
             submission.EscalatedAtUtc,
             submission.PositiveReviews,
@@ -85,7 +87,8 @@ public sealed class SubmissionService(
             audit.CourseTitle,
             audit.ActivityId,
             audit.ActivityTitle,
-            audit.EvidenceUrl,
+            audit.EvidenceType,
+            audit.EvidenceContent,
             audit.Status,
             audit.SubmittedAtUtc,
             audit.ReviewedAtUtc,
@@ -113,7 +116,8 @@ public sealed class SubmissionService(
             submission.EnrollmentId,
             submission.ActivityId,
             submission.Activity.Title,
-            submission.EvidenceUrl,
+            submission.EvidenceType,
+            submission.EvidenceContent,
             submission.Status,
             submission.SubmittedAt,
             submission.ReviewedAt);
@@ -126,7 +130,7 @@ public sealed class SubmissionService(
         var existingSubmission = await submissionRepository.GetByEnrollmentAndActivityAsync(enrollmentId, activityId, cancellationToken);
         if (existingSubmission is not null)
         {
-            existingSubmission.ReplaceEvidence(dto.EvidenceUrl);
+            existingSubmission.ReplaceEvidence(dto.EvidenceType, dto.EvidenceContent);
             ApplyApprovalStrategy(existingSubmission, activity.ApprovalStrategy);
             await submissionRepository.UpdateAsync(existingSubmission, cancellationToken);
             await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -137,7 +141,8 @@ public sealed class SubmissionService(
         var submission = Submission.Create(
             enrollmentId,
             activityId,
-            dto.EvidenceUrl,
+            dto.EvidenceType,
+            dto.EvidenceContent,
             DateTime.UtcNow);
 
         ApplyApprovalStrategy(submission, activity.ApprovalStrategy);
@@ -163,7 +168,7 @@ public sealed class SubmissionService(
         var enrollment = await GetActiveEnrollmentAsync(submission.EnrollmentId, cancellationToken);
         var activity = await ValidateActivityCanBeSubmittedAsync(enrollment, submission.ActivityId, cancellationToken);
 
-        submission.ReplaceEvidence(dto.EvidenceUrl);
+        submission.ReplaceEvidence(dto.EvidenceType, dto.EvidenceContent);
         ApplyApprovalStrategy(submission, activity.ApprovalStrategy);
 
         await submissionRepository.UpdateAsync(submission, cancellationToken);
@@ -273,7 +278,8 @@ public sealed class SubmissionService(
         submission.EnrollmentId,
         submission.ActivityId,
         submission.Activity?.Title ?? string.Empty,
-        submission.EvidenceUrl,
+        submission.EvidenceType,
+        submission.EvidenceContent,
         submission.Status,
         submission.SubmittedAt,
         submission.ReviewedAt);
