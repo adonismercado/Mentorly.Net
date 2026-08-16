@@ -18,6 +18,7 @@ public class Activity
     public ApprovalStrategy ApprovalStrategy { get; private set; }
     public int OrderIndex { get; private set; }
     public Theme Theme { get; private set; } = null!;
+    public ICollection<PeerReviewRubricCriterion> PeerReviewRubricCriteria { get; private set; } = [];
     public void Update(string title, ActivityType type, bool isMandatory, ApprovalStrategy approvalStrategy, int orderIndex)
     {
         if (string.IsNullOrWhiteSpace(title)) throw new ArgumentException("Activity title is required.", nameof(title));

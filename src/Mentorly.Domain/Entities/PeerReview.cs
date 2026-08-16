@@ -51,6 +51,9 @@ public class PeerReview
     public Submission Submission { get; private set; } = null!;
 
     public Student ReviewerStudent { get; private set; } = null!;
+    public ICollection<PeerReviewCriterionScore> CriterionScores { get; private set; } = [];
+
+    public void AddCriterionScore(Guid rubricCriterionId, int score) => CriterionScores.Add(new PeerReviewCriterionScore(Id, rubricCriterionId, score));
 
     public static PeerReview Create(Guid submissionId, Guid reviewerStudentId, bool isApproved, string feedbackComment, DateTime createdAtUtc)
     {
