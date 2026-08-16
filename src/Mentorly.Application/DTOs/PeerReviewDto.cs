@@ -6,4 +6,5 @@ public sealed record PeerReviewDto(
     Guid ReviewerStudentId,
     bool IsApproved,
     string FeedbackComment,
+    PeerReviewCriterionScoreDto[] CriterionScores,
     DateTime CreatedAt);

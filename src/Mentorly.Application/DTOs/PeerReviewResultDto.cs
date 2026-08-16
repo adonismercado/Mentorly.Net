@@ -8,6 +8,7 @@ public sealed record PeerReviewResultDto(
     Guid ReviewerStudentId,
     bool IsApproved,
     string FeedbackComment,
+    PeerReviewCriterionScoreDto[] CriterionScores,
     DateTime CreatedAtUtc,
     int PositiveReviews,
     int RequiredPositiveReviews,
