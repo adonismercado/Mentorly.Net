@@ -15,6 +15,7 @@ public sealed class SubmissionService(
     IGamificationService gamificationService,
     IUnitOfWork unitOfWork) : ISubmissionService
 {
+    private static readonly TimeSpan PendingEscalationDelay = TimeSpan.FromHours(72);
     public async Task<SubmissionDto[]> GetAllSubmissionsAsync(CancellationToken cancellationToken = default)
     {
         var submissions = await submissionRepository.GetAllAsync(cancellationToken);
@@ -211,7 +212,13 @@ public sealed class SubmissionService(
             throw new InvalidOperationException("Only pending or rejected peer-review submissions can be escalated.");
         }
 
-        submission.Escalate(DateTime.UtcNow);
+        var utcNow = DateTime.UtcNow;
+        if (submission.Status == SubmissionStatus.Pending && utcNow - submission.SubmittedAt < PendingEscalationDelay)
+        {
+            throw new InvalidOperationException("A pending peer-review submission can be escalated after 72 hours without a review.");
+        }
+
+        submission.Escalate(utcNow);
         await submissionRepository.UpdateAsync(submission, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return true;

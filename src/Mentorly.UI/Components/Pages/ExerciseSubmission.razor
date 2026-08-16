@@ -87,6 +87,7 @@
             var result = await StudentEnrollmentService.SubmitExerciseAsync(new SubmitExerciseRequestDto(
                 _enrollmentId.Value,
                 _activityId,
+                Mentorly.Domain.Enums.EvidenceType.Url,
                 "https://github.com/example/mentorly-exercise",
                 DateTime.UtcNow));
 
