@@ -18,6 +18,8 @@ public sealed class MentorlyDbContext(
     public DbSet<Submission> Submissions => Set<Submission>();
 
     public DbSet<PeerReview> PeerReviews => Set<PeerReview>();
+    public DbSet<PeerReviewRubricCriterion> PeerReviewRubricCriteria => Set<PeerReviewRubricCriterion>();
+    public DbSet<PeerReviewCriterionScore> PeerReviewCriterionScores => Set<PeerReviewCriterionScore>();
 
     public DbSet<Badge> Badges => Set<Badge>();
 
@@ -42,6 +44,8 @@ public sealed class MentorlyDbContext(
         modelBuilder.ApplyConfiguration(new EnrollmentConfiguration());
         modelBuilder.ApplyConfiguration(new SubmissionConfiguration());
         modelBuilder.ApplyConfiguration(new PeerReviewConfiguration());
+        modelBuilder.ApplyConfiguration(new PeerReviewRubricCriterionConfiguration());
+        modelBuilder.ApplyConfiguration(new PeerReviewCriterionScoreConfiguration());
         modelBuilder.ApplyConfiguration(new BadgeConfiguration());
         modelBuilder.ApplyConfiguration(new StudentBadgeConfiguration());
         modelBuilder.ApplyConfiguration(new UnitConfiguration());

@@ -10,23 +10,25 @@ public sealed class PeerReviewRepository(MentorlyDbContext dbContext) : IPeerRev
     {
         return await dbContext.PeerReviews
             .AsNoTracking()
+            .Include(review => review.CriterionScores)
             .ToArrayAsync(cancellationToken);
     }
 
     public Task<PeerReview?> GetByIdAsync(Guid peerReviewId, CancellationToken cancellationToken = default)
     {
         return dbContext.PeerReviews
+            .Include(review => review.CriterionScores)
             .FirstOrDefaultAsync(x => x.Id == peerReviewId, cancellationToken);
     }
 
     public async Task<PeerReview[]> GetBySubmissionIdAsync(Guid submissionId, CancellationToken cancellationToken = default)
     {
-        return await dbContext.PeerReviews.Where(x => x.SubmissionId == submissionId).OrderBy(x => x.CreatedAt).ToArrayAsync(cancellationToken);
+        return await dbContext.PeerReviews.Include(review => review.CriterionScores).Where(x => x.SubmissionId == submissionId).OrderBy(x => x.CreatedAt).ToArrayAsync(cancellationToken);
     }
 
     public async Task<PeerReview[]> GetByReviewerStudentIdAsync(Guid reviewerStudentId, CancellationToken cancellationToken = default)
     {
-        return await dbContext.PeerReviews.Where(x => x.ReviewerStudentId == reviewerStudentId).OrderByDescending(x => x.CreatedAt).ToArrayAsync(cancellationToken);
+        return await dbContext.PeerReviews.Include(review => review.CriterionScores).Where(x => x.ReviewerStudentId == reviewerStudentId).OrderByDescending(x => x.CreatedAt).ToArrayAsync(cancellationToken);
     }
 
     public Task<bool> HasReviewerAlreadyReviewedAsync(Guid submissionId, Guid reviewerStudentId, CancellationToken cancellationToken = default)

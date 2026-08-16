@@ -8,6 +8,31 @@ namespace Mentorly.Api.Controllers;
 [Route("api")]
 public class PeerReviewsController(IPeerReviewService peerReviewService) : ControllerBase
 {
+    [HttpGet("activities/{activityId:guid}/peer-review-rubric")]
+    public async Task<ActionResult<PeerReviewRubricCriterionDto[]>> GetRubricAsync(Guid activityId, CancellationToken cancellationToken = default) => Ok(await peerReviewService.GetRubricAsync(activityId, cancellationToken));
+
+    [HttpPost("admins/{adminId:guid}/activities/{activityId:guid}/peer-review-rubric/criteria")]
+    public async Task<ActionResult<PeerReviewRubricCriterionDto>> CreateRubricCriterionAsync(Guid adminId, Guid activityId, CreatePeerReviewRubricCriterionDto dto, CancellationToken cancellationToken = default)
+    {
+        try { return Created($"/api/activities/{activityId}/peer-review-rubric", await peerReviewService.CreateRubricCriterionAsync(adminId, activityId, dto, cancellationToken)); }
+        catch (ArgumentException exception) { return BadRequest(new { message = exception.Message }); }
+        catch (InvalidOperationException exception) { return Conflict(new { message = exception.Message }); }
+    }
+
+    [HttpPut("admins/{adminId:guid}/peer-review-rubric/criteria/{criterionId:guid}")]
+    public async Task<IActionResult> UpdateRubricCriterionAsync(Guid adminId, Guid criterionId, UpdatePeerReviewRubricCriterionDto dto, CancellationToken cancellationToken = default)
+    {
+        try { return await peerReviewService.UpdateRubricCriterionAsync(adminId, criterionId, dto, cancellationToken) ? NoContent() : NotFound(); }
+        catch (ArgumentException exception) { return BadRequest(new { message = exception.Message }); }
+        catch (InvalidOperationException exception) { return Conflict(new { message = exception.Message }); }
+    }
+
+    [HttpDelete("admins/{adminId:guid}/peer-review-rubric/criteria/{criterionId:guid}")]
+    public async Task<IActionResult> DeleteRubricCriterionAsync(Guid adminId, Guid criterionId, CancellationToken cancellationToken = default)
+    {
+        try { return await peerReviewService.DeleteRubricCriterionAsync(adminId, criterionId, cancellationToken) ? NoContent() : NotFound(); }
+        catch (InvalidOperationException exception) { return Conflict(new { message = exception.Message }); }
+    }
     [HttpGet("students/{studentId:guid}/peer-review-queue")]
     public async Task<ActionResult<IEnumerable<ReviewQueueItemDto>>> GetQueueAsync(Guid studentId, CancellationToken cancellationToken = default)
     {

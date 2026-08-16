@@ -4,6 +4,7 @@ using Mentorly.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Mentorly.Infrastructure.Migrations
 {
     [DbContext(typeof(MentorlyDbContext))]
-    partial class MentorlyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260816180344_AddSubmissionEvidenceTypes")]
+    partial class AddSubmissionEvidenceTypes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -271,66 +274,6 @@ namespace Mentorly.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("peer_reviews", (string)null);
-                });
-
-            modelBuilder.Entity("Mentorly.Domain.Entities.PeerReviewCriterionScore", b =>
-                {
-                    b.Property<Guid>("PeerReviewId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("peer_review_id");
-
-                    b.Property<Guid>("RubricCriterionId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("rubric_criterion_id");
-
-                    b.Property<int>("Score")
-                        .HasColumnType("int")
-                        .HasColumnName("score");
-
-                    b.HasKey("PeerReviewId", "RubricCriterionId");
-
-                    b.HasIndex("RubricCriterionId");
-
-                    b.ToTable("peer_review_criterion_scores", (string)null);
-                });
-
-            modelBuilder.Entity("Mentorly.Domain.Entities.PeerReviewRubricCriterion", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("id");
-
-                    b.Property<Guid>("ActivityId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("activity_id");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)")
-                        .HasColumnName("description");
-
-                    b.Property<int>("MaxScore")
-                        .HasColumnType("int")
-                        .HasColumnName("max_score");
-
-                    b.Property<int>("OrderIndex")
-                        .HasColumnType("int")
-                        .HasColumnName("order_index");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)")
-                        .HasColumnName("title");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ActivityId", "OrderIndex")
-                        .IsUnique();
-
-                    b.ToTable("peer_review_rubric_criteria", (string)null);
                 });
 
             modelBuilder.Entity("Mentorly.Domain.Entities.QuizAttempt", b =>
@@ -675,36 +618,6 @@ namespace Mentorly.Infrastructure.Migrations
                     b.Navigation("Submission");
                 });
 
-            modelBuilder.Entity("Mentorly.Domain.Entities.PeerReviewCriterionScore", b =>
-                {
-                    b.HasOne("Mentorly.Domain.Entities.PeerReview", "PeerReview")
-                        .WithMany("CriterionScores")
-                        .HasForeignKey("PeerReviewId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Mentorly.Domain.Entities.PeerReviewRubricCriterion", "RubricCriterion")
-                        .WithMany()
-                        .HasForeignKey("RubricCriterionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("PeerReview");
-
-                    b.Navigation("RubricCriterion");
-                });
-
-            modelBuilder.Entity("Mentorly.Domain.Entities.PeerReviewRubricCriterion", b =>
-                {
-                    b.HasOne("Mentorly.Domain.Entities.Activity", "Activity")
-                        .WithMany("PeerReviewRubricCriteria")
-                        .HasForeignKey("ActivityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Activity");
-                });
-
             modelBuilder.Entity("Mentorly.Domain.Entities.StudentBadge", b =>
                 {
                     b.HasOne("Mentorly.Domain.Entities.Badge", "Badge")
@@ -784,11 +697,6 @@ namespace Mentorly.Infrastructure.Migrations
                     b.Navigation("Course");
                 });
 
-            modelBuilder.Entity("Mentorly.Domain.Entities.Activity", b =>
-                {
-                    b.Navigation("PeerReviewRubricCriteria");
-                });
-
             modelBuilder.Entity("Mentorly.Domain.Entities.Badge", b =>
                 {
                     b.Navigation("StudentBadges");
@@ -806,11 +714,6 @@ namespace Mentorly.Infrastructure.Migrations
                     b.Navigation("Submissions");
 
                     b.Navigation("ThemeCompletions");
-                });
-
-            modelBuilder.Entity("Mentorly.Domain.Entities.PeerReview", b =>
-                {
-                    b.Navigation("CriterionScores");
                 });
 
             modelBuilder.Entity("Mentorly.Domain.Entities.Student", b =>
