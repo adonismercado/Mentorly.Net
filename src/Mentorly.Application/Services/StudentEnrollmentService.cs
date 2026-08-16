@@ -1,6 +1,7 @@
 using Mentorly.Application.Abstractions.Persistence;
 using Mentorly.Application.DTOs;
 using Mentorly.Domain.Entities;
+using Mentorly.Domain.Enums;
 
 namespace Mentorly.Application.Services;
 
@@ -96,6 +97,11 @@ public sealed class StudentEnrollmentService(
         if (!await peerReviewWorkflowRepository.CanSubmitMandatoryActivityAsync(request.EnrollmentId, request.ActivityId, cancellationToken))
         {
             throw new InvalidOperationException("Previous mandatory exercises must be approved and the peer-review quota completed before submitting this unit.");
+        }
+
+        if (activity.IsMandatory && request.EvidenceType != EvidenceType.Url)
+        {
+            throw new ArgumentException("Mandatory activities require an HTTP or HTTPS evidence URL.", nameof(request.EvidenceType));
         }
 
         var existingSubmission = await submissionRepository.GetByEnrollmentAndActivityAsync(
