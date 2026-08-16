@@ -15,6 +15,20 @@ public class EnrollmentProgressController(IEnrollmentProgressService enrollmentP
         return progress is null ? NotFound() : Ok(progress);
     }
 
+    [HttpGet("admins/{adminId:guid}/enrollments/{enrollmentId:guid}/progress")]
+    public async Task<ActionResult<EnrollmentProgressDto>> GetProgressAsAdminAsync(Guid adminId, Guid enrollmentId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var progress = await enrollmentProgressService.GetProgressAsAdminAsync(adminId, enrollmentId, cancellationToken);
+            return progress is null ? NotFound() : Ok(progress);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new { message = exception.Message });
+        }
+    }
+
     [HttpPost("enrollments/{enrollmentId:guid}/themes/{themeId:guid}/complete")]
     public async Task<ActionResult<EnrollmentProgressDto>> CompleteThemeAsync(Guid enrollmentId, Guid themeId, CancellationToken cancellationToken = default)
     {

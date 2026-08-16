@@ -32,6 +32,19 @@ public class EnrollmentsController(
     public async Task<ActionResult<IEnumerable<EnrollmentDto>>> GetStudentEnrollmentsAsync(Guid studentId, CancellationToken cancellationToken = default)
         => Ok(await enrollmentProgressService.GetStudentEnrollmentsAsync(studentId, cancellationToken));
 
+    [HttpGet("admins/{adminId:guid}/students/{studentId:guid}/enrollments")]
+    public async Task<ActionResult<IEnumerable<EnrollmentDto>>> GetStudentEnrollmentsAsAdminAsync(Guid adminId, Guid studentId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return Ok(await enrollmentProgressService.GetStudentEnrollmentsAsAdminAsync(adminId, studentId, cancellationToken));
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new { message = exception.Message });
+        }
+    }
+
     [HttpGet("enrollments/{enrollmentId:guid}", Name = "GetEnrollment")]
     public async Task<ActionResult<EnrollmentDto>> GetEnrollmentAsync(Guid enrollmentId, CancellationToken cancellationToken = default)
     {
