@@ -72,7 +72,7 @@ public sealed class PeerReviewServiceTests
         var enrollment = Enrollment.CreateNew(SubmissionOwnerStudentId, course.Id, 1, DateTime.UtcNow);
         SetPrivateProperty(enrollment, nameof(Enrollment.Course), course);
 
-        var submission = Submission.Create(enrollment.Id, Guid.NewGuid(), "https://github.com/example/repo", DateTime.UtcNow);
+        var submission = Submission.Create(enrollment.Id, Guid.NewGuid(), EvidenceType.Url, "https://github.com/example/repo", DateTime.UtcNow);
         SetPrivateProperty(submission, nameof(Submission.Enrollment), enrollment);
 
         return submission;
