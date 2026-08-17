@@ -1,6 +1,8 @@
 namespace Mentorly.Application.DTOs;
 public sealed record CreateQuizQuestionDto(string Prompt,string CorrectAnswer,int OrderIndex);
 public sealed record QuizQuestionDto(Guid Id,string Prompt,int OrderIndex);
+public sealed record AdminQuizQuestionDto(Guid Id, string Prompt, string CorrectAnswer, int OrderIndex);
+public sealed record UpdateQuizQuestionDto(string Prompt, string CorrectAnswer, int OrderIndex);
 public sealed record QuizAnswerDto(Guid QuestionId,string Answer);
 public sealed record SubmitQuizAttemptDto(Guid StudentId, QuizAnswerDto[] Answers);
 public sealed record QuizAttemptDto(Guid Id,decimal Score,bool Passed,DateTime SubmittedAtUtc);
