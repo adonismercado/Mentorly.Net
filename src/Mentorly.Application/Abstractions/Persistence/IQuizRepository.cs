@@ -1,3 +1,15 @@
 using Mentorly.Domain.Entities;
+
 namespace Mentorly.Application.Abstractions.Persistence;
-public interface IQuizRepository { Task<IReadOnlyList<QuizQuestion>> GetQuestionsAsync(Guid activityId, CancellationToken cancellationToken=default); Task<QuizAttempt?> GetLatestAttemptAsync(Guid enrollmentId, Guid activityId, CancellationToken cancellationToken=default); Task<IReadOnlySet<Guid>> GetPassedActivityIdsAsync(Guid enrollmentId, IReadOnlyCollection<Guid> activityIds, CancellationToken cancellationToken=default); void AddQuestion(QuizQuestion question); void AddAttempt(QuizAttempt attempt); }
+
+public interface IQuizRepository
+{
+    Task<IReadOnlyList<QuizQuestion>> GetQuestionsAsync(Guid activityId, CancellationToken cancellationToken = default);
+    Task<QuizQuestion?> GetQuestionByIdAsync(Guid questionId, CancellationToken cancellationToken = default);
+    Task<QuizAttempt?> GetLatestAttemptAsync(Guid enrollmentId, Guid activityId, CancellationToken cancellationToken = default);
+    Task<IReadOnlySet<Guid>> GetPassedActivityIdsAsync(Guid enrollmentId, IReadOnlyCollection<Guid> activityIds, CancellationToken cancellationToken = default);
+    void AddQuestion(QuizQuestion question);
+    void UpdateQuestion(QuizQuestion question);
+    void DeleteQuestion(QuizQuestion question);
+    void AddAttempt(QuizAttempt attempt);
+}

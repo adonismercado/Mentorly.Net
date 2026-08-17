@@ -131,9 +131,13 @@ public sealed class EnrollmentProgressServiceTests
     private sealed class FakeQuizRepository : IQuizRepository
     {
         public Task<IReadOnlyList<QuizQuestion>> GetQuestionsAsync(Guid activityId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<QuizQuestion>>([]);
+        public Task<QuizQuestion?> GetQuestionByIdAsync(Guid questionId, CancellationToken cancellationToken = default) => Task.FromResult<QuizQuestion?>(null);
         public Task<QuizAttempt?> GetLatestAttemptAsync(Guid enrollmentId, Guid activityId, CancellationToken cancellationToken = default) => Task.FromResult<QuizAttempt?>(null);
         public Task<IReadOnlySet<Guid>> GetPassedActivityIdsAsync(Guid enrollmentId, IReadOnlyCollection<Guid> activityIds, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlySet<Guid>>(new HashSet<Guid>());
-        public void AddQuestion(QuizQuestion question) { } public void AddAttempt(QuizAttempt attempt) { }
+        public void AddQuestion(QuizQuestion question) { }
+        public void UpdateQuestion(QuizQuestion question) { }
+        public void DeleteQuestion(QuizQuestion question) { }
+        public void AddAttempt(QuizAttempt attempt) { }
     }
 
     private sealed class FakeUnitRepository : IUnitRepository

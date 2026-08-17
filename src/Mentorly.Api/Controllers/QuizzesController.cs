@@ -14,6 +14,20 @@ public class QuizzesController(IQuizService quizService) : ControllerBase
         return Ok(await quizService.GetQuestionsAsync(activityId, cancellationToken));
     }
 
+    [HttpGet("admins/{adminId:guid}/activities/{activityId:guid}/quiz/questions")]
+    public async Task<ActionResult<AdminQuizQuestionDto[]>> GetAdminQuestionsAsync(Guid adminId, Guid activityId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var questions = await quizService.GetAdminQuestionsAsync(adminId, activityId, cancellationToken);
+            return questions is null ? NotFound() : Ok(questions);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new { message = exception.Message });
+        }
+    }
+
     [HttpPost("admins/{adminId:guid}/activities/{activityId:guid}/quiz/questions")]
     public async Task<ActionResult<QuizQuestionDto>> CreateQuestionAsync(Guid adminId, Guid activityId, CreateQuizQuestionDto dto, CancellationToken cancellationToken = default)
     {
@@ -27,6 +41,39 @@ public class QuizzesController(IQuizService quizService) : ControllerBase
         catch (ArgumentException exception)
         {
             return BadRequest(new { message = exception.Message });
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new { message = exception.Message });
+        }
+    }
+
+    [HttpPut("admins/{adminId:guid}/quiz/questions/{questionId:guid}")]
+    public async Task<ActionResult<AdminQuizQuestionDto>> UpdateQuestionAsync(Guid adminId, Guid questionId, UpdateQuizQuestionDto dto, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var question = await quizService.UpdateQuestionAsync(adminId, questionId, dto, cancellationToken);
+            return question is null ? NotFound() : Ok(question);
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(new { message = exception.Message });
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new { message = exception.Message });
+        }
+    }
+
+    [HttpDelete("admins/{adminId:guid}/quiz/questions/{questionId:guid}")]
+    public async Task<IActionResult> DeleteQuestionAsync(Guid adminId, Guid questionId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await quizService.DeleteQuestionAsync(adminId, questionId, cancellationToken)
+                ? NoContent()
+                : NotFound();
         }
         catch (InvalidOperationException exception)
         {

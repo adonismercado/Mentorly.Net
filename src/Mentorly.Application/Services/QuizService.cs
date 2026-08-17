@@ -8,7 +8,10 @@ namespace Mentorly.Application.Services;
 public interface IQuizService
 {
     Task<QuizQuestionDto[]> GetQuestionsAsync(Guid activityId, CancellationToken cancellationToken = default);
+    Task<AdminQuizQuestionDto[]?> GetAdminQuestionsAsync(Guid adminId, Guid activityId, CancellationToken cancellationToken = default);
     Task<QuizQuestionDto?> CreateQuestionAsync(Guid adminId, Guid activityId, CreateQuizQuestionDto dto, CancellationToken cancellationToken = default);
+    Task<AdminQuizQuestionDto?> UpdateQuestionAsync(Guid adminId, Guid questionId, UpdateQuizQuestionDto dto, CancellationToken cancellationToken = default);
+    Task<bool> DeleteQuestionAsync(Guid adminId, Guid questionId, CancellationToken cancellationToken = default);
     Task<QuizAttemptDto?> SubmitAsync(Guid enrollmentId, Guid activityId, SubmitQuizAttemptDto dto, CancellationToken cancellationToken = default);
 }
 
@@ -29,6 +32,21 @@ public sealed class QuizService(
             .ToArray();
     }
 
+    public async Task<AdminQuizQuestionDto[]?> GetAdminQuestionsAsync(Guid adminId, Guid activityId, CancellationToken cancellationToken = default)
+    {
+        await EnsureAdminAsync(adminId, cancellationToken);
+
+        var activity = await activityRepository.GetByIdAsync(activityId, cancellationToken);
+        if (activity is null || activity.Type != ActivityType.Quiz)
+        {
+            return null;
+        }
+
+        return (await quizRepository.GetQuestionsAsync(activityId, cancellationToken))
+            .Select(MapAdminQuestion)
+            .ToArray();
+    }
+
     public async Task<QuizQuestionDto?> CreateQuestionAsync(Guid adminId, Guid activityId, CreateQuizQuestionDto dto, CancellationToken cancellationToken = default)
     {
         await EnsureAdminAsync(adminId, cancellationToken);
@@ -44,6 +62,50 @@ public sealed class QuizService(
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new QuizQuestionDto(question.Id, question.Prompt, question.OrderIndex);
+    }
+
+    public async Task<AdminQuizQuestionDto?> UpdateQuestionAsync(Guid adminId, Guid questionId, UpdateQuizQuestionDto dto, CancellationToken cancellationToken = default)
+    {
+        await EnsureAdminAsync(adminId, cancellationToken);
+
+        var question = await quizRepository.GetQuestionByIdAsync(questionId, cancellationToken);
+        if (question is null)
+        {
+            return null;
+        }
+
+        var activity = await activityRepository.GetByIdAsync(question.ActivityId, cancellationToken);
+        if (activity is null || activity.Type != ActivityType.Quiz)
+        {
+            return null;
+        }
+
+        question.Update(dto.Prompt, dto.CorrectAnswer, dto.OrderIndex);
+        quizRepository.UpdateQuestion(question);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return MapAdminQuestion(question);
+    }
+
+    public async Task<bool> DeleteQuestionAsync(Guid adminId, Guid questionId, CancellationToken cancellationToken = default)
+    {
+        await EnsureAdminAsync(adminId, cancellationToken);
+
+        var question = await quizRepository.GetQuestionByIdAsync(questionId, cancellationToken);
+        if (question is null)
+        {
+            return false;
+        }
+
+        var activity = await activityRepository.GetByIdAsync(question.ActivityId, cancellationToken);
+        if (activity is null || activity.Type != ActivityType.Quiz)
+        {
+            return false;
+        }
+
+        quizRepository.DeleteQuestion(question);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        return true;
     }
 
     public async Task<QuizAttemptDto?> SubmitAsync(Guid enrollmentId, Guid activityId, SubmitQuizAttemptDto dto, CancellationToken cancellationToken = default)
@@ -100,4 +162,7 @@ public sealed class QuizService(
             throw new InvalidOperationException("Only an administrator can manage quiz questions.");
         }
     }
+
+    private static AdminQuizQuestionDto MapAdminQuestion(QuizQuestion question) =>
+        new(question.Id, question.Prompt, question.CorrectAnswer, question.OrderIndex);
 }
