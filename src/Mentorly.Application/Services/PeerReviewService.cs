@@ -253,9 +253,9 @@ public sealed class PeerReviewService(
     private async Task EnsureReviewerHasActiveEnrollmentAsync(Guid reviewerStudentId, Guid courseId, CancellationToken cancellationToken)
     {
         var enrollments = await enrollmentRepository.GetByStudentIdAsync(reviewerStudentId, cancellationToken);
-        if (!enrollments.Any(enrollment => enrollment.CourseId == courseId && enrollment.CanSubmit(DateTime.UtcNow)))
+        if (!enrollments.Any(enrollment => enrollment.CourseId == courseId && (enrollment.Status == Domain.Enums.EnrollmentStatus.Active || enrollment.Status == Domain.Enums.EnrollmentStatus.Completed) && enrollment.ExpiresAt >= DateTime.UtcNow))
         {
-            throw new InvalidOperationException("Reviewer must have an active enrollment in this course.");
+            throw new InvalidOperationException("Reviewer must have an active or completed enrollment in this course.");
         }
     }
 }

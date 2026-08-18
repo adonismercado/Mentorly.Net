@@ -64,7 +64,7 @@ public sealed class PeerReviewWorkflowRepository(MentorlyDbContext dbContext) : 
                           && dbContext.Enrollments.Any(reviewerEnrollment =>
                               reviewerEnrollment.StudentId == reviewerStudentId &&
                               reviewerEnrollment.CourseId == unit.CourseId &&
-                              reviewerEnrollment.Status == Domain.Enums.EnrollmentStatus.Active &&
+                              (reviewerEnrollment.Status == Domain.Enums.EnrollmentStatus.Active || reviewerEnrollment.Status == Domain.Enums.EnrollmentStatus.Completed) &&
                               reviewerEnrollment.ExpiresAt >= DateTime.UtcNow)
                           && dbContext.Submissions.Any(own => own.ActivityId == submission.ActivityId && own.Enrollment.StudentId == reviewerStudentId)
                           && !dbContext.PeerReviews.Any(review => review.SubmissionId == submission.Id && review.ReviewerStudentId == reviewerStudentId)
@@ -97,7 +97,7 @@ public sealed class PeerReviewWorkflowRepository(MentorlyDbContext dbContext) : 
                     && dbContext.Enrollments.Any(reviewerEnrollment =>
                         reviewerEnrollment.StudentId == reviewerStudentId &&
                         reviewerEnrollment.CourseId == unit.CourseId &&
-                        reviewerEnrollment.Status == Domain.Enums.EnrollmentStatus.Active &&
+                        (reviewerEnrollment.Status == Domain.Enums.EnrollmentStatus.Active || reviewerEnrollment.Status == Domain.Enums.EnrollmentStatus.Completed) &&
                         reviewerEnrollment.ExpiresAt >= DateTime.UtcNow)
                     && dbContext.Submissions.Any(own => own.ActivityId == submission.ActivityId && own.Enrollment.StudentId == reviewerStudentId)
                     && !dbContext.PeerReviews.Any(review => review.SubmissionId == submission.Id && review.ReviewerStudentId == reviewerStudentId)
