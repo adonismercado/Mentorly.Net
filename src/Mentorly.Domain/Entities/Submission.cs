@@ -61,11 +61,12 @@ public class Submission
         return new Submission(Guid.NewGuid(), enrollmentId, activityId, evidenceType, evidenceContent, submittedAtUtc);
     }
 
-    public void ReplaceEvidence(EvidenceType evidenceType, string evidenceContent)
+    public void ReplaceEvidence(EvidenceType evidenceType, string evidenceContent, DateTime? submittedAtUtc = null)
     {
         EvidenceType = evidenceType;
         EvidenceContent = NormalizeEvidenceContent(evidenceType, evidenceContent);
         Status = SubmissionStatus.Pending;
+        SubmittedAt = EnsureUtc(submittedAtUtc ?? DateTime.UtcNow);
         ReviewedAt = null;
     }
 
