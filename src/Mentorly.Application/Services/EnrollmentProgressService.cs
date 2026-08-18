@@ -169,27 +169,43 @@ public sealed class EnrollmentProgressService(
 
     private async Task<EnrollmentProgressDto> BuildProgressAsync(Enrollment enrollment, CancellationToken cancellationToken, bool saveStatus = true)
     {
+        var units = await unitRepository.GetByCourseIdAsync(enrollment.CourseId, cancellationToken);
+        var unitThemes = new List<(Domain.Entities.Unit Unit, IReadOnlyList<Domain.Entities.Theme> Themes, Dictionary<Guid, IReadOnlyList<Domain.Entities.Activity>> ActivitiesByTheme)>();
+        var allActivityIds = new List<Guid>();
+
+        foreach (var unit in units)
+        {
+            var themes = await themeRepository.GetByUnitIdAsync(unit.Id, cancellationToken);
+            var activitiesByTheme = new Dictionary<Guid, IReadOnlyList<Domain.Entities.Activity>>();
+            foreach (var theme in themes)
+            {
+                var activities = await activityRepository.GetByThemeIdAsync(theme.Id, cancellationToken);
+                activitiesByTheme[theme.Id] = activities;
+                allActivityIds.AddRange(activities.Select(a => a.Id));
+            }
+            unitThemes.Add((unit, themes, activitiesByTheme));
+        }
+
         var themeIds = await progressRepository.GetThemeIdsAsync(enrollment.CourseId, cancellationToken);
         var completedThemeIds = (await themeCompletionRepository.GetByEnrollmentIdAsync(enrollment.Id, cancellationToken)).Select(x => x.ThemeId).ToHashSet();
         var requiredActivityIds = await progressRepository.GetMandatoryActivityIdsAsync(enrollment.CourseId, cancellationToken);
-        var approvedActivityIds = (await submissionRepository.GetApprovedActivityIdsAsync(enrollment.Id, requiredActivityIds, cancellationToken)).ToHashSet();
-        approvedActivityIds.UnionWith(await quizRepository.GetPassedActivityIdsAsync(enrollment.Id, requiredActivityIds, cancellationToken));
+        var activitiesToCheck = allActivityIds.Count > 0 ? allActivityIds : requiredActivityIds;
+        var approvedActivityIds = (await submissionRepository.GetApprovedActivityIdsAsync(enrollment.Id, activitiesToCheck, cancellationToken)).ToHashSet();
+        approvedActivityIds.UnionWith(await quizRepository.GetPassedActivityIdsAsync(enrollment.Id, activitiesToCheck, cancellationToken));
         var completedThemes = themeIds.Count(x => completedThemeIds.Contains(x));
         var approvedActivities = requiredActivityIds.Count(approvedActivityIds.Contains);
         var total = themeIds.Count + requiredActivityIds.Count;
         var completed = completedThemes + approvedActivities;
         var isCompleted = total > 0 && completed == total && enrollment.Status == EnrollmentStatus.Active;
         var percentage = total == 0 ? 0 : (int)Math.Round(completed * 100m / total, MidpointRounding.AwayFromZero);
-        var units = await unitRepository.GetByCourseIdAsync(enrollment.CourseId, cancellationToken);
         var unitProgress = new List<EnrollmentUnitProgressDto>();
 
-        foreach (var unit in units)
+        foreach (var (unit, themes, activitiesByTheme) in unitThemes)
         {
-            var themes = await themeRepository.GetByUnitIdAsync(unit.Id, cancellationToken);
             var themeProgress = new List<EnrollmentThemeProgressDto>();
             foreach (var theme in themes)
             {
-                var themeActivities = await activityRepository.GetByThemeIdAsync(theme.Id, cancellationToken);
+                var themeActivities = activitiesByTheme[theme.Id];
                 themeProgress.Add(new EnrollmentThemeProgressDto(
                     theme.Id,
                     theme.Title,
@@ -201,7 +217,7 @@ public sealed class EnrollmentProgressService(
                         activity.Title,
                         activity.Type,
                         activity.IsMandatory,
-                        !activity.IsMandatory || approvedActivityIds.Contains(activity.Id))).ToArray()));
+                        approvedActivityIds.Contains(activity.Id))).ToArray()));
             }
 
             var unitActivities = themeProgress.SelectMany(theme => theme.Activities).ToArray();
