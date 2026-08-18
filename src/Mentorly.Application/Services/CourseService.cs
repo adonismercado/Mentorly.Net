@@ -17,7 +17,6 @@ public sealed class CourseService(
     {
         var courses = await courseRepository.GetAllAsync(cancellationToken);
         return courses
-            .Where(course => course.IsPublished)
             .Select(MapCourse)
             .ToArray();
     }
