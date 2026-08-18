@@ -31,10 +31,16 @@ public sealed class PeerReviewRepository(MentorlyDbContext dbContext) : IPeerRev
         return await dbContext.PeerReviews.Include(review => review.CriterionScores).Where(x => x.ReviewerStudentId == reviewerStudentId).OrderByDescending(x => x.CreatedAt).ToArrayAsync(cancellationToken);
     }
 
-    public Task<bool> HasReviewerAlreadyReviewedAsync(Guid submissionId, Guid reviewerStudentId, CancellationToken cancellationToken = default)
+    public Task<bool> HasReviewerAlreadyReviewedAsync(Guid submissionId, Guid reviewerStudentId, DateTime? submissionSubmittedAtUtc = null, CancellationToken cancellationToken = default)
     {
+        if (submissionSubmittedAtUtc is null)
+        {
+            return dbContext.PeerReviews
+                .AnyAsync(x => x.SubmissionId == submissionId && x.ReviewerStudentId == reviewerStudentId, cancellationToken);
+        }
+
         return dbContext.PeerReviews
-            .AnyAsync(x => x.SubmissionId == submissionId && x.ReviewerStudentId == reviewerStudentId, cancellationToken);
+            .AnyAsync(x => x.SubmissionId == submissionId && x.ReviewerStudentId == reviewerStudentId && (x.IsApproved || x.CreatedAt >= submissionSubmittedAtUtc.Value), cancellationToken);
     }
 
     public Task<int> CountApprovalsForSubmissionAsync(Guid submissionId, CancellationToken cancellationToken = default)

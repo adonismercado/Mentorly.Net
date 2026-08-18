@@ -67,7 +67,10 @@ public sealed class PeerReviewWorkflowRepository(MentorlyDbContext dbContext) : 
                               (reviewerEnrollment.Status == Domain.Enums.EnrollmentStatus.Active || reviewerEnrollment.Status == Domain.Enums.EnrollmentStatus.Completed) &&
                               reviewerEnrollment.ExpiresAt >= DateTime.UtcNow)
                           && dbContext.Submissions.Any(own => own.ActivityId == submission.ActivityId && own.Enrollment.StudentId == reviewerStudentId)
-                          && !dbContext.PeerReviews.Any(review => review.SubmissionId == submission.Id && review.ReviewerStudentId == reviewerStudentId)
+                          && !dbContext.PeerReviews.Any(review =>
+                              review.SubmissionId == submission.Id &&
+                              review.ReviewerStudentId == reviewerStudentId &&
+                              (review.IsApproved || review.CreatedAt >= submission.SubmittedAt))
                       orderby submission.SubmittedAt
                       select new ReviewQueueItemData(submission.Id, submission.ActivityId, activity.Title, submission.EvidenceType, submission.EvidenceContent, submission.SubmittedAt))
             .ToListAsync(cancellationToken);
@@ -100,7 +103,10 @@ public sealed class PeerReviewWorkflowRepository(MentorlyDbContext dbContext) : 
                         (reviewerEnrollment.Status == Domain.Enums.EnrollmentStatus.Active || reviewerEnrollment.Status == Domain.Enums.EnrollmentStatus.Completed) &&
                         reviewerEnrollment.ExpiresAt >= DateTime.UtcNow)
                     && dbContext.Submissions.Any(own => own.ActivityId == submission.ActivityId && own.Enrollment.StudentId == reviewerStudentId)
-                    && !dbContext.PeerReviews.Any(review => review.SubmissionId == submission.Id && review.ReviewerStudentId == reviewerStudentId)
+                    && !dbContext.PeerReviews.Any(review =>
+                        review.SubmissionId == submission.Id &&
+                        review.ReviewerStudentId == reviewerStudentId &&
+                        (review.IsApproved || review.CreatedAt >= submission.SubmittedAt))
                 select new AnonymousSubmissionData(submission.Id, activity.Id, activity.Title, submission.EvidenceType, submission.EvidenceContent, submission.SubmittedAt))
             .FirstOrDefaultAsync(cancellationToken);
     }

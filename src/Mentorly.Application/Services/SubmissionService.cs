@@ -171,7 +171,7 @@ public sealed class SubmissionService(
         var activity = await ValidateActivityCanBeSubmittedAsync(enrollment, submission.ActivityId, cancellationToken);
         EnsureEvidenceMatchesActivity(activity, dto.EvidenceType);
 
-        submission.ReplaceEvidence(dto.EvidenceType, dto.EvidenceContent);
+        submission.ReplaceEvidence(dto.EvidenceType, dto.EvidenceContent, DateTime.UtcNow);
         ApplyApprovalStrategy(submission, activity.ApprovalStrategy);
 
         await submissionRepository.UpdateAsync(submission, cancellationToken);

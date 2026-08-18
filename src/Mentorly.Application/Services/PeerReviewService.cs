@@ -66,6 +66,7 @@ public sealed class PeerReviewService(
         var alreadyReviewed = await peerReviewRepository.HasReviewerAlreadyReviewedAsync(
             submission.Id,
             reviewerStudentId,
+            submission.SubmittedAt,
             cancellationToken);
 
         if (alreadyReviewed)
