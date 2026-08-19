@@ -215,6 +215,7 @@ public sealed class EnrollmentProgressService(
                     themeActivities.Select(activity => new EnrollmentActivityProgressDto(
                         activity.Id,
                         activity.Title,
+                        activity.Description,
                         activity.Type,
                         activity.IsMandatory,
                         approvedActivityIds.Contains(activity.Id))).ToArray()));
