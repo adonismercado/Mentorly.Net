@@ -13,6 +13,7 @@ public sealed class ActivityConfiguration : IEntityTypeConfiguration<Activity>
         builder.Property(x => x.Id).HasColumnName("id");
         builder.Property(x => x.ThemeId).HasColumnName("theme_id").IsRequired();
         builder.Property(x => x.Title).HasColumnName("title").HasMaxLength(200).IsRequired();
+        builder.Property(x => x.Description).HasColumnName("description").HasMaxLength(4000).IsRequired();
         builder.Property(x => x.Type).HasColumnName("type").HasConversion<string>().HasMaxLength(32).IsRequired();
         builder.Property(x => x.IsMandatory).HasColumnName("is_mandatory").IsRequired();
         builder.Property(x => x.ApprovalStrategy).HasColumnName("approval_strategy").HasConversion<string>().HasMaxLength(32).IsRequired();

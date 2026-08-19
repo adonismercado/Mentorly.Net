@@ -27,6 +27,7 @@ public sealed record CourseThemeContentDto(
 public sealed record CourseActivityContentDto(
     Guid Id,
     string Title,
+    string Description,
     ActivityType Type,
     bool IsMandatory,
     ApprovalStrategy ApprovalStrategy,

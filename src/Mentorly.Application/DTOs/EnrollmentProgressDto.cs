@@ -38,6 +38,7 @@ public sealed record EnrollmentThemeProgressDto(
 public sealed record EnrollmentActivityProgressDto(
     Guid ActivityId,
     string Title,
+    string Description,
     ActivityType Type,
     bool IsMandatory,
     bool IsApproved);
