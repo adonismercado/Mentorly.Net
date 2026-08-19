@@ -60,7 +60,7 @@ public class PeerReview
         return new PeerReview(Guid.NewGuid(), submissionId, reviewerStudentId, isApproved, feedbackComment, createdAtUtc);
     }
 
-    public void UpdateReview(bool isApproved, string feedbackComment)
+    public void UpdateReview(bool isApproved, string feedbackComment, DateTime? reviewedAtUtc = null)
     {
         if (string.IsNullOrWhiteSpace(feedbackComment))
         {
@@ -69,6 +69,10 @@ public class PeerReview
 
         IsApproved = isApproved;
         FeedbackComment = feedbackComment.Trim();
+        if (reviewedAtUtc.HasValue)
+        {
+            CreatedAt = EnsureUtc(reviewedAtUtc.Value);
+        }
     }
 
     private static DateTime EnsureUtc(DateTime value)

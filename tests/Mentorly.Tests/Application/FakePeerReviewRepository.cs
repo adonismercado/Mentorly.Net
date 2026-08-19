@@ -21,7 +21,10 @@ public sealed class FakePeerReviewRepository(int existingApprovalCount, bool alr
     public Task<PeerReview[]> GetByReviewerStudentIdAsync(Guid reviewerStudentId, CancellationToken cancellationToken = default)
         => Task.FromResult(Array.Empty<PeerReview>());
 
-    public Task<bool> HasReviewerAlreadyReviewedAsync(Guid submissionId, Guid reviewerStudentId, CancellationToken cancellationToken = default)
+    public Task<PeerReview?> GetBySubmissionAndReviewerAsync(Guid submissionId, Guid reviewerStudentId, CancellationToken cancellationToken = default)
+        => Task.FromResult(alreadyReviewed ? PeerReview.Create(submissionId, reviewerStudentId, true, "Already reviewed", DateTime.UtcNow) : null);
+
+    public Task<bool> HasReviewerAlreadyReviewedAsync(Guid submissionId, Guid reviewerStudentId, DateTime? submissionSubmittedAtUtc = null, CancellationToken cancellationToken = default)
         => Task.FromResult(alreadyReviewed);
 
     public Task<int> CountApprovalsForSubmissionAsync(Guid submissionId, CancellationToken cancellationToken = default)

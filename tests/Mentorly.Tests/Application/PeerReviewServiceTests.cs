@@ -153,7 +153,10 @@ public sealed class PeerReviewServiceTests
     {
         public PeerReview? LastAdded { get; private set; }
 
-        public Task<bool> HasReviewerAlreadyReviewedAsync(Guid submissionId, Guid reviewerStudentId, CancellationToken cancellationToken = default)
+        public Task<PeerReview?> GetBySubmissionAndReviewerAsync(Guid submissionId, Guid reviewerStudentId, CancellationToken cancellationToken = default)
+            => Task.FromResult(alreadyReviewed ? PeerReview.Create(submissionId, reviewerStudentId, true, "Already reviewed", DateTime.UtcNow) : null);
+
+        public Task<bool> HasReviewerAlreadyReviewedAsync(Guid submissionId, Guid reviewerStudentId, DateTime? submissionSubmittedAtUtc = null, CancellationToken cancellationToken = default)
             => Task.FromResult(alreadyReviewed);
 
         public Task<int> CountApprovalsForSubmissionAsync(Guid submissionId, CancellationToken cancellationToken = default)
