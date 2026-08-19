@@ -63,38 +63,70 @@ public sealed class PeerReviewService(
             throw new InvalidOperationException("Reviewer must submit their own solution before reviewing peers.");
         }
 
-        var alreadyReviewed = await peerReviewRepository.HasReviewerAlreadyReviewedAsync(
+        var existingReview = await peerReviewRepository.GetBySubmissionAndReviewerAsync(
             submission.Id,
             reviewerStudentId,
-            submission.SubmittedAt,
             cancellationToken);
 
-        if (alreadyReviewed)
+        if (existingReview is not null)
         {
-            throw new InvalidOperationException("The reviewer already reviewed this submission.");
+            if (existingReview.IsApproved || existingReview.CreatedAt >= submission.SubmittedAt)
+            {
+                throw new InvalidOperationException("The reviewer already reviewed this submission.");
+            }
         }
 
         await EnsureReviewerHasActiveEnrollmentAsync(reviewerStudentId, submission.Enrollment.CourseId, cancellationToken);
 
         var reviewedAtUtc = DateTime.UtcNow;
-        var review = PeerReview.Create(
-            request.SubmissionId,
-            reviewerStudentId,
-            request.IsApproved,
-            request.FeedbackComment,
-            reviewedAtUtc);
-
         var scores = request.CriterionScores ?? [];
         var criteria = await rubricRepository.GetByActivityIdAsync(submission.ActivityId, cancellationToken);
         ValidateScores(criteria, scores);
-        foreach (var score in scores) review.AddCriterionScore(score.RubricCriterionId, score.Score);
 
-        await peerReviewRepository.AddAsync(review, cancellationToken);
-
-        var positiveReviews = await peerReviewRepository.CountApprovalsForSubmissionAsync(submission.Id, cancellationToken);
-        if (request.IsApproved)
+        PeerReview review;
+        if (existingReview is not null)
         {
-            positiveReviews++;
+            existingReview.UpdateReview(request.IsApproved, request.FeedbackComment, reviewedAtUtc);
+            existingReview.CriterionScores.Clear();
+            foreach (var score in scores)
+            {
+                existingReview.AddCriterionScore(score.RubricCriterionId, score.Score);
+            }
+            peerReviewRepository.Update(existingReview);
+            review = existingReview;
+        }
+        else
+        {
+            review = PeerReview.Create(
+                request.SubmissionId,
+                reviewerStudentId,
+                request.IsApproved,
+                request.FeedbackComment,
+                reviewedAtUtc);
+
+            foreach (var score in scores)
+            {
+                review.AddCriterionScore(score.RubricCriterionId, score.Score);
+            }
+
+            await peerReviewRepository.AddAsync(review, cancellationToken);
+        }
+
+        var currentApprovals = await peerReviewRepository.CountApprovalsForSubmissionAsync(submission.Id, cancellationToken);
+        var positiveReviews = currentApprovals;
+        if (existingReview is null)
+        {
+            if (request.IsApproved)
+            {
+                positiveReviews++;
+            }
+        }
+        else
+        {
+            if (request.IsApproved)
+            {
+                positiveReviews++;
+            }
         }
 
         var requiredReviews = submission.Enrollment.Course.RequiredPeerReviews;

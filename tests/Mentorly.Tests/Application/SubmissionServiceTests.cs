@@ -226,6 +226,7 @@ public sealed class SubmissionServiceTests
         public Task<PeerReview?> GetByIdAsync(Guid peerReviewId, CancellationToken cancellationToken = default) => Task.FromResult<PeerReview?>(null);
         public Task<PeerReview[]> GetBySubmissionIdAsync(Guid submissionId, CancellationToken cancellationToken = default) => Task.FromResult<PeerReview[]>([]);
         public Task<PeerReview[]> GetByReviewerStudentIdAsync(Guid reviewerStudentId, CancellationToken cancellationToken = default) => Task.FromResult<PeerReview[]>([]);
+        public Task<PeerReview?> GetBySubmissionAndReviewerAsync(Guid submissionId, Guid reviewerStudentId, CancellationToken cancellationToken = default) => Task.FromResult<PeerReview?>(null);
         public Task<bool> HasReviewerAlreadyReviewedAsync(Guid submissionId, Guid reviewerStudentId, DateTime? submissionSubmittedAtUtc = null, CancellationToken cancellationToken = default) => Task.FromResult(false);
         public Task<int> CountApprovalsForSubmissionAsync(Guid submissionId, CancellationToken cancellationToken = default) => Task.FromResult(0);
         public Task AddAsync(PeerReview review, CancellationToken cancellationToken = default) => Task.CompletedTask;
