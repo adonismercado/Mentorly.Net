@@ -153,7 +153,7 @@ public sealed class PeerReviewServiceTests
     {
         public PeerReview? LastAdded { get; private set; }
 
-        public Task<bool> HasReviewerAlreadyReviewedAsync(Guid submissionId, Guid reviewerStudentId, CancellationToken cancellationToken = default)
+        public Task<bool> HasReviewerAlreadyReviewedAsync(Guid submissionId, Guid reviewerStudentId, DateTime? submissionSubmittedAtUtc = null, CancellationToken cancellationToken = default)
             => Task.FromResult(alreadyReviewed);
 
         public Task<int> CountApprovalsForSubmissionAsync(Guid submissionId, CancellationToken cancellationToken = default)
