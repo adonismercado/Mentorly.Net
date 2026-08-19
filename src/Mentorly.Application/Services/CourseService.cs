@@ -67,6 +67,7 @@ public sealed class CourseService(
                     activities.Select(activity => new CourseActivityContentDto(
                         activity.Id,
                         activity.Title,
+                        activity.Description,
                         activity.Type,
                         activity.IsMandatory,
                         activity.ApprovalStrategy,
