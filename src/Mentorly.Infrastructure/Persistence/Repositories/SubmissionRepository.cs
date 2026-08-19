@@ -25,6 +25,7 @@ public sealed class SubmissionRepository(MentorlyDbContext dbContext) : ISubmiss
             join course in dbContext.Courses on enrollment.CourseId equals course.Id
             join activity in dbContext.Activities on submission.ActivityId equals activity.Id
             where submission.Status == SubmissionStatus.Escalated
+               || (activity.ApprovalStrategy == ApprovalStrategy.Admin && submission.Status == SubmissionStatus.Pending)
             orderby submission.ReviewedAt ?? submission.SubmittedAt
             select new AdminEscalatedSubmissionData(
                 submission.Id,
@@ -55,7 +56,7 @@ public sealed class SubmissionRepository(MentorlyDbContext dbContext) : ISubmiss
             .Include(item => item.Enrollment)
             .ThenInclude(enrollment => enrollment.Course)
             .FirstOrDefaultAsync(
-                item => item.Id == submissionId && item.Status == SubmissionStatus.Escalated,
+                item => item.Id == submissionId && (item.Status == SubmissionStatus.Escalated || item.Status == SubmissionStatus.Pending),
                 cancellationToken);
 
         if (submission is null)
